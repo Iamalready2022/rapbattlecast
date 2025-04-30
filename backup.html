@@ -1,75 +1,311 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" class="scroll-smooth">
 <head>
-  <title>Rapbattlecast - Backup</title>
-  <style>
-    /* Add styling from index.html or use this basic styling */
-    body { font-family: Arial, sans-serif; padding: 50px; }
-    h1 { font-size: 2.5em; text-align: center; }
-    h2 { font-size: 1.5em; color: #555; text-align: center; }
-    ul { list-style: none; padding: 0; }
-    li { margin: 10px 0; }
-    a { color: #007bff; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    section { margin: 40px 0; }
-    .features, .testimonials, .about, .faq { max-width: 800px; margin: 0 auto; }
-    .testimonials p { font-style: italic; }
-    footer { text-align: center; margin-top: 40px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RapBattleCast - Backup</title>
+    <meta name="description" content="Join the ultimate rap battle community. Epic recaps, dope blogs, and pure hip-hop hype.">
+    <link href="https://unpkg.com/tailwindcss@^3/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script defer src="https://unpkg.com/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
-<body>
-  <h1>RapBattleCast</h1>
-  <h2>Dropping Epic Rap Battles That Are Dope...</h2>
-  <p style="text-align: center;">
-    Join the ultimate hip-hop community where raw talent meets epic showdowns. Showcase your skills, build your legacy, and become part of hip-hop history.
-  </p>
-  <p style="text-align: center;"><a href="/join">Start Your Battle Journey</a></p>
+<body class="bg-gray-900 text-gray-100 antialiased">
+    <header class="fixed w-full z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
+        <nav class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <a href="https://iamalready2022.github.io/rapbattlecast/" class="text-2xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent hover:scale-105 transition-transform duration-300">
+                    RapBattleCast
+                </a>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#features" class="text-gray-300 hover:text-white hover:scale-105 transition-all duration-300">Features</a>
+                    <a href="#testimonials" class="text-gray-300 hover:text-white hover:scale-105 transition-all duration-300">Testimonials</a>
+                    <a href="#about" class="text-gray-300 hover:text-white hover:scale-105 transition-all duration-300">About Us</a>
+                    <a href="#faq" class="text-gray-300 hover:text-white hover:scale-105 transition-all duration-300">FAQ</a>
+                    <a href="/join" class="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full font-medium hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300 transform hover:scale-105">
+                        Join Now
+                    </a>
+                </div>
+                <button class="mobile-menu-button md:hidden" aria-label="Toggle mobile menu">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+            <div class="mobile-menu hidden md:hidden mt-4 bg-gray-800 rounded-lg p-4">
+                <a href="#features" class="block py-2 text-gray-300 hover:text-white">Features</a>
+                <a href="#testimonials" class="block py-2 text-gray-300 hover:text-white">Testimonials</a>
+                <a href="#about" class="block py-2 text-gray-300 hover:text-white">About Us</a>
+                <a href="#faq" class="block py-2 text-gray-300 hover:text-white">FAQ</a>
+                <a href="/join" class="block py-2 text-gray-300 hover:text-white">Join Now</a>
+            </div>
+        </nav>
+    </header>
 
-  <section class="features">
-    <h2>What Makes Us The Ultimate Battle Platform</h2>
-    <ul>
-      <li><strong>Live Battle Arena:</strong> Experience real-time lyrical warfare with HD streaming, instant crowd reactions, and professional judging. Our platform hosts over 100+ battles monthly with a 95% satisfaction rate.</li>
-      <li><strong>Expert Battle Analysis:</strong> Get deep insights from industry veterans, detailed battle breakdowns, and professional commentary. Our analysis team includes former champions and respected critics.</li>
-      <li><strong>Elite Community:</strong> Join a thriving network of 50,000+ battle rap enthusiasts, connect with legends, and build your reputation in the game. Weekly events and exclusive member perks.</li>
-    </ul>
-  </section>
+    <main>
+        <!-- Hero Section -->
+        <section class="relative min-h-screen flex items-center justify-center overflow-hidden py-32 px-6" style="background-image: url('https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80'); background-size: cover; background-position: center;">
+            <div class="absolute inset-0 bg-gradient-to-br from-purple-900/80 to-gray-900/90"></div>
+            <div class="relative container mx-auto text-center">
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight mb-8 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    Dropping Epic Rap Battles That Are Dope...
+                </h1>
+                <p class="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto">
+                    Join the ultimate hip-hop community where raw talent meets epic showdowns. Showcase your skills, build your legacy, and become part of hip-hop history.
+                </p>
+                <a href="/join" class="inline-block px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full text-lg font-semibold hover:shadow-xl hover:shadow-purple-500/30 transition-all duration-300 transform hover:scale-105">
+                    Start Your Battle Journey
+                </a>
+            </div>
+        </section>
 
-  <section class="testimonials">
-    <h2>What The Community Says</h2>
-    <p>★★★★★<br>"RapBattleCast completely changed my battle career. The exposure and networking opportunities are unmatched. Made it to the finals in my first season!"<br><em>Marcus "FlowMaster" Johnson, 2023 League Champion</em></p>
-    <p>★★★★★<br>"The platform's professional judging and instant feedback system helped me improve faster than years of local battles. The community is supportive and real."<br><em>Sarah "Lyrical" Chen, Rising Star Award Winner</em></p>
-    <p>★★★★★<br>"Best battle platform out there. The streaming quality is top-notch, and the analysis team provides incredible insights. Worth every penny."<br><em>Mike "Verbal" Thompson, Battle Analyst & Veteran MC</em></p>
-    <p>★★★★★<br>"From amateur to pro in 8 months. The mentorship program and weekly workshops are game-changers. This is where legends are made."<br><em>Alex "WordPlay" Rodriguez, Breakthrough Artist 2023</em></p>
-  </section>
+        <!-- Features Section -->
+        <section id="features" class="py-24 px-6 bg-gray-800/50">
+            <div class="container mx-auto">
+                <h2 class="text-3xl md:text-4xl font-bold text-center mb-16 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    What Makes Us The Ultimate Battle Platform
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+                    <div class="bg-gray-800 rounded-2xl p-8 hover:bg-gray-700/50 transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-purple-500/20">
+                        <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full mb-6 flex items-center justify-center">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-4">Live Battle Arena</h3>
+                        <p class="text-gray-400">Experience real-time lyrical warfare with HD streaming, instant crowd reactions, and professional judging. Our platform hosts over 100+ battles monthly with a 95% satisfaction rate.</p>
+                    </div>
+                    <div class="bg-gray-800 rounded-2xl p-8 hover:bg-gray-700/50 transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-purple-500/20">
+                        <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full mb-6 flex items-center justify-center">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2 2 0 00-2-2h-2"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-4">Expert Battle Analysis</h3>
+                        <p class="text-gray-400">Get deep insights from industry veterans, detailed battle breakdowns, and professional commentary. Our analysis team includes former champions and respected critics.</p>
+                    </div>
+                    <div class="bg-gray-800 rounded-2xl p-8 hover:bg-gray-700/50 transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-purple-500/20">
+                        <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full mb-6 flex items-center justify-center">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-4">Elite Community</h3>
+                        <p class="text-gray-400">Join a thriving network of 50,000+ battle rap enthusiasts, connect with legends, and build your reputation in the game. Weekly events and exclusive member perks.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-  <section class="about">
-    <h2>Our Story</h2>
-    <p>Founded in 2020 by a collective of battle rap veterans and tech innovators, RapBattleCast emerged from a vision to revolutionize the battle rap scene. What started as a small online community during the global lockdown has evolved into the largest digital battle rap platform, hosting over 1,000 events and launching countless careers.</p>
-    <p>Our mission is to elevate battle rap culture through innovation, authenticity, and community. We believe in preserving the raw essence of battle rap while providing modern tools and opportunities for artists to showcase their talent. Our core values of respect, creativity, and excellence drive everything we do, from our judging system to our community guidelines.</p>
-  </section>
+        <!-- Testimonials Section -->
+        <section id="testimonials" class="py-24 px-6 bg-gray-900">
+            <div class="container mx-auto">
+                <h2 class="text-3xl md:text-4xl font-bold text-center mb-16 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    What The Community Says
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div class="bg-gray-800 p-6 rounded-xl hover:shadow-xl transition-all duration-300 hover:scale-105">
+                        <div class="flex text-yellow-400 mb-4">
+                            ★★★★★
+                        </div>
+                        <p class="text-gray-300 mb-4">"RapBattleCast completely changed my battle career. The exposure and networking opportunities are unmatched. Made it to the finals in my first season!"</p>
+                        <div class="text-sm">
+                            <p class="font-semibold text-white">Marcus "FlowMaster" Johnson</p>
+                            <p class="text-gray-400">2023 League Champion</p>
+                        </div>
+                    </div>
+                    <div class="bg-gray-800 p-6 rounded-xl hover:shadow-xl transition-all duration-300 hover:scale-105">
+                        <div class="flex text-yellow-400 mb-4">
+                            ★★★★★
+                        </div>
+                        <p class="text-gray-300 mb-4">"The platform's professional judging and instant feedback system helped me improve faster than years of local battles. The community is supportive and real."</p>
+                        <div class="text-sm">
+                            <p class="font-semibold text-white">Sarah "Lyrical" Chen</p>
+                            <p class="text-gray-400">Rising Star Award Winner</p>
+                        </div>
+                    </div>
+                    <div class="bg-gray-800 p-6 rounded-xl hover:shadow-xl transition-all duration-300 hover:scale-105">
+                        <div class="flex text-yellow-400 mb-4">
+                            ★★★★★
+                        </div>
+                        <p class="text-gray-300 mb-4">"Best battle platform out there. The streaming quality is top-notch, and the analysis team provides incredible insights. Worth every penny."</p>
+                        <div class="text-sm">
+                            <p class="font-semibold text-white">Mike "Verbal" Thompson</p>
+                            <p class="text-gray-400">Battle Analyst & Veteran MC</p>
+                        </div>
+                    </div>
+                    <div class="bg-gray-800 p-6 rounded-xl hover:shadow-xl transition-all duration-300 hover:scale-105">
+                        <div class="flex text-yellow-400 mb-4">
+                            ★★★★★
+                        </div>
+                        <p class="text-gray-300 mb-4">"From amateur to pro in 8 months. The mentorship program and weekly workshops are game-changers. This is where legends are made."</p>
+                        <div class="text-sm">
+                            <p class="font-semibold text-white">Alex "WordPlay" Rodriguez</p>
+                            <p class="text-gray-400">Breakthrough Artist 2023</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-  <section class="faq">
-    <h2>Frequently Asked Questions</h2>
-    <p><strong>How do I start battling?</strong></p>
-    <p><strong>What equipment do I need?</strong></p>
-    <p><strong>How does judging work?</strong></p>
-    <p><strong>What are the membership tiers?</strong></p>
-    <p><strong>Can I monetize my battles?</strong></p>
-  </section>
+        <!-- About Us Section -->
+        <section id="about" class="py-24 px-6 bg-gray-800/50">
+            <div class="container mx-auto max-w-4xl text-center">
+                <h2 class="text-3xl md:text-4xl font-bold mb-12 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Our Story</h2>
+                <div class="space-y-8">
+                    <p class="text-lg text-gray-300">
+                        Founded in 2020 by a collective of battle rap veterans and tech innovators, RapBattleCast emerged from a vision to revolutionize the battle rap scene. What started as a small online community during the global lockdown has evolved into the largest digital battle rap platform, hosting over 1,000 events and launching countless careers.
+                    </p>
+                    <p class="text-lg text-gray-300">
+                        Our mission is to elevate battle rap culture through innovation, authenticity, and community. We believe in preserving the raw essence of battle rap while providing modern tools and opportunities for artists to showcase their talent. Our core values of respect, creativity, and excellence drive everything we do, from our judging system to our community guidelines.
+                    </p>
+                </div>
+            </div>
+        </section>
 
-  <section style="text-align: center;">
-    <h2>Ready to Dominate the Battle Scene?</h2>
-    <p>Join thousands of MCs who've taken their skills to the next level. Your legacy starts here.</p>
-    <p><a href="/join">Start Your Journey Now</a></p>
-  </section>
+        <!-- FAQ Section -->
+        <section id="faq" class="py-24 px-6">
+            <div class="container mx-auto max-w-4xl">
+                <h2 class="text-3xl md:text-4xl font-bold text-center mb-16 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    Frequently Asked Questions
+                </h2>
+                <div class="space-y-6" x-data="{selected:null}">
+                    <div class="bg-gray-800 rounded-xl hover:bg-gray-700/50 transition-all duration-300">
+                        <button @click="selected !== 1 ? selected = 1 : selected = null" class="flex justify-between items-center w-full p-6">
+                            <span class="font-semibold">How do I start battling?</span>
+                            <svg class="w-6 h-6 transform transition-transform duration-300" :class="{'rotate-180': selected === 1}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        <div x-show="selected === 1" class="p-6 pt-0 text-gray-400">
+                            Simply sign up, complete your profile, and enter our Rookie League. New battles start every week, with opportunities to challenge others or join scheduled events. Our matching system ensures fair and exciting matchups based on your experience level.
+                        </div>
+                    </div>
+                    <div class="bg-gray-800 rounded-xl hover:bg-gray-700/50 transition-all duration-300">
+                        <button @click="selected !== 2 ? selected = 2 : selected = null" class="flex justify-between items-center w-full p-6">
+                            <span class="font-semibold">What equipment do I need?</span>
+                            <svg class="w-6 h-6 transform transition-transform duration-300" :class="{'rotate-180': selected === 2}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        <div x-show="selected === 2" class="p-6 pt-0 text-gray-400">
+                            A stable internet connection and a decent microphone are essential. We recommend a minimum upload speed of 5Mbps and a USB microphone for optimal sound quality. Our platform works on all major devices and browsers.
+                        </div>
+                    </div>
+                    <div class="bg-gray-800 rounded-xl hover:bg-gray-700/50 transition-all duration-300">
+                        <button @click="selected !== 3 ? selected = 3 : selected = null" class="flex justify-between items-center w-full p-6">
+                            <span class="font-semibold">How does judging work?</span>
+                            <svg class="w-6 h-6 transform transition-transform duration-300" :class="{'rotate-180': selected === 3}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        <div x-show="selected === 3" class="p-6 pt-0 text-gray-400">
+                            Battles are judged by a panel of certified judges using our comprehensive scoring system. Criteria include technical skill, delivery, creativity, and crowd reaction. All decisions are final and transparent, with detailed feedback provided after each battle.
+                        </div>
+                    </div>
+                    <div class="bg-gray-800 rounded-xl hover:bg-gray-700/50 transition-all duration-300">
+                        <button @click="selected !== 4 ? selected = 4 : selected = null" class="flex justify-between items-center w-full p-6">
+                            <span class="font-semibold">What are the membership tiers?</span>
+                            <svg class="w-6 h-6 transform transition-transform duration-300" :class="{'rotate-180': selected === 4}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        <div x-show="selected === 4" class="p-6 pt-0 text-gray-400">
+                            We offer Free, Pro ($19.99/month), and Elite ($39.99/month) memberships. Each tier provides increasing access to features, events, and training resources. Elite members get priority matching and exclusive workshop access.
+                        </div>
+                    </div>
+                    <div class="bg-gray-800 rounded-xl hover:bg-gray-700/50 transition-all duration-300">
+                        <button @click="selected !== 5 ? selected = 5 : selected = null" class="flex justify-between items-center w-full p-6">
+                            <span class="font-semibold">Can I monetize my battles?</span>
+                            <svg class="w-6 h-6 transform transition-transform duration-300" :class="{'rotate-180': selected === 5}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        <div x-show="selected === 5" class="p-6 pt-0 text-gray-400">
+                            Yes! Pro and Elite members can earn from battles through our revenue sharing program. Top performers can also qualify for sponsored events and promotional opportunities. Our partnership program connects talented MCs with brands and events.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-  <footer>
-    <p><strong>RapBattleCast</strong><br>Elevating battle rap culture since 2020.</p>
-    <p><strong>Contact</strong><br><a href="mailto:breadcrumbsflow@gmail.com">breadcrumbsflow@gmail.com</a></p>
-    <p><strong>Legal</strong><br><a href="/privacy">Privacy Policy</a> | <a href="/terms">Terms of Service</a></p>
-    <p><strong>Blog</strong><br><a href="/blog">Blog</a></p>
-    <p><strong>Follow Us</strong><br><a href="https://x.com/rapbattlecast">Twitter</a></p>
-    <p>© 2024 RapBattleCast. All rights reserved.</p>
-  </footer>
+        <!-- CTA Section -->
+        <section class="py-24 px-6 bg-gradient-to-br from-purple-900/40 to-gray-900" style="background-image: url('https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80'); background-size: cover; background-position: center;">
+            <div class="container mx-auto text-center">
+                <h2 class="text-3xl md:text-5xl font-bold mb-8">Ready to Dominate the Battle Scene?</h2>
+                <p class="text-xl text-gray-300 mb-12 max-w-2xl mx-auto">Join thousands of MCs who've taken their skills to the next level. Your legacy starts here.</p>
+                <a href="/join" class="inline-block px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full text-lg font-semibold hover:shadow-xl hover:shadow-purple-500/30 transition-all duration-300 transform hover:scale-105">
+                    Start Your Journey Now
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-gray-800/50 border-t border-gray-800">
+        <div class="container mx-auto px-6 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">RapBattleCast</h3>
+                    <p class="text-gray-400">Elevating battle rap culture since 2020.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Contact</h4>
+                    <a href="mailto:breadcrumbsflow@gmail.com" class="text-gray-400 hover:text-white transition-colors duration-300">
+                        breadcrumbsflow@gmail.com
+                    </a>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Legal</h4>
+                    <div class="space-y-2">
+                        <a href="/privacy" class="block text-gray-400 hover:text-white transition-colors duration-300">Privacy Policy</a>
+                        <a href="/terms" class="block text-gray-400 hover:text-white transition-colors duration-300">Terms of Service</a>
+                        <a href="/blog" class="block text-gray-400 hover:text-white transition-colors duration-300">Blog</a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Follow Us</h4>
+                    <div class="flex space-x-4">
+                        <a href="https://x.com/rapbattlecast" class="text-gray-400 hover:text-white transition-colors duration-300">
+                            <span class="sr-only">Twitter</span>
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-12 pt-8 border-t border-gray-800 text-center text-gray-400">
+                <p>© 2024 RapBattleCast. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuButton = document.querySelector('header nav .mobile-menu-button');
+            const mobileMenu = document.querySelector('header nav .mobile-menu');
+            
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', () => {
+                    mobileMenu.classList.toggle('hidden');
+                    const icon = mobileMenuButton.querySelector('i');
+                    if (icon) {
+                        icon.classList.toggle('fa-bars');
+                        icon.classList.toggle('fa-times');
+                    }
+                });
+
+                const mobileMenuLinks = mobileMenu.querySelectorAll('a');
+                mobileMenuLinks.forEach(link => {
+                    link.addEventListener('click', () => {
+                        mobileMenu.classList.add('hidden');
+                        const icon = mobileMenuButton.querySelector('i');
+                        if (icon) {
+                            icon.classList.remove('fa-times');
+                            icon.classList.add('fa-bars');
+                        }
+                    });
+                });
+            }
+        });
+    </script>
 </body>
 </html>
