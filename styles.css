@@ -1,6 +1,6 @@
 body {
   background-image: url('https://rapbattlecast.com/images/background-image.png');
-  background-size: cover;
+  background-size: 100% auto; /* Scales the image to 100% of the viewport width, maintaining aspect ratio */
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
