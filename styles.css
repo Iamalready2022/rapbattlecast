@@ -1,10 +1,10 @@
 body {
   background-image: url('https://rapbattlecast.com/images/background-image.png');
-  background-size: 100% auto;
+  background-size: contain; /* Fits the image without stretching */
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
-  background-color: #1a1a1a; /* A dark color to blend with the image */
+  background-color: #1a1a1a; /* Dark color for empty space */
   color: white;
   min-height: 100vh;
 }
