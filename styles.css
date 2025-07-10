@@ -8,21 +8,31 @@ body {
   color: white;
   min-height: 100vh;
 }
+
 h1, p, a {
   color: white;
   text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.3);
 }
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
 .battle-container {
   display: flex;
   justify-content: space-around;
   gap: 20px;
   padding: 20px;
 }
+
 .battle-column {
   flex: 1;
   text-align: center;
   max-width: 360px; /* Width of each column */
 }
+
 .battle-column iframe {
   width: 360px; /* Fixed width for 9:16 */
   height: 640px; /* Fixed height for 9:16 */
