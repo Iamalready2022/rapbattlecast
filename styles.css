@@ -1,9 +1,9 @@
 body {
-  background-image: url('https://rapbattlecast.com/images/background-image.png');
-  background-size: 90% auto; /* Slightly smaller width to allow more vertical space */
-  background-position: 50% 60px; /* Centers horizontally, shifts 60px down from the top */
+  background-image: url('images/iamalready.bg.png');
+  background-size: cover;
+  background-position: center top;
   background-repeat: no-repeat;
-  background-attachment: fixed;
+  background-attachment: scroll; /* Changed to scroll for better mobile compatibility */
   background-color: #1a1a1a;
   color: white;
   min-height: 100vh;
@@ -39,10 +39,3 @@ h1, p, a {
   border: none;
 }
 
-/* Media query for mobile devices */
-@media (max-width: 768px) {
-  body {
-    background-size: cover; /* Ensure image covers the area */
-    background-position: 50% 20%; /* Adjust position to show more of the face */
-  }
-}
