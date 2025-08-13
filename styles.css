@@ -38,3 +38,10 @@ h1, p, a {
   height: 640px; /* Fixed height for 9:16 */
   border: none;
 }
+
+/* Media query for mobile devices */
+@media (max-width: 768px) {
+  body {
+    background-position: 50% top; /* Align top of image to top of viewport on mobile */
+  }
+}
