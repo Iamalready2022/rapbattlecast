@@ -42,6 +42,7 @@ h1, p, a {
 /* Media query for mobile devices */
 @media (max-width: 768px) {
   body {
-    background-position: 50% top; /* Align top of image to top of viewport on mobile */
+    background-size: cover; /* Ensure image covers the area */
+    background-position: 50% 20%; /* Adjust position to show more of the face */
   }
 }
