@@ -47,4 +47,5 @@ h1, p, a {
 
 main {
   flex: 1; /* Allow main content to grow and push footer down */
+  padding-top: 150px; /* Add more padding to clear fixed header */
 }
