@@ -1,12 +1,18 @@
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
 body {
   background-image: url('images/rapbattle-bg-image.png');
   background-size: cover;
   background-position: center top;
   background-repeat: no-repeat;
-  background-attachment: scroll; /* Changed to scroll for better mobile compatibility */
+  background-attachment: scroll;
   background-color: #1a1a1a;
   color: white;
-  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 h1, p, a {
@@ -39,3 +45,6 @@ h1, p, a {
   border: none;
 }
 
+main {
+  flex: 1; /* Allow main content to grow and push footer down */
+}
