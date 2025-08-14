@@ -13,7 +13,6 @@ body {
   color: white;
   display: flex;
   flex-direction: column;
-  padding-top: 100px; /* Add padding to clear fixed header */
 }
 
 h1, p, a {
