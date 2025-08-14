@@ -13,6 +13,7 @@ body {
   color: white;
   display: flex;
   flex-direction: column;
+  padding-top: 150px; /* Add padding to clear fixed header */
 }
 
 h1, p, a {
@@ -47,5 +48,4 @@ h1, p, a {
 
 main {
   flex: 1; /* Allow main content to grow and push footer down */
-  margin-top: 200px; /* Increase margin to clear fixed header (test) */
 }
