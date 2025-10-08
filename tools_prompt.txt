@@ -1,0 +1,7 @@
+Generate a responsive HTML/CSS code snippet for a "Tools" page on a static website hosted via GitHub Pages. The page should have:
+- A left sidebar with links to four tools: "R/L Audio Editor," "Beat Generator," "Lyric Analyzer," and "BPM Counter."
+- A main content area with a heading "Rapbattlecast Tools" and a brief placeholder description: "Select a tool from the sidebar to create, edit, or analyze your rap battle content."
+- Use Bootstrap 5 for styling to ensure responsiveness across mobile and desktop.
+- Keep the code minimal (under 100 lines), semantic, and ready to save as `tools.html` in a GitHub Pages repo.
+- Include a dark theme with a rap-inspired aesthetic (e.g., bold fonts, vibrant accents like purple or gold).
+- Output only the complete HTML code with inline CSS or Bootstrap classes, no explanations.
