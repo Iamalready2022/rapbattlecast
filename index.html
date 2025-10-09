@@ -1,21 +1,22 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
-<head><link rel="stylesheet" href="styles.css">
+<html lang="en">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RapBattleCast - Coming Soon</title>
-    <meta name="description" content="Join the ultimate rap battle community. Epic recaps, dope blogs, and pure hip-hop hype.">
+    <title>RapBattleCast</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script defer src="https://unpkg.com/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        body { background: #1a1a1a; }
+        .hero-bg { background-image: url('stage-mic.jpg'); background-size: cover; background-position: center; }
+    </style>
 </head>
-<body class="text-gray-100 antialiased">
+<body class="text-white">
     <header class="fixed w-full z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800 top-0">
         <nav class="container mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
                 <a href="https://iamalready2022.github.io/rapbattlecast/" class="text-2xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent hover:scale-105 transition-transform duration-300">
-                    <img src="iamalready.logo.png" alt="RapBattleCast Logo" class="h-20 w-20 inline-block mr-2">RapBattleCast
+                    <img src="iamalready.logo.png" alt="RapBattleCast Logo" class="h-12 w-12 inline-block mr-2">RapBattleCast
                 </a>
                 <nav class="hidden md:flex space-x-8">
                     <a href="index.html" class="text-gray-300 hover:text-white hover:scale-105 transition-all duration-300">Home</a>
@@ -37,36 +38,23 @@
             </div>
         </nav>
     </header>
-
-    <main>
-        <!-- Hero Section -->
-        <section class="relative min-h-screen flex items-center justify-center overflow-hidden py-32 px-6"> 
-            <div class="relative container mx-auto text-center">
-                <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight mb-8 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                    Dropping Epic Rap Battles That Are Dope...
-                </h1>
-                <p class="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto">
-                    Join the ultimate hip-hop community where raw talent meets epic showdowns. Showcase your skills, build your legacy, and become part of hip-hop history.
-                </p>
-                <a href="/join" class="inline-block px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full text-lg font-semibold hover:shadow-xl hover:shadow-purple-500/30 transition-all duration-300 transform hover:scale-105">
-                    Start Your Battle Journey
-                </a>
+    <div class="h-24"></div>
+    <main class="container mx-auto px-6 py-4 min-h-screen">
+        <section class="hero-bg h-96 flex items-center justify-center">
+            <div class="text-center">
+                <h1 class="text-4xl font-bold text-yellow-400">Welcome to RapBattleCast</h1>
+                <p class="mt-4 text-gray-300">Elevating battle rap culture with epic battles and tools.</p>
             </div>
         </section>
+        <section class="mt-8">
+            <h2 class="text-2xl font-bold text-yellow-400">Featured Content</h2>
+            <p class="mt-2 text-gray-300">Check out our latest battles and blog posts!</p>
+            <!-- Add your existing content, e.g., picture, links -->
+        </section>
     </main>
-<section id="rap-battles-casts" class="p-4 bg-gray-900">
-    <h2 class="text-2xl font-bold mb-4">Rap Battles & Casts</h2>
-    <ul>
-        <li><a href="blog/post1.html" class="text-blue-400">Droppin Some Light...</a></li>
-        <li><a href="blog/post2.html" class="text-blue-400">How to Win a Rap Battle</a></li>
-        <li><a href="blog/post3.html" class="text-blue-400">History of Rap Battles</a></li>
-        <li><a href="blog/post4.html" class="text-blue-400">Tips for Writing Rap Lyrics</a></li>
-        <li><a href="blog/post5.html" class="text-blue-400">Legends of Rap Battles</a></li>
-    </ul>
-</section>
     <footer class="bg-gray-800/50 border-t border-gray-800">
-        <div class="container mx-auto px-6 py-12">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+        <div class="container mx-auto px-6 py-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <div>
                     <h3 class="text-xl font-bold mb-4">RapBattleCast</h3>
                     <p class="text-gray-400">Elevating battle rap culture since 2025.</p>
@@ -83,6 +71,8 @@
                         <a href="terms.html" class="block text-gray-400 hover:text-white transition-colors duration-300">Terms of Service</a>
                         <a href="disclaimer.html" class="block text-gray-400 hover:text-white transition-colors duration-300">Disclaimer</a>
                         <a href="blog/post1.html" class="block text-gray-400 hover:text-white transition-colors duration-300">Blog</a>
+                        <a href="index.html" class="block text-gray-400 hover:text-white transition-colors duration-300">Home</a>
+                        <a href="tools.html" class="block text-gray-400 hover:text-white transition-colors duration-300">Tools</a>
                     </div>
                 </div>
                 <div>
@@ -98,40 +88,10 @@
                     </div>
                 </div>
             </div>
-            <div class="mt-12 pt-8 border-t border-gray-800 text-center text-gray-400">
+            <div class="mt-6 pt-4 border-t border-gray-800 text-center text-gray-400">
                 <p>© 2025 RapBattleCast. All rights reserved.</p>
             </div>
         </div>
     </footer>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const mobileMenuButton = document.querySelector('header nav .mobile-menu-button');
-            const mobileMenu = document.querySelector('header nav .mobile-menu');
-            
-            if (mobileMenuButton && mobileMenu) {
-                mobileMenuButton.addEventListener('click', () => {
-                    mobileMenu.classList.toggle('hidden');
-                    const icon = mobileMenuButton.querySelector('i');
-                    if (icon) {
-                        icon.classList.toggle('fa-bars');
-                        icon.classList.toggle('fa-times');
-                    }
-                });
-
-                const mobileMenuLinks = mobileMenu.querySelectorAll('a');
-                mobileMenuLinks.forEach(link => {
-                    link.addEventListener('click', () => {
-                        mobileMenu.classList.add('hidden');
-                        const icon = mobileMenuButton.querySelector('i');
-                        if (icon) {
-                            icon.classList.remove('fa-times');
-                            icon.classList.add('fa-bars');
-                        }
-                    });
-                });
-            }
-        });
-    </script>
 </body>
 </html>
