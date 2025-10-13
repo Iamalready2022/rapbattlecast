@@ -3,11 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Disclaimer - RapBattleCast</title>
+    <title>R/L Audio Editor - RapBattleCast</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background: #1a1a1a; }
+        canvas { width: 100%; height: 100px; background: #333; }
+        progress { 
+            width: 100%; 
+            height: 20px; 
+            background: #333; 
+            border: 2px solid #facc15; /* yellow-400 */
+            border-radius: 5px; 
+        }
+        progress::-webkit-progress-bar { 
+            background: #333; 
+            border-radius: 5px; 
+        }
+        progress::-webkit-progress-value { 
+            background: #facc15; /* yellow-400 */
+            border-radius: 5px; 
+        }
+        progress::-moz-progress-bar { 
+            background: #facc15; /* yellow-400 */
+            border-radius: 5px; 
+        }
+        input[type="range"] {
+            appearance: none; /* Standard property */
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            background: #333;
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #facc15; /* yellow-400 */
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #facc15; /* yellow-400 */
+            border-radius: 50%;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body class="text-white">
@@ -25,7 +69,7 @@
                     <a href="facts.html" class="text-gray-300 hover:text-white hover:scale-105 transition-all duration-300">Facts</a>
                 </nav>
                 <button class="mobile-menu-button md:hidden" aria-label="Toggle mobile menu">
-                    <i class="fas fa-bars text-2xl"></i>
+                    <svg class="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                 </button>
             </div>
             <div class="mobile-menu hidden md:hidden mt-4 bg-gray-800 rounded-lg p-4">
@@ -39,17 +83,57 @@
     </header>
     <div class="h-24"></div>
     <main class="container mx-auto px-6 py-4 min-h-screen">
-        <section id="disclaimer">
-            <h2 class="text-3xl font-bold text-yellow-400">Disclaimer</h2>
-            <p class="mt-2 text-gray-300">Last Updated: July 10, 2025</p>
-            <p class="mt-2 text-gray-300">The information provided by RapBattleCast on rapbattlecast.com ("Site") is for general informational purposes only. All information is provided in good faith, however, we make no representation or warranty of any kind, express or implied, regarding the accuracy, adequacy, validity, reliability, availability, or completeness of any information on the Site.</p>
-            <h3 class="text-xl font-bold mt-4 text-yellow-400">No Professional Advice</h3>
-            <p class="mt-2 text-gray-300">The content on this Site does not constitute professional advice. You should not rely on any information as a substitute for professional advice.</p>
-            <h3 class="text-xl font-bold mt-4 text-yellow-400">External Links</h3>
-            <p class="mt-2 text-gray-300">The Site may contain links to third-party websites or services that are not owned or controlled by RapBattleCast. We have no control over and assume no responsibility for the content, privacy policies, or practices of any third-party sites or services.</p>
-            <h3 class="text-xl font-bold mt-4 text-yellow-400">Contact</h3>
-            <p class="mt-2 text-gray-300">For questions about this Disclaimer, contact us at breadcrumbsflow@gmail.com.</p>
-        </section>
+        <h1 class="text-3xl font-bold text-yellow-400">R/L Audio Editor</h1>
+        <p class="mt-2 text-gray-300">Upload and edit WAV or MP3 files with frequency, pitch, and channel controls.</p>
+        <div class="mt-4">
+            <input type="file" accept=".wav,.mp3" id="audio-upload" class="text-gray-300">
+            <div class="mt-2 flex items-center space-x-2">
+                <p id="upload-status" class="text-gray-300"></p>
+                <button id="repeat-btn" class="bg-yellow-400 text-gray-900 px-2 py-1 rounded hover:bg-yellow-500 hidden">Repeat</button>
+            </div>
+            <div class="mt-4 flex items-center space-x-4">
+                <label for="hz-slider" class="text-gray-300">Frequency (Hz):</label>
+                <input type="range" id="hz-slider" min="20" max="20000" step="1" value="20000" class="w-full">
+                <input type="number" id="hz-number" min="20" max="20000" value="20000" class="w-24 bg-gray-800 text-gray-300 border border-gray-600 rounded px-2">
+                <span id="hz-value" class="text-gray-300">20000 Hz</span>
+            </div>
+            <div class="mt-4">
+                <label for="pitch-slider" class="text-gray-300">Pitch (Semitones):</label>
+                <input type="range" id="pitch-slider" min="-12" max="12" step="0.1" value="0" class="w-full">
+                <span id="pitch-value" class="text-gray-300">0 Semitones</span>
+            </div>
+            <div class="mt-4">
+                <label for="left-volume" class="text-gray-300">Left Channel Volume:</label>
+                <input type="range" id="left-volume" min="0" max="1" step="0.01" value="1" class="w-full">
+                <label for="right-volume" class="text-gray-300">Right Channel Volume:</label>
+                <input type="range" id="right-volume" min="0" max="1" step="0.01" value="1" class="w-full">
+            </div>
+            <div class="mt-4">
+                <label for="white-noise-volume" class="text-gray-300">White Noise Volume:</label>
+                <input type="range" id="white-noise-volume" min="0" max="1" step="0.01" value="0.3" class="w-full">
+                <label for="rain-volume" class="text-gray-300">Rain Volume:</label>
+                <input type="range" id="rain-volume" min="0" max="1" step="0.01" value="0.3" class="w-full">
+            </div>
+            <div class="mt-4">
+                <label class="text-gray-300">Progress:</label>
+                <progress id="progress-bar" max="100" value="0" class="w-full"></progress>
+            </div>
+            <div class="mt-4">
+                <canvas id="waveform" class="mt-2"></canvas>
+            </div>
+            <div class="mt-4 flex space-x-4">
+                <button id="play-btn" class="bg-yellow-400 text-gray-900 px-4 py-2 rounded hover:bg-yellow-500">Play</button>
+                <button id="pause-btn" class="bg-yellow-400 text-gray-900 px-4 py-2 rounded hover:bg-yellow-500">Pause</button>
+                <button id="stop-btn" class="bg-yellow-400 text-gray-900 px-4 py-2 rounded hover:bg-yellow-500">Stop</button>
+                <button id="download-btn" class="bg-yellow-400 text-gray-900 px-4 py-2 rounded hover:bg-yellow-500">Download</button>
+                <button id="white-noise-btn" class="bg-yellow-400 text-gray-900 px-4 py-2 rounded hover:bg-yellow-500 flex items-center">
+                    <span class="mr-2">-</span>White Noise<span class="ml-2">+</span>
+                </button>
+                <button id="rain-btn" class="bg-yellow-400 text-gray-900 px-4 py-2 rounded hover:bg-yellow-500 flex items-center">
+                    <span class="mr-2">-</span>Rain Sounds<span class="ml-2">+</span>
+                </button>
+            </div>
+        </div>
     </main>
     <footer class="bg-gray-800/50 border-t border-gray-800">
         <div class="container mx-auto px-6 py-2">
@@ -90,5 +174,318 @@
             </div>
         </div>
     </footer>
+    <script>
+        // Audio editor with fixes
+        const audioUpload = document.getElementById('audio-upload');
+        const uploadStatus = document.getElementById('upload-status');
+        const repeatBtn = document.getElementById('repeat-btn');
+        const playBtn = document.getElementById('play-btn');
+        const pauseBtn = document.getElementById('pause-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const downloadBtn = document.getElementById('download-btn');
+        const whiteNoiseBtn = document.getElementById('white-noise-btn');
+        const rainBtn = document.getElementById('rain-btn');
+        const hzSlider = document.getElementById('hz-slider');
+        const hzNumber = document.getElementById('hz-number');
+        const hzValue = document.getElementById('hz-value');
+        const pitchSlider = document.getElementById('pitch-slider');
+        const pitchValue = document.getElementById('pitch-value');
+        const leftVolume = document.getElementById('left-volume');
+        const rightVolume = document.getElementById('right-volume');
+        const whiteNoiseVolume = document.getElementById('white-noise-volume');
+        const rainVolume = document.getElementById('rain-volume');
+        const progressBar = document.getElementById('progress-bar');
+        const canvas = document.getElementById('waveform');
+        const ctx = canvas.getContext('2d');
+        let audioContext = null;
+        let source = null;
+        let audioElement = null;
+        let filter = null;
+        let stereoPanner = null;
+        let analyser = null;
+        let whiteNoiseSource = null;
+        let rainSource = null;
+        let currentFile = null;
+
+        // Throttle for smooth slider
+        function throttle(fn, wait) {
+            let lastCall = 0;
+            return function (...args) {
+                const now = Date.now();
+                if (now - lastCall >= wait) {
+                    lastCall = now;
+                    fn(...args);
+                }
+            };
+        }
+
+        // Initialize audio context
+        function initAudioContext() {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            filter = audioContext.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(hzSlider.value, audioContext.currentTime);
+            filter.Q.setValueAtTime(1, audioContext.currentTime);
+            stereoPanner = audioContext.createStereoPanner();
+            analyser = audioContext.createAnalyser();
+            analyser.fftSize = 2048;
+        }
+
+        // Waveform visualization
+        function drawWaveform() {
+            if (!analyser) return;
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            analyser.getByteTimeDomainData(dataArray);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#facc15'; // yellow-400
+            ctx.beginPath();
+            const sliceWidth = canvas.width / bufferLength;
+            for (let i = 0; i < bufferLength; i++) {
+                const v = (dataArray[i] / 128.0 - 1) * 2;
+                const y = (v * canvas.height) / 4 + canvas.height / 2;
+                if (i === 0) ctx.moveTo(0, y);
+                else ctx.lineTo(i * sliceWidth, y);
+            }
+            ctx.stroke();
+            requestAnimationFrame(drawWaveform);
+        }
+
+        // File upload
+        audioUpload.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                currentFile = file;
+                uploadStatus.textContent = `Loaded: ${file.name}`;
+                repeatBtn.classList.remove('hidden');
+                console.log(`File selected: ${file.name}, Size: ${file.size} bytes`);
+                const url = URL.createObjectURL(file);
+                audioElement = new Audio(url);
+                initAudioContext();
+                source = audioContext.createMediaElementSource(audioElement);
+                source.connect(filter).connect(stereoPanner).connect(analyser).connect(audioContext.destination);
+                drawWaveform();
+                audioElement.addEventListener('timeupdate', updateProgress);
+            } else {
+                uploadStatus.textContent = 'No file selected.';
+                repeatBtn.classList.add('hidden');
+                console.log('No file selected.');
+            }
+        });
+
+        // Repeat
+        repeatBtn.addEventListener('click', () => {
+            if (currentFile && audioElement) {
+                audioElement.pause();
+                audioElement.currentTime = 0;
+                audioElement.play();
+                console.log('Repeating audio');
+            }
+        });
+
+        // Progress bar update
+        function updateProgress() {
+            if (audioElement && audioElement.duration) {
+                progressBar.value = (audioElement.currentTime / audioElement.duration) * 100;
+                console.log(`Progress: ${progressBar.value}%`);
+            }
+        }
+
+        // Play
+        playBtn.addEventListener('click', () => {
+            if (audioContext && audioElement) {
+                audioContext.resume();
+                audioElement.play();
+                console.log('Playing audio');
+            } else {
+                uploadStatus.textContent = 'Please upload a WAV or MP3 file first.';
+                console.log('No audio loaded');
+            }
+        });
+
+        // Pause
+        pauseBtn.addEventListener('click', () => {
+            if (audioContext && audioElement) {
+                audioContext.suspend();
+                audioElement.pause();
+                console.log('Paused audio');
+            }
+        });
+
+        // Stop
+        stopBtn.addEventListener('click', () => {
+            if (audioContext && audioElement) {
+                audioElement.pause();
+                audioElement.currentTime = 0;
+                audioContext.close();
+                audioContext = null;
+                source = null;
+                audioElement = null;
+                analyser = null;
+                progressBar.value = 0;
+                uploadStatus.textContent = 'Stopped. Upload a new file.';
+                repeatBtn.classList.add('hidden');
+                console.log('Stopped audio');
+            }
+            if (whiteNoiseSource) {
+                whiteNoiseSource.stop();
+                whiteNoiseSource = null;
+            }
+            if (rainSource) {
+                rainSource.stop();
+                rainSource = null;
+            }
+        });
+
+        // Download
+        downloadBtn.addEventListener('click', async () => {
+            if (audioElement && currentFile) {
+                const ext = currentFile.name.endsWith('.mp3') ? '.mp3' : '.wav';
+                const defaultName = `edited_binaural_rap${ext}`;
+                try {
+                    if (window.showSaveFilePicker) {
+                        const handle = await window.showSaveFilePicker({
+                            suggestedName: defaultName,
+                            types: [
+                                { description: 'WAV Audio', accept: { 'audio/wav': ['.wav'] } },
+                                { description: 'MP3 Audio', accept: { 'audio/mpeg': ['.mp3'] } }
+                            ]
+                        });
+                        const writable = await handle.createWritable();
+                        const response = await fetch(audioElement.src);
+                        const blob = await response.blob();
+                        await writable.write(blob);
+                        await writable.close();
+                        console.log(`Downloaded as ${handle.name}`);
+                    } else {
+                        const a = document.createElement('a');
+                        a.href = audioElement.src;
+                        a.download = defaultName;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        console.log(`Downloaded as ${defaultName} (fallback)`);
+                    }
+                } catch (err) {
+                    uploadStatus.textContent = 'Download failed. Try again.';
+                    console.error('Download error:', err);
+                }
+            } else {
+                uploadStatus.textContent = 'Please upload a WAV or MP3 file first.';
+                console.log('No audio to download');
+            }
+        });
+
+        // Hz slider and number input
+        const updateHz = throttle((value) => {
+            hzValue.textContent = `${value} Hz`;
+            hzSlider.value = value;
+            hzNumber.value = value;
+            if (filter) filter.frequency.setValueAtTime(value, audioContext.currentTime);
+            console.log(`Hz set to: ${value}`);
+        }, 1);
+
+        hzSlider.addEventListener('input', () => updateHz(hzSlider.value));
+        hzNumber.addEventListener('input', () => {
+            const value = Math.min(Math.max(hzNumber.value, 20), 20000);
+            updateHz(value);
+        });
+
+        // Pitch slider
+        pitchSlider.addEventListener('input', () => {
+            const semitones = parseFloat(pitchSlider.value);
+            pitchValue.textContent = `${semitones} Semitones`;
+            if (audioElement) {
+                audioElement.playbackRate = Math.pow(2, semitones / 12);
+                console.log(`Pitch set to: ${semitones} semitones`);
+            }
+        });
+
+        // Volume sliders
+        leftVolume.addEventListener('input', () => {
+            if (stereoPanner) stereoPanner.pan.setValueAtTime(rightVolume.value - leftVolume.value, audioContext.currentTime);
+            console.log(`Pan: ${rightVolume.value - leftVolume.value}`);
+        });
+        rightVolume.addEventListener('input', () => {
+            if (stereoPanner) stereoPanner.pan.setValueAtTime(rightVolume.value - leftVolume.value, audioContext.currentTime);
+            console.log(`Pan: ${rightVolume.value - leftVolume.value}`);
+        });
+
+        // White noise
+        whiteNoiseBtn.addEventListener('click', () => {
+            if (whiteNoiseSource) {
+                whiteNoiseSource.stop();
+                whiteNoiseSource = null;
+                console.log('Stopped white noise');
+                return;
+            }
+            if (!audioContext) initAudioContext();
+            const bufferSize = audioContext.sampleRate * 2;
+            const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+            const output = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) output[i] = (Math.random() * 2 - 1) * 0.3;
+            whiteNoiseSource = audioContext.createBufferSource();
+            whiteNoiseSource.buffer = buffer;
+            whiteNoiseSource.loop = true;
+            const gainNode = audioContext.createGain();
+            gainNode.gain.setValueAtTime(whiteNoiseVolume.value, audioContext.currentTime);
+            whiteNoiseSource.connect(gainNode).connect(analyser).connect(audioContext.destination);
+            whiteNoiseSource.start();
+            console.log('Playing white noise');
+        });
+
+        whiteNoiseVolume.addEventListener('input', () => {
+            if (whiteNoiseSource) {
+                const gainNode = whiteNoiseSource.context.destination.previousSibling;
+                gainNode.gain.setValueAtTime(whiteNoiseVolume.value, audioContext.currentTime);
+                console.log(`White noise volume: ${whiteNoiseVolume.value}`);
+            }
+        });
+
+        // Rain sounds
+        rainBtn.addEventListener('click', () => {
+            if (rainSource) {
+                rainSource.stop();
+                rainSource = null;
+                console.log('Stopped rain sounds');
+                return;
+            }
+            if (!audioContext) initAudioContext();
+            const bufferSize = audioContext.sampleRate * 2;
+            const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+            const output = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                const noise = Math.random() * 0.03 - 0.015;
+                const envelope = 0.8 + 0.2 * Math.sin(i * 0.0003);
+                output[i] = noise * envelope * 0.08;
+            }
+            rainSource = audioContext.createBufferSource();
+            rainSource.buffer = buffer;
+            rainSource.loop = true;
+            const gainNode = audioContext.createGain();
+            gainNode.gain.setValueAtTime(rainVolume.value, audioContext.currentTime);
+            const rainFilter = audioContext.createBiquadFilter();
+            rainFilter.type = 'lowpass';
+            rainFilter.frequency.setValueAtTime(300, audioContext.currentTime);
+            rainFilter.Q.setValueAtTime(0.1, audioContext.currentTime);
+            rainSource.connect(rainFilter).connect(gainNode).connect(analyser).connect(audioContext.destination);
+            try {
+                rainSource.start();
+                console.log('Playing rain sounds');
+            } catch (err) {
+                console.error('Rain sound error:', err);
+                uploadStatus.textContent = 'Error playing rain sounds.';
+            }
+        });
+
+        rainVolume.addEventListener('input', () => {
+            if (rainSource) {
+                const gainNode = rainSource.context.destination.previousSibling.previousSibling;
+                gainNode.gain.setValueAtTime(rainVolume.value, audioContext.currentTime);
+                console.log(`Rain volume: ${rainVolume.value}`);
+            }
+        });
+    </script>
 </body>
 </html>
