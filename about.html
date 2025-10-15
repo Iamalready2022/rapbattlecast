@@ -4,111 +4,77 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About - RapBattleCast</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="/css/styles.css" rel="stylesheet">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <style>
-        body { background: #1a1a1a; }
-        .hero-bg { background-image: url('images/rapbattlecast-bg.png'); background-size: cover; background-position: center; }
-        .video-container {
-            position: relative;
-            padding-bottom: 56.25%;
-            height: 0;
-            overflow: hidden;
-            max-width: 100%;
-        }
-        .video-container iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
+        /* Inline fallback for text-size-adjust to fix DevTools warning */
+        * { text-size-adjust: 100%; }
     </style>
 </head>
-<body class="text-white">
-    <header class="fixed w-full z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800 top-0">
-        <nav class="container mx-auto px-6 py-4">
-            <div class="flex items-center justify-between">
-                <a href="https://iamalready2022.github.io/rapbattlecast/" class="text-4xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent hover:scale-105 transition-transform duration-300">
-                    <img src="iamalready.logo.png" alt="RapBattleCast Logo" class="h-16 w-16 inline-block mr-2">RapBattleCast
-                </a>
-                <nav class="hidden md:flex space-x-8">
-                    <a href="index.html" class="text-gray-300 hover:text-white hover:scale-105 transition-all duration-300">Home</a>
-                    <a href="about.html" class="text-gray-300 hover:text-white hover:scale-105 transition-all duration-300">About</a>
-                    <a href="battles.html" class="text-gray-300 hover:text-white hover:scale-105 transition-all duration-300">Battles</a>
-                    <a href="tools.html" class="text-gray-300 hover:text-white hover:scale-105 transition-all duration-300">Tools</a>
-                    <a href="facts.html" class="text-gray-300 hover:text-white hover:scale-105 transition-all duration-300">Facts</a>
-                </nav>
-                <button class="mobile-menu-button md:hidden" aria-label="Toggle mobile menu">
-                    <svg class="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                </button>
-            </div>
-            <div class="mobile-menu hidden md:hidden mt-4 bg-gray-800 rounded-lg p-4">
-                <a href="index.html" class="block py-2 text-gray-300 hover:text-white">Home</a>
-                <a href="about.html" class="block py-2 text-gray-300 hover:text-white">About</a>
-                <a href="battles.html" class="block py-2 text-gray-300 hover:text-white">Battles</a>
-                <a href="tools.html" class="block py-2 text-gray-300 hover:text-white">Tools</a>
-                <a href="facts.html" class="block py-2 text-gray-300 hover:text-white">Facts</a>
-            </div>
-        </nav>
-    </header>
-    <div class="h-24"></div>
-    <main class="container mx-auto px-6 py-4 min-h-screen">
-        <section class="hero-bg h-96 flex items-center justify-center">
-            <div class="text-center">
-                <h1 class="text-4xl font-bold text-yellow-400">My Story</h1>
-                <p class="mt-4 text-xl text-gray-300">From the streets to the mic, building a legacy of wisdom and rhyme.</p>
-            </div>
-        </section>
-        <section class="mt-8">
-            <h2 class="text-2xl font-bold text-yellow-400">About Me</h2>
-            <p class="mt-2 text-gray-300">I’m James, the heart behind RapBattleCast. My journey started in the hustle of street life, where I learned resilience and grit. Now, I’m channeling that energy into creating wisdom-filled raps, epic battles, and tools to empower artists. My projects include this site, audio editing apps, and turning wisdom books into lyrical fire.</p>
-            <h2 class="mt-6 text-2xl font-bold text-yellow-400">Featured Battle</h2>
-            <p class="mt-2 text-gray-300">Check out my latest rap battle, straight from the heart of the streets.</p>
-            <div class="video-container mt-4">
-                <iframe src="https://drive.google.com/file/d/1Toz-y15LxDw0EPYf2xto0WbssN6u42zm/preview" title="Rap Battle 1: Droppin' some light..." allowfullscreen></iframe>
-            </div>
-            <p class="mt-2 text-gray-300">A gritty take on street life from a hustler’s perspective.</p>
-        </section>
-    </main>
-    <footer class="bg-gray-800/50 border-t border-gray-800">
-        <div class="container mx-auto px-6 py-2">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                    <h3 class="text-lg font-bold mb-2">RapBattleCast</h3>
-                    <p class="text-gray-400 text-sm">Elevating battle rap culture since 2025.</p>
-                </div>
-                <div>
-                    <h4 class="font-semibold mb-2">Contact</h4>
-                    <a href="mailto:breadcrumbsflow@gmail.com" class="text-gray-400 hover:text-white transition-colors duration-300 text-sm">
-                        breadcrumbsflow@gmail.com
-                    </a>
-                </div>
-                <div>
-                    <h4 class="font-semibold mb-2">Legal</h4>
-                    <div class="space-y-1">
-                        <a href="terms.html" class="block text-gray-400 hover:text-white transition-colors duration-300 text-sm">Terms of Service</a>
-                        <a href="disclaimer.html" class="block text-gray-400 hover:text-white transition-colors duration-300 text-sm">Disclaimer</a>
-                        <a href="blog/post1.html" class="block text-gray-400 hover:text-white transition-colors duration-300 text-sm">Blog</a>
-                    </div>
-                </div>
-                <div>
-                    <h4 class="font-semibold mb-2">Follow Us</h4>
-                    <div class="flex flex-wrap gap-2">
-                        <a href="https://www.youtube.com/@iamalready2022" target="_blank" class="text-gray-400 hover:text-white transition-colors duration-300 text-sm">YouTube</a>
-                        <a href="https://bio.site/Iamalready" target="_blank" class="text-gray-400 hover:text-white transition-colors duration-300 text-sm">Bio.site</a>
-                        <a href="https://www.facebook.com/iamalready2023/" target="_blank" class="text-gray-400 hover:text-white transition-colors duration-300 text-sm">Facebook</a>
-                        <a href="https://www.tiktok.com/@iamalready2022?lang=en" target="_blank" class="text-gray-400 hover:text-white transition-colors duration-300 text-sm">TikTok</a>
-                        <a href="https://www.linkedin.com/in/james-hughes-365daysayear/" target="_blank" class="text-gray-400 hover:text-white transition-colors duration-300 text-sm">LinkedIn</a>
-                        <a href="https://x.com/iamalready2022" target="_blank" class="text-gray-400 hover:text-white transition-colors duration-300 text-sm">X</a>
-                        <a href="https://www.instagram.com/iamalready2022/" target="_blank" class="text-gray-400 hover:text-white transition-colors duration-300 text-sm">Instagram</a>
-                    </div>
-                </div>
-            </div>
-            <div class="mt-4 pt-2 border-t border-gray-800 text-center text-gray-400 text-sm">
-                <p>© 2025 RapBattleCast. All rights reserved.</p>
-            </div>
+<body class="bg-[#1a1a1a] text-white font-sans min-h-screen">
+    <!-- Simple Navigation (adjust links as needed) -->
+    <nav class="container mx-auto px-4 py-4 flex justify-between items-center">
+        <a href="/index.html" class="text-2xl font-bold text-[#b19cd9]">RapBattleCast</a>
+        <ul class="hidden md:flex space-x-6">
+            <li><a href="/index.html" class="hover:text-[#b19cd9]">Home</a></li>
+            <li><a href="/about.html" class="hover:text-[#b19cd9]">About</a></li>
+            <li><a href="/audio.html" class="hover:text-[#b19cd9]">Audio</a></li>
+            <li><a href="/battles.html" class="hover:text-[#b19cd9]">Battles</a></li>
+            <li><a href="/facts.html" class="hover:text-[#b19cd9]">Facts</a></li>
+        </ul>
+        <!-- Mobile menu toggle (basic) -->
+        <button class="md:hidden" onclick="toggleMenu()">☰</button>
+    </nav>
+
+    <!-- Main Content -->
+    <section class="container mx-auto px-4 py-8 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold mb-4">About RapBattleCast</h1>
+        <p class="text-lg md:text-xl mb-6 max-w-2xl mx-auto">
+            RapBattleCast drops wisdom through rhymes, capturing the soul of battle rap with a 432Hz vibe.
+            Join us to explore legendary clashes, lyrical facts, and the culture that fuels the mic.
+        </p>
+        <div class="mx-auto w-[360px] h-[640px] mb-8 aspect-[9/16]">
+            <iframe 
+                src="https://www.youtube.com/embed/GmTQDZ3o02I" 
+                title="Droppin' Some Light - Get You Some" 
+                class="w-full h-full object-contain rounded-lg shadow-lg" 
+                frameborder="0" 
+                allowfullscreen>
+            </iframe>
         </div>
+        <div class="mx-auto w-[360px] h-[640px] mb-8 aspect-[9/16]">
+            <iframe 
+                src="https://www.youtube.com/embed/y-psgcWmj38" 
+                title="Vibin' The Truth - What Is" 
+                class="w-full h-full object-contain rounded-lg shadow-lg" 
+                frameborder="0" 
+                allowfullscreen>
+            </iframe>
+        </div>
+        <!-- Optional: Add social links or call-to-action here -->
+        <div class="mt-8">
+            <p class="text-sm opacity-75">Vibe with us at 432Hz—truth in every bar.</p>
+        </div>
+    </section>
+
+    <!-- Simple Footer -->
+    <footer class="container mx-auto px-4 py-4 text-center text-sm opacity-75 border-t border-[#b19cd9]/20">
+        <p>&copy; 2025 RapBattleCast. All rights reserved. | <a href="/terms.html" class="hover:text-[#b19cd9]">Terms</a> | <a href="/disclaimer.html" class="hover:text-[#b19cd9]">Disclaimer</a></p>
     </footer>
+
+    <!-- Basic Mobile Menu Script -->
+    <script>
+        function toggleMenu() {
+            const nav = document.querySelector('nav ul');
+            nav.classList.toggle('hidden');
+            nav.classList.toggle('flex');
+            nav.classList.toggle('flex-col');
+            nav.classList.toggle('absolute');
+            nav.classList.toggle('top-16');
+            nav.classList.toggle('left-0');
+            nav.classList.toggle('w-full');
+            nav.classList.toggle('bg-[#1a1a1a]');
+        }
+    </script>
 </body>
 </html>
