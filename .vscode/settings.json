@@ -1,5 +1,6 @@
 {
     "css.lint.unknownAtRules": "ignore",
     "liveServer.settings.port": 5500,
-    "liveServer.settings.useBrowserPreview": false
+    "liveServer.settings.useBrowserPreview": false,
+    "editor.fontSize": 12
 }
