@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Herbal Bible + Ancient Breathing Wisdom</title>
+    <style>
+        body {
+            font-family: 'Georgia', serif;
+            background: #f8f1e9;
+            color: #333;
+            padding: 20px;
+            max-width: 1000px;
+            margin: auto;
+            line-height: 1.6;
+        }
+
+        h1,
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+        }
+
+        .search {
+            text-align: center;
+            margin: 20px;
+        }
+
+        .search input {
+            padding: 12px;
+            width: 80%;
+            max-width: 500px;
+            font-size: 18px;
+            border-radius: 12px;
+            border: 1px solid #8b4513;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: 0.3s;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        .card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .tags {
+            margin: 10px 0;
+        }
+
+        .tag {
+            background: #8b4513;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin: 2px;
+            display: inline-block;
+        }
+
+        .verse {
+            font-style: italic;
+            color: #555;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>🌿 The Herbal Bible & Ancient Breathing Wisdom</h1>
+    <p style="text-align:center;">Click any herb or any body system. Everything is linked both ways.</p>
+
+    <div class="search">
+        <input type="text" id="searchBox" placeholder="Search herb, system, or scripture..." onkeyup="search()">
+    </div>
+
+    <div class="grid" id="grid">
+
+        <!-- BLACK SEED -->
+        <div class="card" data-tags="respiratory immune digestive prophetic blackseed nigella">
+            <img src="https://images.unsplash.com/photo-1580201097700-67a3e3079e15" alt="Black Seed">
+            <h3>Black Seed</h3>
+            <p><strong>Nigella sativa</strong> – “The Prophet’s Seed”</p>
+            <div class="tags">
+                <span class="tag">Lungs</span>
+                <span class="tag">Immune</span>
+                <span class="tag">Digestion</span>
+            </div>
+            <div class="verse">“Use the Black Seed, for it has a cure for every disease except death.”<br>— Prophet
+                Muhammad (Sahih Bukhari)</div>
+        </div>
+
+        <!-- FRANKINCENSE -->
+        <div class="card" data-tags="respiratory nervous brain frankincense boswellia">
+            <img src="https://images.unsplash.com/photo-1608571423902-7b1f3c7e58eb8" alt="Frankincense">
+            <h3>Frankincense</h3>
+            <p><strong>Boswellia sacra</strong> – “Tears of the Gods”</p>
+            <div class="tags">
+                <span class="tag">Lungs</span>
+                <span class="tag">Brain</span>
+                <span class="tag">Anti-inflammatory</span>
+            </div>
+            <div class="verse">“Take incense… frankincense… and make a perfume.”<br>— Exodus 30:34-35</div>
+        </div>
+
+        <!-- MULLEIN -->
+        <div class="card" data-tags="respiratory lungs mullein expectorant">
+            <img src="https://images.unsplash.com/photo-1594737624696-887c8f66f4a5" alt="Mullein">
+            <h3>Mullein</h3>
+            <p><strong>Verbascum thapsus</strong> – “Lung Torch”</p>
+            <div class="tags"><span class="tag">Lungs</span><span class="tag">Expectorant</span></div>
+            <div class="verse">Used by Hippocrates for pulmonary diseases ~400 BC</div>
+        </div>
+
+        <!-- Add 30–40 more whenever you feel like it — just copy a card and change the data -->
+
+    </div>
+
+    <h2 style="margin-top:60px;">Ancient Breathing Texts</h2>
+    <div class="grid">
+        <div class="card">
+            <p><strong>Bhagavad Gita 4:29</strong><br>“Still others offer as sacrifice the outgoing breath in the
+                incoming breath…”</p>
+        </div>
+        <div class="card">
+            <p><strong>Genesis 2:7</strong><br>“Then the Lord God… breathed into his nostrils the breath of life.”</p>
+        </div>
+        <div class="card">
+            <p><strong>Emerald Tablet</strong><br>“That which is below is like that which is above… by means of breath.”
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function search() {
+            let input = document.getElementById('searchBox').value.toLowerCase();
+            let cards = document.getElementsByClassName('card');
+            for (let c of cards) {
+                c.style.display = c.dataset.tags.includes(input) || c.textContent.toLowerCase().includes(input) ? "" : "none";
+            }
+        }
+    </script>
+</body>
+
+</html>
