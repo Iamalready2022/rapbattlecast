@@ -38,29 +38,46 @@
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
             margin-top: 30px;
         }
 
         .card {
             background: white;
             border-radius: 15px;
-            padding: 15px;
+            padding: 20px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             text-align: center;
             transition: 0.3s;
+            display: flex;
+            flex-direction: column;
         }
 
         .card:hover {
-            transform: scale(1.05);
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
         }
 
         .card img {
             width: 100%;
-            height: 200px;
+            height: 220px;
             object-fit: cover;
             border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .card h3 {
+            margin: 10px 0 5px;
+            color: #2c3e50;
+            font-size: 1.4em;
+        }
+
+        .card .names {
+            font-size: 0.9em;
+            color: #555;
+            margin-bottom: 10px;
+            min-height: 40px;
         }
 
         .tags {
@@ -72,16 +89,53 @@
             color: white;
             padding: 4px 10px;
             border-radius: 20px;
-            font-size: 12px;
+            font-size: 11px;
             margin: 2px;
             display: inline-block;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .details {
+            text-align: left;
+            font-size: 0.95em;
+            margin-top: 15px;
+            padding: 15px;
+            background: #fffbf7;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            flex-grow: 1;
+        }
+
+        .details p {
+            margin: 8px 0;
+            line-height: 1.5;
+        }
+
+        .details strong {
+            color: #8b4513;
         }
 
         .verse {
             font-style: italic;
             color: #555;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            font-size: 0.95em;
+        }
+
+        .sources {
+            font-size: 0.75em;
+            color: #95a5a6;
             margin-top: 10px;
-            font-size: 14px;
+            text-align: right;
+        }
+
+        .warning {
+            color: #c0392b;
+            font-weight: bold;
+            font-size: 0.9em;
         }
     </style>
 </head>
@@ -101,126 +155,277 @@
         <div class="card" data-tags="respiratory immune digestive prophetic blackseed nigella">
             <img src="https://cdn.pixabay.com/photo/2016/11/29/05/14/black-cumin-1868744_1280.jpg" alt="Black Seed">
             <h3>Black Seed</h3>
-            <p><strong>Nigella sativa</strong> – “The Prophet's Seed”</p>
+            <p class="names">
+                <strong>Nigella sativa</strong><br>
+                <em>“The Prophet's Seed”, “Blessed Seed”</em>
+            </p>
             <div class="tags">
                 <span class="tag">Lungs</span>
                 <span class="tag">Immune</span>
                 <span class="tag">Digestion</span>
             </div>
+            <div class="details">
+                <p><strong>Traditional Uses:</strong> Revered for centuries in the Middle East and Africa for
+                    respiratory health, asthma, and digestive weakness. Known to “heat” the body and expel
+                    cold/dampness.</p>
+                <p><strong>Modern Science:</strong> Thymoquinone, the active compound, demonstrates bronchodilatory
+                    effects comparable to some pharmaceuticals in studies. Shown to reduce inflammation in airways.</p>
+                <p><strong>Dosage:</strong> 1/2 tsp oil daily or 1 tsp seeds ground fresh with raw honey.</p>
+                <p class="warning"><strong>Safety:</strong> Consult doctor if pregnant (stimulates uterus).</p>
+            </div>
             <div class="verse">“Use the Black Seed, for it has a cure for every disease except death.”<br>— Prophet
                 Muhammad (Sahih Bukhari)</div>
+            <div class="sources">Sources: Avicenna, PubMed (Thymoquinone)</div>
         </div>
 
         <!-- FRANKINCENSE -->
         <div class="card" data-tags="respiratory nervous brain frankincense boswellia">
             <img src="https://cdn.pixabay.com/photo/2017/08/07/18/28/frankincense-2604230_1280.jpg" alt="Frankincense">
             <h3>Frankincense</h3>
-            <p><strong>Boswellia sacra</strong> – “Tears of the Gods”</p>
+            <p class="names">
+                <strong>Boswellia sacra</strong><br>
+                <em>“Tears of the Gods”, “Olibanum”</em>
+            </p>
             <div class="tags">
                 <span class="tag">Lungs</span>
                 <span class="tag">Brain</span>
                 <span class="tag">Anti-inflammatory</span>
             </div>
+            <div class="details">
+                <p><strong>Traditional Uses:</strong> Burned to purify air during sickness. Used internally and
+                    externally for deep lung congestion and arthritis. Deepens breathing for prayer/meditation.</p>
+                <p><strong>Modern Science:</strong> Boswellic acids inhibit 5-LOX, an enzyme key to inflammation in
+                    asthma and colitis. Proven to reduce bronchial swelling.</p>
+                <p><strong>Dosage:</strong> Chew 1–2 tears daily (resins) or steam inhalation.</p>
+                <p class="warning"><strong>Safety:</strong> Only use high-grade resin for internal use.</p>
+            </div>
             <div class="verse">“Take incense… frankincense… and make a perfume.”<br>— Exodus 30:34-35</div>
+            <div class="sources">Sources: Bible, Clinical Phytoscience</div>
         </div>
 
         <!-- MULLEIN -->
         <div class="card" data-tags="respiratory lungs mullein expectorant">
             <img src="https://cdn.pixabay.com/photo/2017/07/12/18/19/mullein-2496603_1280.jpg" alt="Mullein">
             <h3>Mullein</h3>
-            <p><strong>Verbascum thapsus</strong> – “Lung Torch”</p>
+            <p class="names">
+                <strong>Verbascum thapsus</strong><br>
+                <em>“Lung Torch”, “Grandmother’s Flannel”</em>
+            </p>
             <div class="tags"><span class="tag">Lungs</span><span class="tag">Expectorant</span></div>
+            <div class="details">
+                <p><strong>Traditional Uses:</strong> The supreme lung tonic. Gentle but effective. Used for dry,
+                    hacking coughs where soothing is needed. Leaves are demulcent (soothing) and expectorant.</p>
+                <p><strong>Modern Science:</strong> Contains mucilage and saponins that help loosen phlegm while coating
+                    irritated membranes. Antibacterial against <em>Staphylococcus aureus</em>.</p>
+                <p><strong>Dosage:</strong> Tea: 1-2 tsp dried leaves per cup, steeped 15 mins.</p>
+                <p class="warning"><strong>Safety:</strong> Always strain tea well (fine hairs irritate throat).</p>
+            </div>
             <div class="verse">Used by Hippocrates for pulmonary diseases ~400 BC</div>
+            <div class="sources">Sources: Dioscorides, German Commission E</div>
         </div>
 
         <!-- TURMERIC -->
         <div class="card" data-tags="respiratory immune inflammation joints turmeric curcumin">
             <img src="https://cdn.pixabay.com/photo/2016/11/06/23/54/turmeric-1803413_1280.jpg" alt="Turmeric">
             <h3>Turmeric</h3>
-            <p><strong>Curcuma longa</strong> – “Golden Healer”</p>
+            <p class="names">
+                <strong>Curcuma longa</strong><br>
+                <em>“Golden Healer”, “Indian Saffron”</em>
+            </p>
             <div class="tags">
                 <span class="tag">Lungs</span>
                 <span class="tag">Anti-inflammatory</span>
                 <span class="tag">Immune</span>
             </div>
+            <div class="details">
+                <p><strong>Traditional Uses:</strong> Ayurvedic staple for dissolving Kapha (mucus/congestion). Blood
+                    mover and systemic anti-inflammatory. Used for strengthening lungs and immunity.</p>
+                <p><strong>Modern Science:</strong> Curcumin modulates immune response and reduces airway inflammation.
+                    studied extensively for arthritis and preventing cytokine storms.</p>
+                <p><strong>Dosage:</strong> 1 tsp powder with black pepper and fat (coconut oil/milk) to activate.</p>
+                <p class="warning"><strong>Safety:</strong> Caution with blood thinners or gallstones.</p>
+            </div>
             <div class="verse">“The fruit thereof shall be for meat, and the leaf thereof for medicine.”<br>— Ezekiel
                 47:12</div>
+            <div class="sources">Sources: Ayurveda, NIH Clinical Trials</div>
         </div>
 
         <!-- GINGER -->
         <div class="card" data-tags="respiratory digestion circulation ginger nausea">
             <img src="https://cdn.pixabay.com/photo/2016/12/13/00/22/ginger-1905231_1280.jpg" alt="Ginger">
             <h3>Ginger</h3>
-            <p><strong>Zingiber officinale</strong> – “Fire Root”</p>
+            <p class="names">
+                <strong>Zingiber officinale</strong><br>
+                <em>“Fire Root”, “Shen Jiang”</em>
+            </p>
             <div class="tags"><span class="tag">Lungs</span><span class="tag">Circulation</span><span
                     class="tag">Digestion</span></div>
+            <div class="details">
+                <p><strong>Traditional Uses:</strong> “Universal Medicine” in Ayurveda. Warming expectorant that breaks
+                    up stuck phlegm. Circulates blood to the periphery and lungs.</p>
+                <p><strong>Modern Science:</strong> Gingerols have been shown to relax airway smooth muscle
+                    (bronchodilation) and suppress allergic reactions.</p>
+                <p><strong>Ancient Wisdom:</strong> “And they will be given to drink a cup [of wine] mixed with Zanjabil
+                    (ginger).” (Quran 76:17)</p>
+                <p><strong>Dosage:</strong> Fresh slices in boiling water or 1g dried powder daily.</p>
+                <p class="warning"><strong>Safety:</strong> Can cause heartburn in high doses.</p>
+            </div>
             <div class="verse">Used in Ayurveda for 5000+ years as the “universal medicine”</div>
+            <div class="sources">Sources: Quran, Ayurveda, Respiratory Research</div>
         </div>
 
         <!-- GARLIC -->
         <div class="card" data-tags="respiratory immune blood garlic allicin">
             <img src="https://cdn.pixabay.com/photo/2016/03/05/19/02/garlic-1238995_1280.jpg" alt="Garlic">
             <h3>Garlic</h3>
-            <p><strong>Allium sativum</strong> – “Russian Penicillin”</p>
+            <p class="names">
+                <strong>Allium sativum</strong><br>
+                <em>“Russian Penicillin”, “Stinking Rose”</em>
+            </p>
             <div class="tags"><span class="tag">Lungs</span><span class="tag">Heart</span><span
                     class="tag">Immune</span></div>
-            <div class="verse">“We remember… the garlic.”<br>— Numbers 11:5 (Israelites craving it in the wilderness)
+            <div class="details">
+                <p><strong>Traditional Uses:</strong> One of the oldest medicines. Used to treat lung infections,
+                    parasites, and plague. Powerful antimicrobial and blood thinner.</p>
+                <p><strong>Modern Science:</strong> Allicin (created when crushed) is potent against viruses and
+                    bacteria. Studies show reduced frequency of common cold.</p>
+                <p><strong>Dosage:</strong> 1 clove raw, crushed and left to sit 10 mins before eating (activates
+                    enzymes).</p>
+                <p class="warning"><strong>Safety:</strong> Stop 2 weeks before surgery (blood thinning).</p>
             </div>
+            <div class="verse">“We remember… the garlic.”<br>— Numbers 11:5</div>
+            <div class="sources">Sources: Codex Ebers, Modern Phytotherapy</div>
         </div>
 
         <!-- CAYENNE -->
         <div class="card" data-tags="circulation pain respiratory cayenne capsicum">
             <img src="https://cdn.pixabay.com/photo/2017/01/11/11/33/cayenne-pepper-1974033_1280.jpg" alt="Cayenne">
             <h3>Cayenne Pepper</h3>
-            <p><strong>Capsicum annuum</strong> – “Heart Starter”</p>
+            <p class="names">
+                <strong>Capsicum annuum</strong><br>
+                <em>“Heart Starter”, “Guinea Spice”</em>
+            </p>
             <div class="tags"><span class="tag">Circulation</span><span class="tag">Pain Relief</span></div>
+            <div class="details">
+                <p><strong>Traditional Uses:</strong> Stimulant. Brings blood to immediate action. Used to stop heart
+                    attacks, stop bleeding, and break fevers through sweating.</p>
+                <p><strong>Modern Science:</strong> Capsaicin depletes Substance P (pain signal) and acts as a mucolytic
+                    (thins mucus) for sinuses and lungs.</p>
+                <p><strong>Dosage:</strong> A pinch in warm water with lemon. Work up to 1/2 tsp.</p>
+                <p class="warning"><strong>Safety:</strong> Intense irritant to eyes and sensitive tissues.</p>
+            </div>
             <div class="verse">Dr. Christopher's famous “stop a heart attack in minutes” herb</div>
+            <div class="sources">Sources: School of Natural Healing, Dr. Schulze</div>
         </div>
 
         <!-- ELDERBERRY -->
         <div class="card" data-tags="respiratory immune flu elderberry">
             <img src="https://cdn.pixabay.com/photo/2018/08/22/15/18/elderberry-3624367_1280.jpg" alt="Elderberry">
             <h3>Elderberry</h3>
-            <p><strong>Sambucus nigra</strong> – “Medicine Chest of the Country People”</p>
+            <p class="names">
+                <strong>Sambucus nigra</strong><br>
+                <em>“Medicine Chest of the Country People”</em>
+            </p>
             <div class="tags"><span class="tag">Lungs</span><span class="tag">Immune</span><span
                     class="tag">Fever</span></div>
+            <div class="details">
+                <p><strong>Traditional Uses:</strong> The go-to remedy for flu and colds. Induces diaphoresis (sweating)
+                    to break fevers safely.</p>
+                <p><strong>Modern Science:</strong> Clinical studies show Elderberry syrup can shorten flu duration by
+                    up to 4 days. Inhibits viral replication.</p>
+                <p><strong>Dosage:</strong> 1 tbsp syrup daily for prevention; 1 tbsp every 3 hours at first sign of
+                    illness.</p>
+                <p class="warning"><strong>Safety:</strong> Never eat raw berries (contain mild cyanide-like toxins).
+                    Cook them!</p>
+            </div>
             <div class="verse">Hippocrates called it his “medicine chest” ~400 BC</div>
+            <div class="sources">Sources: Journal of Int. Medical Research</div>
         </div>
 
         <!-- THYME -->
         <div class="card" data-tags="respiratory lungs immune thyme expectorant">
             <img src="https://cdn.pixabay.com/photo/2016/09/22/10/05/thyme-1688555_1280.jpg" alt="Thyme">
             <h3>Thyme</h3>
-            <p><strong>Thymus vulgaris</strong> – “Cough Buster”</p>
+            <p class="names">
+                <strong>Thymus vulgaris</strong><br>
+                <em>“Cough Buster”</em>
+            </p>
             <div class="tags"><span class="tag">Lungs</span><span class="tag">Antiviral</span></div>
+            <div class="details">
+                <p><strong>Traditional Uses:</strong> A specific for spasmodic coughs, bronchitis, and whooping cough.
+                    Purifying to the lungs and stomach.</p>
+                <p><strong>Modern Science:</strong> Thymol is a strong antiseptic. Essential oil of thyme is proven to
+                    kill bacteria and fungus even in air. Approved by German Commission E for bronchitis.</p>
+                <p><strong>Dosage:</strong> Steepy 1 tsp dried herb in cup of water (covered to keep oils in).</p>
+                <p class="warning"><strong>Safety:</strong> Essential oil is very hot/caustic—dilute heavily.</p>
+            </div>
             <div class="verse">Used since ancient Egypt for embalming & respiratory healing</div>
+            <div class="sources">Sources: German Commission E, Egyptian Ebers Papyrus</div>
         </div>
 
         <!-- OREGANO -->
         <div class="card" data-tags="respiratory immune oregano oil">
             <img src="https://cdn.pixabay.com/photo/2017/01/07/02/58/oregano-1953981_1280.jpg" alt="Oregano">
             <h3>Oregano</h3>
-            <p><strong>Origanum vulgare</strong> – “Mountain Joy”</p>
+            <p class="names">
+                <strong>Origanum vulgare</strong><br>
+                <em>“Mountain Joy”, “Wild Marjoram”</em>
+            </p>
             <div class="tags"><span class="tag">Lungs</span><span class="tag">Antibacterial</span></div>
+            <div class="details">
+                <p><strong>Traditional Uses:</strong> Warming, stimulating, and purifying. Used for deep-seated
+                    infections and parasites.</p>
+                <p><strong>Modern Science:</strong> Carvacrol content makes it a powerhouse antibiotic alternative.
+                    Effective against MRSA and fungal infections in lab studies.</p>
+                <p><strong>Dosage:</strong> Culinary use is safe/mild. Oil of Oregano: 2-3 drops in carrier oil (very
+                    potent).</p>
+                <p class="warning"><strong>Safety:</strong> Inhibits iron absorption. harsh on mucous membranes.</p>
+            </div>
             <div class="verse">Hippocrates used oregano as antiseptic & respiratory cure</div>
+            <div class="sources">Sources: PubMed, Greek Traditional Medicine</div>
         </div>
 
         <!-- HOLY BASIL (TULSI) -->
         <div class="card" data-tags="respiratory stress immune tulsi">
             <img src="https://cdn.pixabay.com/photo/2016/09/22/10/05/holy-basil-1688556_1280.jpg" alt="Holy Basil">
             <h3>Holy Basil (Tulsi)</h3>
-            <p><strong>Ocimum sanctum</strong> – “Queen of Herbs”</p>
+            <p class="names">
+                <strong>Ocimum sanctum</strong><br>
+                <em>“The Queen of Herbs”, “Incomparable One”</em>
+            </p>
             <div class="tags"><span class="tag">Lungs</span><span class="tag">Adaptogen</span></div>
+            <div class="details">
+                <p><strong>Traditional Uses:</strong> The most sacred herb in India. Clarifies the mind, opens the heart
+                    and lungs, and builds resilience to stress (Adaptogen).</p>
+                <p><strong>Modern Science:</strong> Studies confirm anti-stress, anti-inflammatory, and immunomodulatory
+                    effects. Helps normalize cortisol.</p>
+                <p><strong>Dosage:</strong> Drink as tea freely. 1 tsp per cup.</p>
+                <p class="warning"><strong>Safety:</strong> Mild blood thinning effect.</p>
+            </div>
             <div class="verse">“Incomparable” in Ayurveda for prana (life breath) – Charaka Samhita</div>
+            <div class="sources">Sources: Charaka Samhita, J. Ayurveda Integr. Med.</div>
         </div>
 
         <!-- PEPPERMINT -->
         <div class="card" data-tags="respiratory digestion peppermint menthol">
             <img src="https://cdn.pixabay.com/photo/2017/02/20/11/10/peppermint-2080746_1280.jpg" alt="Peppermint">
             <h3>Peppermint</h3>
-            <p><strong>Mentha piperita</strong></p>
+            <p class="names">
+                <strong>Mentha piperita</strong><br>
+                <em>“Brandy Mint”</em>
+            </p>
             <div class="tags"><span class="tag">Lungs</span><span class="tag">Sinuses</span></div>
+            <div class="details">
+                <p><strong>Traditional Uses:</strong> Cooling and dispersing. Opens blocked sinuses and soothes hot,
+                    irritable digestion.</p>
+                <p><strong>Modern Science:</strong> Menthol triggers cold-sensitive receptors in the nose, creating a
+                    sensation of increased airflow. Antispasmodic for gut.</p>
+                <p><strong>Dosage:</strong> Tea from fresh or dried leaves. Inhalation of steam.</p>
+                <p class="warning"><strong>Safety:</strong> Can worsen acid reflux (GERD) by relaxing esophageal
+                    sphincter.</p>
+            </div>
             <div class="verse">Mentioned in Ebers Papyrus (1550 BC) for stomach & breath</div>
+            <div class="sources">Sources: Luke 11:42, Ebers Papyrus</div>
         </div>
 
         <!-- MARSHMALLOW ROOT -->
@@ -228,90 +433,215 @@
             <img src="https://cdn.pixabay.com/photo/2016/09/22/10/05/marshmallow-root-1688557_1280.jpg"
                 alt="Marshmallow Root">
             <h3>Marshmallow Root</h3>
-            <p><strong>Althaea officinalis</strong> – “Soothing Slippery Herb”</p>
+            <p class="names">
+                <strong>Althaea officinalis</strong><br>
+                <em>“Soothing Herb”, “Mallards”</em>
+            </p>
             <div class="tags"><span class="tag">Lungs</span><span class="tag">Throat</span></div>
+            <div class="details">
+                <p><strong>Traditional Uses:</strong> The ultimate soother. Used for dry, irritated coughs, ulcers, and
+                    bladder irritation. “Althaea” means “to heal”.</p>
+                <p><strong>Modern Science:</strong> High mucilage content coats mucous membranes (bioadhesive).
+                    Effective for soothing sore throats and dry coughs.</p>
+                <p><strong>Dosage:</strong> Cold infusion: Soak 1 tbsp root in cold water overnight (extracts mucilage
+                    best).</p>
+                <p class="warning"><strong>Safety:</strong> Take away from meds (may delay absorption).</p>
+            </div>
             <div class="verse">Used by Romans & Greeks to soothe irritated membranes</div>
+            <div class="sources">Sources: Homer's Iliad, Herbal Pharmacopoeia</div>
         </div>
 
         <!-- LICORICE ROOT -->
         <div class="card" data-tags="respiratory adrenal lungs licorice glycyrrhiza">
             <img src="https://cdn.pixabay.com/photo/2017/06/02/18/35/licorice-2368295_1280.jpg" alt="Licorice Root">
             <h3>Licorice Root</h3>
-            <p><strong>Glycyrrhiza glabra</strong> – “Sweet Root”</p>
+            <p class="names">
+                <strong>Glycyrrhiza glabra</strong><br>
+                <em>“Sweet Root”, “Grandfather Herb”</em>
+            </p>
             <div class="tags"><span class="tag">Lungs</span><span class="tag">Adrenals</span></div>
+            <div class="details">
+                <p><strong>Traditional Uses:</strong> A "Harmonizer" in TCM (Gan Cao). Used to sweeten teas and support
+                    adrenals. Moistens lungs and stops coughing.</p>
+                <p><strong>Modern Science:</strong> Glycyrrhizin has antiviral properties and extends the half-life of
+                    cortisol, helping with fatigue.</p>
+                <p><strong>Dosage:</strong> Small amounts in tea blends (1/2 tsp).</p>
+                <p class="warning"><strong>Safety:</strong> Raises blood pressure. Do not use if hypertensive. Max use
+                    4-6 weeks.</p>
+            </div>
             <div class="verse">Traditional Chinese Medicine's #1 harmonizing herb for 3000+ years</div>
+            <div class="sources">Sources: Shen Nong Ben Cao Jing</div>
         </div>
 
         <!-- LOBELIA -->
         <div class="card" data-tags="respiratory asthma lungs lobelia">
             <img src="https://cdn.pixabay.com/photo/2016/09/22/10/05/lobelia-1688558_1280.jpg" alt="Lobelia">
             <h3>Lobelia</h3>
-            <p><strong>Lobelia inflata</strong> – “Asthma Weed”</p>
+            <p class="names">
+                <strong>Lobelia inflata</strong><br>
+                <em>“Asthma Weed”, “Pukeweed”</em>
+            </p>
             <div class="tags"><span class="tag">Lungs</span><span class="tag">Bronchodilator</span></div>
+            <div class="details">
+                <p><strong>Traditional Uses:</strong> Powerful antispasmodic used to stop acute asthma attacks
+                    instantly. Also a strong relaxant.</p>
+                <p><strong>Modern Science:</strong> Lobeline alkaloid stimulates the respiratory center in the
+                    brainstem, deepening breathing.</p>
+                <p><strong>Dosage:</strong> LOW DOSE ONLY. 3-5 drops of vinegar tincture during attack.</p>
+                <p class="warning"><strong>Safety:</strong> Emetic (causes vomiting) in large doses. Respect this herb.
+                </p>
+            </div>
             <div class="verse">Dr. Thomson's famous “puke weed” that saved thousands</div>
+            <div class="sources">Sources: Samuel Thomson, Ethnobotany of N. America</div>
         </div>
 
         <!-- COLTSFOOT -->
         <div class="card" data-tags="respiratory cough lungs coltsfoot">
             <img src="https://cdn.pixabay.com/photo/2016/09/22/10/05/coltsfoot-1688559_1280.jpg" alt="Coltsfoot">
             <h3>Coltsfoot</h3>
-            <p><strong>Tussilago farfara</strong> – “Son Before Father”</p>
+            <p class="names">
+                <strong>Tussilago farfara</strong><br>
+                <em>“Son Before Father”, “Coughwort”</em>
+            </p>
             <div class="tags"><span class="tag">Lungs</span><span class="tag">Cough</span></div>
+            <div class="details">
+                <p><strong>Traditional Uses:</strong> Specific for coughs (Tussilago means "Cough dispeller"). Leaves
+                    appear after flowers (Son before father).</p>
+                <p><strong>Modern Science:</strong> Potent antitussive (cough suppressant) properties.</p>
+                <p><strong>Dosage:</strong> Tea for short durations.</p>
+                <p class="warning"><strong>Safety:</strong> Contains PA (alkaloids) which can damage liver. Use only
+                    certified PA-free or very short term.</p>
+            </div>
             <div class="verse">Smoked by Europeans for centuries for asthma & bronchitis</div>
+            <div class="sources">Sources: Pliny the Elder, Dioscorides</div>
         </div>
 
         <!-- PLANTAIN -->
         <div class="card" data-tags="respiratory skin lungs plantain">
             <img src="https://cdn.pixabay.com/photo/2016/09/22/10/05/plantain-1688560_1280.jpg" alt="Plantain">
-            <h3>Plantain (not banana)</h3>
-            <p><strong>Plantago major</strong> – “White Man's Footprint”</p>
+            <h3>Plantain</h3>
+            <p class="names">
+                <strong>Plantago major</strong><br>
+                <em>“White Man's Footprint”, “Waybread”</em>
+            </p>
             <div class="tags"><span class="tag">Lungs</span><span class="tag">Wounds</span></div>
+            <div class="details">
+                <p><strong>Traditional Uses:</strong> The "drawing" herb. Draws out toxins (venom, splinters) from skin,
+                    and mucus from lungs. Soothing and healing.</p>
+                <p><strong>Modern Science:</strong> Aucubin content provides antimicrobial and anti-inflammatory action.
+                </p>
+                <p><strong>Dosage:</strong> Fresh leaf poultice (chew and apply) or tea.</p>
+                <p class="warning"><strong>Safety:</strong> Very safe.</p>
+            </div>
             <div class="verse">Native Americans called it “life medicine”</div>
+            <div class="sources">Sources: Anglo-Saxon Nine Herbs Charm</div>
         </div>
 
         <!-- DANDELION -->
         <div class="card" data-tags="liver lungs detox dandelion">
             <img src="https://cdn.pixabay.com/photo/2016/03/05/19/02/dandelion-1238995_1280.jpg" alt="Dandelion">
             <h3>Dandelion</h3>
-            <p><strong>Taraxacum officinale</strong> – “Lion's Tooth”</p>
+            <p class="names">
+                <strong>Taraxacum officinale</strong><br>
+                <em>“Lion's Tooth”, “Piss-en-lit”</em>
+            </p>
             <div class="tags"><span class="tag">Lungs</span><span class="tag">Liver</span></div>
+            <div class="details">
+                <p><strong>Traditional Uses:</strong> Master cleanser for liver and kidneys. Bitter tonic to stimulate
+                    digestion. Cooling to the body.</p>
+                <p><strong>Modern Science:</strong> Potent diuretic that contains potassium (unlike drug diuretics which
+                    deplete it). Liver protectant.</p>
+                <p><strong>Dosage:</strong> Root decoction for liver; Leaf tea for kidneys.</p>
+                <p class="warning"><strong>Safety:</strong> Caution if you have bile duct obstruction/stones.</p>
+            </div>
             <div class="verse">“Bitter herb” of Passover – Exodus 12:8</div>
+            <div class="sources">Sources: Bible, Traditional European Medicine</div>
         </div>
 
         <!-- NETTLE -->
         <div class="card" data-tags="respiratory allergies lungs nettle">
             <img src="https://cdn.pixabay.com/photo/2016/03/05/19/02/nettle-1238996_1280.jpg" alt="Nettle">
             <h3>Stinging Nettle</h3>
-            <p><strong>Urtica dioica</strong> – “Spring Tonic”</p>
+            <p class="names">
+                <strong>Urtica dioica</strong><br>
+                <em>“Spring Tonic”, “Burn Weed”</em>
+            </p>
             <div class="tags"><span class="tag">Lungs</span><span class="tag">Allergies</span></div>
+            <div class="details">
+                <p><strong>Traditional Uses:</strong> Blood builder and nutritive tonic. Used for spring allergies and
+                    to clear eczema/skin heat.</p>
+                <p><strong>Modern Science:</strong> Freeze-dried nettle has shown antihistamine activity in studies.
+                    Rich in iron, calcium, and magnesium.</p>
+                <p><strong>Dosage:</strong> Strong infusion (steep dried herb 4-8 hours) for mineral content.</p>
+                <p class="warning"><strong>Safety:</strong> Drying or cooking destroys the sting. Do not eat raw.</p>
+            </div>
             <div class="verse">Used since Bronze Age for breathing & strength</div>
+            <div class="sources">Sources: Tibetan Medicine (Milarepa), Western Herbalism</div>
         </div>
 
         <!-- ASTRAGALUS -->
         <div class="card" data-tags="immune lungs qi astragalus">
             <img src="https://cdn.pixabay.com/photo/2016/09/22/10/05/astragalus-1688561_1280.jpg" alt="Astragalus">
             <h3>Astragalus</h3>
-            <p><strong>Astragalus membranaceus</strong> – “Yellow Leader”</p>
+            <p class="names">
+                <strong>Astragalus membranaceus</strong><br>
+                <em>“Yellow Leader”, “Huang Qi”</em>
+            </p>
             <div class="tags"><span class="tag">Immune</span><span class="tag">Lungs</span></div>
+            <div class="details">
+                <p><strong>Traditional Uses:</strong> Primary lung and spleen tonic in TCM. Builds "Wei Qi" (protective
+                    shield). Keeps lungs strong against cold.</p>
+                <p><strong>Modern Science:</strong> Telomerase activator (anti-aging). Increases white blood cell count
+                    and interferon.</p>
+                <p><strong>Dosage:</strong> 10-30g dried root slices simmered in soup or tea for hours.</p>
+                <p class="warning"><strong>Safety:</strong> Do not use during active fever/infection (traps the thief).
+                </p>
+            </div>
             <div class="verse">Top tonic herb in Chinese medicine for 2000+ years</div>
+            <div class="sources">Sources: TCM, Shen Nong Ben Cao Jing</div>
         </div>
 
         <!-- REISHI MUSHROOM -->
         <div class="card" data-tags="immune lungs spirit reishi ganoderma">
             <img src="https://cdn.pixabay.com/photo/2016/09/22/10/05/reishi-1688562_1280.jpg" alt="Reishi">
             <h3>Reishi Mushroom</h3>
-            <p><strong>Ganoderma lucidum</strong> – “Mushroom of Immortality”</p>
+            <p class="names">
+                <strong>Ganoderma lucidum</strong><br>
+                <em>“Mushroom of Immortality”, “Ling Zhi”</em>
+            </p>
             <div class="tags"><span class="tag">Lungs</span><span class="tag">Spirit</span></div>
+            <div class="details">
+                <p><strong>Traditional Uses:</strong> Calms the "Shen" (Spirit). Promotes deep, peaceful breathing and
+                    longevity. The "Bridge between Earth and Heaven".</p>
+                <p><strong>Modern Science:</strong> Rich in Beta-glucans and triterpenes. Immunomodulating and
+                    anti-cancer potential.</p>
+                <p><strong>Dosage:</strong> Decoction (simmered tea) or dual-extraction tincture.</p>
+                <p class="warning"><strong>Safety:</strong> Safe. Caution if on anticoagulants.</p>
+            </div>
             <div class="verse">Used 2000+ years in Asia for breath & longevity</div>
+            <div class="sources">Sources: Taoist Herbalism, PubMed</div>
         </div>
 
         <!-- ASHWAGANDHA -->
         <div class="card" data-tags="stress lungs thyroid ashwagandha">
             <img src="https://cdn.pixabay.com/photo/2016/09/22/10/05/ashwagandha-1688563_1280.jpg" alt="Ashwagandha">
             <h3>Ashwagandha</h3>
-            <p><strong>Withania somnifera</strong> – “Strength of the Stallion”</p>
+            <p class="names">
+                <strong>Withania somnifera</strong><br>
+                <em>“Strength of the Stallion”, “Indian Ginseng”</em>
+            </p>
             <div class="tags"><span class="tag">Lungs</span><span class="tag">Calm</span></div>
+            <div class="details">
+                <p><strong>Traditional Uses:</strong> Rasayana (Rejuvenative). Builds stamina (Ojas) and calms a racing
+                    mind/nervous system. Lung strengthener.</p>
+                <p><strong>Modern Science:</strong> Proven to lower cortisol levels and combat adrenal fatigue.
+                    Immunomodulating.</p>
+                <p><strong>Dosage:</strong> 3-6g root powder daily, traditionally in warm milk.</p>
+                <p class="warning"><strong>Safety:</strong> Nightshade sensitivity. Avoid in hyperthyroid (stimulates
+                    thread).</p>
+            </div>
             <div class="verse">“Smell of horse” herb – gives vitality of a horse</div>
+            <div class="sources">Sources: Ayurveda (Charaka Samhita)</div>
         </div>
 
         <!-- MULLEIN FLOWERS (extra) -->
@@ -319,9 +649,20 @@
             <img src="https://cdn.pixabay.com/photo/2017/07/12/18/19/mullein-flowers-2496604_1280.jpg"
                 alt="Mullein Flowers">
             <h3>Mullein Flowers</h3>
-            <p><strong>Verbascum thapsus</strong> – “Ear Oil King”</p>
+            <p class="names">
+                <strong>Verbascum thapsus</strong><br>
+                <em>“Ear Oil King”</em>
+            </p>
             <div class="tags"><span class="tag">Lungs</span><span class="tag">Ears</span></div>
+            <div class="details">
+                <p><strong>Traditional Uses:</strong> Flowers specifically used for earaches (infused in oil with
+                    garlic). Also a mild nervine/sedative for coughs preventing sleep.</p>
+                <p><strong>Modern Science:</strong> Antiviral activity against Herpes simplex and Influenza A/B.</p>
+                <p><strong>Dosage:</strong> 2-3 drops warmed oil in ear (if drum not perforated).</p>
+                <p class="warning"><strong>Safety:</strong> Same as leaf—strain well if drinking.</p>
+            </div>
             <div class="verse">Traditional oil for earaches & lung tea for chest</div>
+            <div class="sources">Sources: Traditional Herbalism</div>
         </div>
 
     </div>
@@ -329,14 +670,17 @@
     <h2 style="margin-top:60px;">Ancient Breathing Texts</h2>
     <div class="grid">
         <div class="card">
-            <p><strong>Bhagavad Gita 4:29</strong><br>“Still others offer as sacrifice the outgoing breath in the
+            <p class="details" style="text-align:center;"><strong>Bhagavad Gita 4:29</strong><br>“Still others offer as
+                sacrifice the outgoing breath in the
                 incoming breath…”</p>
         </div>
         <div class="card">
-            <p><strong>Genesis 2:7</strong><br>“Then the Lord God… breathed into his nostrils the breath of life.”</p>
+            <p class="details" style="text-align:center;"><strong>Genesis 2:7</strong><br>“Then the Lord God… breathed
+                into his nostrils the breath of life.”</p>
         </div>
         <div class="card">
-            <p><strong>Emerald Tablet</strong><br>“That which is below is like that which is above… by means of breath.”
+            <p class="details" style="text-align:center;"><strong>Emerald Tablet</strong><br>“That which is below is
+                like that which is above… by means of breath.”
             </p>
         </div>
     </div>
@@ -346,7 +690,8 @@
             let input = document.getElementById('searchBox').value.toLowerCase();
             let cards = document.getElementsByClassName('card');
             for (let c of cards) {
-                c.style.display = c.dataset.tags.includes(input) || c.textContent.toLowerCase().includes(input) ? "" : "none";
+                // Search now includes the new details class content
+                c.style.display = c.innerText.toLowerCase().includes(input) || c.dataset.tags.includes(input) ? "flex" : "none";
             }
         }
     </script>
