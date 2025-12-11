@@ -7,11 +7,10 @@
     <title>Herbal Bible + Ancient Breathing Wisdom | RapBattleCast</title>
     <style>
         body {
-            font-family: 'Georgia', serif;
+            font-family: Georgia, serif;
             background: #f8f1e9;
             color: #333;
             margin: 0;
-            padding: 0;
             line-height: 1.6;
         }
 
@@ -39,17 +38,18 @@
 
         h1 {
             color: #f1c40f;
+            text-align: center;
         }
 
         .search {
             text-align: center;
-            margin: 30px;
+            margin: 40px 0;
         }
 
         .search input {
-            padding: 12px;
+            padding: 14px;
             width: 80%;
-            max-width: 500px;
+            max-width: 600px;
             font-size: 18px;
             border-radius: 12px;
             border: 1px solid #8b4513;
@@ -57,53 +57,54 @@
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 30px;
         }
 
         .card {
             background: white;
             border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-            text-align: left;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+            transition: 0.3s;
         }
 
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
-            transition: 0.3s;
+            transform: translateY(-8px);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
         }
 
         .card img {
             width: 100%;
-            height: 220px;
+            height: 240px;
             object-fit: cover;
             border-radius: 12px;
             margin-bottom: 15px;
         }
 
         .card h3 {
-            margin: 10px 0;
+            margin: 15px 0 10px;
             color: #8b4513;
+            font-size: 22px;
         }
 
         .tag {
             background: #8b4513;
             color: white;
-            padding: 4px 10px;
+            padding: 5px 12px;
             border-radius: 20px;
-            font-size: 12px;
+            font-size: 13px;
+            margin: 4px;
             display: inline-block;
-            margin: 3px;
         }
 
         .disclaimer {
             background: #fff3cd;
-            padding: 20px;
+            padding: 25px;
             border-left: 6px solid #f1c40f;
-            margin: 40px 0;
+            margin: 50px 0;
             font-style: italic;
+            border-radius: 8px;
         }
     </style>
 </head>
@@ -121,42 +122,57 @@
     </header>
 
     <div class="container">
-
-        <h1 style="text-align:center; margin-top:20px;">🌿 The Herbal Bible & Ancient Breathing Wisdom</h1>
-        <p style="text-align:center; font-size:18px;">Researched • Scripture-Backed • Respiratory Focused</p>
+        <h1>🌿 The Herbal Bible & Ancient Breathing Wisdom</h1>
+        <p style="text-align:center; font-size:19px; margin-bottom:40px;">Researched • Scripture-Backed • Respiratory
+            Focused</p>
 
         <div class="search">
-            <input type="text" id="searchBox" placeholder="Search any herb, symptom, or scripture..."
+            <input type="text" id="searchBox" placeholder="Search any herb, symptom, scripture, or body system..."
                 onkeyup="search()">
         </div>
 
         <div class="grid" id="grid">
-            <!-- Antigravity already filled this whole section with the rich, detailed cards — just keep everything from your latest version here -->
-            <!-- (I'm pasting only the first two as example — you already have the full 22 from Antigravity) -->
+
+            <!-- ALL 22 RICH CARDS FROM YOUR ANTIGRAVITY VERSION GO HERE -->
             <!-- BLACK SEED -->
             <div class="card" data-tags="respiratory immune digestive prophetic blackseed nigella">
                 <img src="https://cdn.pixabay.com/photo/2016/11/29/05/14/black-cumin-1868744_1280.jpg" alt="Black Seed">
                 <h3>Black Seed (Nigella sativa)</h3>
-                <p>Known as “the seed of blessing”… (the full rich text Antigravity wrote)</p>
-                <p><strong>Sources:</strong> Sahih Bukhari, PubMed, etc.</p>
+                <p>Known as “the seed of blessing”… (everything Antigravity wrote — long paragraph, dosage, cautions,
+                    sources, etc.)</p>
             </div>
 
-            <!-- … and all the rest of the 21 detailed cards you already have … -->
+            <!-- FRANKINCENSE -->
+            <div class="card" data-tags="respiratory nervous brain frankincense boswellia">
+                <img src="https://cdn.pixabay.com/photo/2017/08/07/18/28/frankincense-2604230_1280.jpg"
+                    alt="Frankincense">
+                <h3>Frankincense (Boswellia sacra)</h3>
+                <p>… (full rich text Antigravity wrote)</p>
+            </div>
+
+            <!-- … and the other 20 cards exactly as Antigravity gave you … -->
+
+            <!-- MULLEIN FLOWERS (extra) -->
+            <div class="card" data-tags="respiratory ears lungs mullein">
+                <img src="https://cdn.pixabay.com/photo/2017/07/12/18/19/mullein-flowers-2496604_1280.jpg"
+                    alt="Mullein Flowers">
+                <h3>Mullein Flowers</h3>
+                <p>… (full rich text)</p>
+            </div>
 
         </div>
 
         <div class="disclaimer">
-            <strong>Medical Disclaimer:</strong> This information is for educational purposes only and is not medical
-            advice. Always consult a qualified healthcare provider before using any herb, especially if pregnant,
-            nursing, or on medication. RapBattleCast.com is not liable for misuse of information.
+            <strong>Medical Disclaimer:</strong> This information is for educational and spiritual purposes only and is
+            not intended to diagnose, treat, cure, or prevent any disease. Always consult a qualified healthcare
+            professional before using herbs, especially if pregnant, nursing, or on medication. RapBattleCast.com is not
+            liable for misuse.
         </div>
 
     </div>
 
     <footer>
-        © 2025 RapBattleCast • <a href="https://rapbattlecast.com/tos.html">Terms of Service</a> •
-        <a href="https://rapbattlecast.com/disclaimer.html">Medical Disclaimer</a> •
-        Made with breath, love, and a little antigravity
+        © 2025 RapBattleCast • Made with breath, love, and a little antigravity
     </footer>
 
     <script>
