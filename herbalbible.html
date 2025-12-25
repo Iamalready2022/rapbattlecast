@@ -42,19 +42,6 @@
             margin: 30px 0;
         }
 
-        .search {
-            text-align: center;
-            margin: 40px 0;
-        }
-
-        .search input {
-            padding: 14px;
-            width: 80%;
-            max-width: 600px;
-            font-size: 18px;
-            border-radius: 12px;
-            border: 1px solid #8b4513;
-        }
 
         .grid {
             display: grid;
@@ -185,10 +172,7 @@
         <p style="text-align:center;font-size:19px;margin-bottom:40px;">Researched • Scripture-Backed • Respiratory
             Focused</p>
 
-        <div class="search">
-            <input type="text" id="searchBox" placeholder="Search any herb, symptom, scripture, or body system..."
-                onkeyup="search()">
-        </div>
+
 
         <div class="grid" id="grid">
 
@@ -1114,16 +1098,8 @@
         © 2025 RapBattleCast • Made with breath, love, and a little antigravity
     </footer>
 
-    <script>
-        function search() {
-            let input = document.getElementById('searchBox').value.toLowerCase();
-            let cards = document.getElementsByClassName('card');
-            for (let c of cards) {
-                // Search both the visible text and the hidden data-tags
-                c.style.display = c.dataset.tags.includes(input) || c.textContent.toLowerCase().includes(input) ? "" : "none";
-            }
-        }
 
+    <script>
         function toggleCard(btn) {
             let card = btn.parentElement;
             let fullContent = card.querySelector('.full-content');
