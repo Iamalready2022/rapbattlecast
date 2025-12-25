@@ -1116,10 +1116,26 @@
 
     <script>
         function search() {
-            let input = document.getElementById('searchBox").value.toLowerCase();
-  let cards = document.getElementsByClassName('card');
+            let input = document.getElementById('searchBox').value.toLowerCase();
+            let cards = document.getElementsByClassName('card');
             for (let c of cards) {
+                // Search both the visible text and the hidden data-tags
                 c.style.display = c.dataset.tags.includes(input) || c.textContent.toLowerCase().includes(input) ? "" : "none";
+            }
+        }
+
+        function toggleCard(btn) {
+            let card = btn.parentElement;
+            let fullContent = card.querySelector('.full-content');
+
+            if (fullContent.style.display === "block") {
+                fullContent.style.display = "none";
+                btn.textContent = "Read More";
+                btn.style.background = "#2c3e50"; // Reset color
+            } else {
+                fullContent.style.display = "block";
+                btn.textContent = "Show Less";
+                btn.style.background = "#d35400"; // Highlight color when open
             }
         }
     </script>
