@@ -85,7 +85,8 @@
 
         .card h3 {
             margin: 15px 0 10px;
-            color: #8b55300;
+            color: #8b4513;
+            /* Fixed typo from #8b55300 */
             font-size: 22px;
         }
 
@@ -97,6 +98,63 @@
             font-size: 13px;
             margin: 4px;
             display: inline-block;
+        }
+
+        /* Read More / Expanded Content Styles */
+        .full-content {
+            display: none;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            animation: fadeIn 0.5s;
+        }
+
+        .full-content h4 {
+            color: #d35400;
+            margin: 15px 0 5px;
+            font-size: 1.1em;
+            border-bottom: 2px solid #f9e79f;
+            display: inline-block;
+        }
+
+        .full-content ul {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+
+        .full-content li {
+            margin-bottom: 5px;
+        }
+
+        .read-more-btn {
+            background: #2c3e50;
+            color: #f1c40f;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 15px;
+            width: 100%;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 14px;
+        }
+
+        .read-more-btn:hover {
+            background: #34495e;
+            transform: scale(1.02);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         .disclaimer {
@@ -135,219 +193,910 @@
         <div class="grid" id="grid">
 
             <!-- BLACK SEED -->
+            <!-- BLACK SEED (Expanded) -->
             <div class="card" data-tags="respiratory immune digestive prophetic blackseed nigella">
                 <img src="black-seed.jpg" alt="Black Seed">
                 <h3>Black Seed (Nigella sativa)</h3>
-                <p>Known as “the seed of blessing” in Islamic tradition and praised by Prophet Muhammad (peace be upon
-                    him) as having a remedy for every disease except death. Thymoquinone provides strong
-                    anti-inflammatory, bronchodilatory, and immunomodulatory effects — excellent for asthma, allergies,
-                    and chronic lung conditions.</p>
-                <p><strong>Dosage:</strong> ½–1 tsp seeds or oil daily. <strong>Caution:</strong> May lower blood
-                    pressure/sugar.</p>
-                <p><strong>Sources:</strong> Sahih Bukhari 7:71:592, PubMed (thymoquinone asthma trials).</p>
+
+                <div class="summary">
+                    <p><strong>"The Seed of Blessing"</strong> — Known in Arabic as <em>Habbatul Barakah</em>. A
+                        legendary remedy praised by prophets and pharaohs alike. Contains <strong>Thymoquinone</strong>,
+                        a powerful compound that opens the airways and balances the immune system.</p>
+                </div>
+
+                <div class="full-content">
+                    <h4>🌿 Ancient Wisdom & Scripture</h4>
+                    <p>Black Seed holds a unique status in history. Prophet Muhammad (peace be upon him) famously
+                        stated: <em>"Use this Black Seed, for in it is a cure for every disease except death"</em>
+                        (Sahih Bukhari 7:71:592). It was found in the tomb of Tutankhamun to assist him in the
+                        afterlife, and Cleopatra reportedly used it for beauty and vitality. In the Bible, it is
+                        referred to as "black cumin" (Isaiah 28:25-27), highlighting its agricultural and medicinal
+                        importance.</p>
+
+                    <h4>🫁 Respiratory & Healing Power</h4>
+                    <p>Modern science confirms ancient wisdom. The active compound, <strong>Thymoquinone</strong>, is a
+                        potent bronchodilator and anti-inflammatory. It relaxes the tracheal muscles, making it a
+                        top-tier remedy for <strong>asthma</strong>, chronic bronchitis, and allergies. Unlike
+                        conventional antihistamines that can cause drowsiness, Black Seed modulates the immune
+                        system—boosting it when weak and calming it when overactive (such as in autoimmune conditions or
+                        allergies).</p>
+
+                    <h4>🍵 Dosage & Preparation</h4>
+                    <ul>
+                        <li><strong>Daily Maintenance:</strong> ½–1 tsp of fresh oil or 1 tsp of seeds (chewed or
+                            ground) daily. Mix with raw honey for synergy.</li>
+                        <li><strong>For Congestion/Asthma:</strong> Add 1 tsp of oil to a bowl of boiling water and
+                            inhale the vapors (towel over head) for 5-10 minutes.</li>
+                        <li><strong>Chest Rub:</strong> Mix Black Seed oil with a little olive oil and rub on the chest
+                            and back for cough relief.</li>
+                        <li><strong>Tea:</strong> Boil seeds with mint and honey for a soothing respiratory drink.</li>
+                    </ul>
+
+                    <h4>⚠️ Safety & Contraindications</h4>
+                    <p>Generally very safe. However, large medicinal doses may lower blood sugar and blood pressure;
+                        diabetics and those on hypotension meds should monitor closely. <strong>Pregnancy:</strong> Safe
+                        in culinary amounts, but avoid high medicinal doses as it may stimulate uterine contractions.
+                    </p>
+
+                    <p><strong>Sources:</strong> Sahih Bukhari • PubMed (Thymoquinone asthma trails) • Avicenna's
+                        <em>Canon of Medicine</em> • <em>Journal of Ethnopharmacology</em>.
+                    </p>
+                </div>
+
+                <button class="read-more-btn" onclick="toggleCard(this)">Read More</button>
             </div>
 
             <!-- FRANKINCENSE -->
+            <!-- FRANKINCENSE (Expanded) -->
             <div class="card" data-tags="respiratory nervous brain frankincense boswellia">
                 <img src="frankincense.jpg" alt="Frankincense">
                 <h3>Frankincense (Boswellia sacra)</h3>
-                <p>One of the gifts of the Magi. Boswellic acids inhibit leukotrienes, reducing airway inflammation in
-                    asthma and COPD. Inhalation calms the nervous system and supports cognitive health.</p>
-                <p><strong>Dosage:</strong> 300–500 mg extract or resin tea. <strong>Caution:</strong> Rare GI upset.
-                </p>
-                <p><strong>Sources:</strong> Exodus 30:34-35, Journal of Ethnopharmacology 2019.</p>
+                <div class="summary">
+                    <p><strong>"The Liquid Pearl"</strong> — One of the three gifts of the Magi. Renowned for its
+                        ability to deepen the breath and calm the spirit. Contains <strong>boswellic acids</strong>
+                        which powerfully inhibit inflammation pathways in the lungs.</p>
+                </div>
+                <div class="full-content">
+                    <h4>🌿 Ancient Wisdom & Scripture</h4>
+                    <p>Frankincense was a key ingredient in the holy incense of the Tabernacle (Exodus 30:34-35). It has
+                        been used for millennia in Ayurveda (*Shallaki*) and TCM to move stagnant blood and "invigorate
+                        the blood." It is said to have been given to the Christ child to symbolize his priestly role.
+                    </p>
+
+                    <h4>🫁 Respiratory & Healing Power</h4>
+                    <p>Boswellic acids are unique because they inhibit **5-LOX** (5-lipoxygenase), an enzyme responsible
+                        for producing leukotrienes—molecules that cause constriction in asthma and COPD. By blocking
+                        this, it reduces edema and bronchial restriction. It is also a premier nervine, slowing the
+                        breath and calming the mind for meditation and prayer.</p>
+
+                    <h4>🍵 Dosage & Preparation</h4>
+                    <ul>
+                        <li><strong>Tea/Water:</strong> Dissolve 1 tear of resin in a jar of water overnight; drink the
+                            "frankincense water" the next day.</li>
+                        <li><strong>Supplement:</strong> 300–500 mg of standardized Boswellia extract (65% boswellic
+                            acids).</li>
+                        <li><strong>Incense:</strong> Burn resin on charcoal to purify the air (antimicrobial) and
+                            lungs.</li>
+                    </ul>
+
+                    <h4>⚠️ Safety & Contraindications</h4>
+                    <p>Generally safe. Rare gastrointestinal upset. In large doses, it may act as a blood thinner, so
+                        pause use 2 weeks before surgery.</p>
+
+                    <p><strong>Sources:</strong> Bible (Exodus, Matthew) • *Journal of Ethnopharmacology* (Asthma
+                        studies) • *European Journal of Medical Research*.</p>
+                </div>
+                <button class="read-more-btn" onclick="toggleCard(this)">Read More</button>
             </div>
 
             <!-- MULLEIN -->
+            <!-- MULLEIN (Expanded) -->
             <div class="card" data-tags="respiratory lungs mullein expectorant">
                 <img src="mullein.jpg" alt="Mullein">
                 <h3>Mullein (Verbascum thapsus)</h3>
-                <p>Classic “lung torch” herb used by Hippocrates to Native Americans. Saponins loosen mucus; demulcent
-                    soothes irritated airways. Ideal for bronchitis and smoker’s cough.</p>
-                <p><strong>Dosage:</strong> 1–2 tsp leaf tea 3× daily. <strong>Caution:</strong> Strain hairs.</p>
-                <p><strong>Sources:</strong> Hippocrates, Mrs. Grieve’s Modern Herbal.</p>
+                <div class="summary">
+                    <p><strong>"The Lung Torch"</strong> — A velvety giant that grows straight to the sky. The classic
+                        remedy for all things respiratory. Its leaves act as a gentle expectorant, while its demulcent
+                        properties soothe raw, inflamed tissues.</p>
+                </div>
+                <div class="full-content">
+                    <h4>🌿 Ancient Wisdom & Scripture</h4>
+                    <p>Historically used as torches by Greeks and Romans (dipped in tallow). Native Americans smoked the
+                        leaves to treat asthma and spasmodic coughs. Dioscorides recommended it for diseases of the lung
+                        2,000 years ago.</p>
+
+                    <h4>🫁 Respiratory & Healing Power</h4>
+                    <p>Mullein is supreme for **dry, racking coughs**. It contains saponins that help loosen sticky
+                        mucus in the chest, making it easier to expel (expectorant), while its mucilage coats the throat
+                        (demulcent). It effectively hydrates the lungs and relaxes the bronchioles.</p>
+
+                    <h4>🍵 Dosage & Preparation</h4>
+                    <ul>
+                        <li><strong>Tea (Standard):</strong> Steep 1-2 tsp of dried leaves in hot water for 15 mins.
+                            **IMPORTANT:** Strain through a coffee filter or cloth to remove the tiny hairs which can
+                            irritate the throat.</li>
+                        <li><strong>Smoking Mix:</strong> Dried leaves can be smoked physically for immediate bronchial
+                            relaxation (traditional use).</li>
+                        <li><strong>Tincture:</strong> 2-4 ml, 3x daily.</li>
+                    </ul>
+
+                    <h4>⚠️ Safety & Contraindications</h4>
+                    <p>Very safe. The only main caution is the fine hairs on the leaves—always filter your tea well.
+                        Seeds are toxic (contain rotenone) and should never be used.</p>
+
+                    <p><strong>Sources:</strong> *Materia Medica* by Dioscorides • Mrs. Grieve’s *A Modern Herbal*.</p>
+                </div>
+                <button class="read-more-btn" onclick="toggleCard(this)">Read More</button>
             </div>
 
             <!-- TURMERIC -->
+            <!-- TURMERIC (Expanded) -->
             <div class="card" data-tags="respiratory immune inflammation joints turmeric curcumin">
                 <img src="turmeric.jpg" alt="Turmeric">
                 <h3>Turmeric (Curcuma longa)</h3>
-                <p>Curcumin powerfully reduces lung inflammation and oxidative stress. Biblical “leaves for medicine.”
-                </p>
-                <p><strong>Dosage:</strong> 500 mg curcumin + pepper daily. <strong>Caution:</strong> Blood thinner.</p>
-                <p><strong>Sources:</strong> Ezekiel 47:12, Lancet 2021 meta-analysis.</p>
+                <div class="summary">
+                    <p><strong>"The Golden Spice"</strong> — Known in India as *Haridra*. It is the most researched
+                        anti-inflammatory herb in the world. Its active compound, **curcumin**, is a shield for the
+                        lungs against fibrosis and chronic damage.</p>
+                </div>
+                <div class="full-content">
+                    <h4>🌿 Ancient Wisdom & Scripture</h4>
+                    <p>Often linked to the "leaves for medicine" in Ezekiel 47:12. In Ayurveda, it is a warming spice
+                        used to clear Kapha (mucus/congestion). Traditionally applied as a paste to the chest for colds.
+                    </p>
+
+                    <h4>🫁 Respiratory & Healing Power</h4>
+                    <p>Curcumin modulates nuclear factor-kappa B (NF-κB), a master switch for inflammation. This makes
+                        it incredible for **COPD** and lung fibrosis prevention. It protects lung tissue from oxidative
+                        stress (pollution, smoke) and reduces airway inflammation in allergic asthma.</p>
+
+                    <h4>🍵 Dosage & Preparation</h4>
+                    <ul>
+                        <li><strong>Golden Milk:</strong> 1 tsp turmeric powder boiled in milk (dairy or plant) with a
+                            pinch of black pepper and fat (coconut oil/ghee) to activate absorption.</li>
+                        <li><strong>Supplement:</strong> 500–1000 mg Curcumin extract (95%) with piperine.</li>
+                        <li><strong>Raw:</strong> 1/2 inch fresh root juiced or added to smoothies.</li>
+                    </ul>
+
+                    <h4>⚠️ Safety & Contraindications</h4>
+                    <p>Blood thinner—stop before surgery. High doses over long periods can cause stomach upset or
+                        increase risk of kidney stones (oxalates) in susceptible individuals. Gallbladder obstruction:
+                        avoid large doses.</p>
+
+                    <p><strong>Sources:</strong> *The Lancet* (Meta-analysis) • Ezekiel 47:12 • *Journal of Clinical
+                        Immunology*.</p>
+                </div>
+                <button class="read-more-btn" onclick="toggleCard(this)">Read More</button>
             </div>
 
             <!-- GINGER -->
+            <!-- GINGER (Expanded) -->
             <div class="card" data-tags="respiratory digestion circulation ginger nausea">
                 <img src="ginger.jpg" alt="Ginger">
                 <h3>Ginger (Zingiber officinale)</h3>
-                <p>“Universal medicine” in Ayurveda. Gingerols relax bronchial muscle and improve circulation.</p>
-                <p><strong>Dosage:</strong> 1–2 g fresh root tea. <strong>Caution:</strong> Heartburn in excess.</p>
-                <p><strong>Sources:</strong> Charaka Samhita, Cochrane Review.</p>
+                <div class="summary">
+                    <p><strong>"The Universal Medicine"</strong> — Or *Vishwabheshaj* in Sanskrit. A heating,
+                        stimulating root that breaks up congestion, warms the lungs, and drives blood flow to the
+                        extremities.</p>
+                </div>
+                <div class="full-content">
+                    <h4>🌿 Ancient Wisdom & Scripture</h4>
+                    <p>Mentioned in the Qur'an (76:17) as a drink of paradise ("In it will be passed to them a cup whose
+                        mixture is ginger"). Confucious never ate a meal without ginger. It is the cornerstone of
+                        digestive and respiratory health in almost every traditional system.</p>
+
+                    <h4>🫁 Respiratory & Healing Power</h4>
+                    <p>Gingerols and shogaols induce **bronchodilation** by modulating calcium signaling in airway
+                        smooth muscle. It is a "circulatory stimulant," meaning it pushes blood to the lungs to carry
+                        away toxins and bring immune cells to fight infection. Excellent for "cold"
+                        conditions—shivering, pale mucus, and chills.</p>
+
+                    <h4>🍵 Dosage & Preparation</h4>
+                    <ul>
+                        <li><strong>Tea:</strong> Simmer (don't just steep) fresh slices for 20 minutes for a strong
+                            decoction.</li>
+                        <li><strong>Juice:</strong> Fresh ginger shots for immediate sinus clearing.</li>
+                        <li><strong>Poultice:</strong> grated ginger on the chest (with a cloth barrier) to warm the
+                            lungs.</li>
+                    </ul>
+
+                    <h4>⚠️ Safety & Contraindications</h4>
+                    <p>Generally safe. Can cause heartburn in high doses. Caution with blood thinners due to
+                        anti-platelet activity.</p>
+
+                    <p><strong>Sources:</strong> Qur'an 76:17 • *American Journal of Respiratory Cell and Molecular
+                        Biology* • *Charaka Samhita*.</p>
+                </div>
+                <button class="read-more-btn" onclick="toggleCard(this)">Read More</button>
             </div>
 
             <!-- GARLIC -->
+            <!-- GARLIC (Expanded) -->
             <div class="card" data-tags="respiratory immune blood garlic allicin">
                 <img src="garlic.jpg" alt="Garlic">
                 <h3>Garlic (Allium sativum)</h3>
-                <p>“Russian penicillin.” Allicin kills respiratory pathogens and thins mucus.</p>
-                <p><strong>Dosage:</strong> 1–2 cloves raw daily. <strong>Caution:</strong> Blood thinner.</p>
-                <p><strong>Sources:</strong> Numbers 11:5, Journal of Nutrition 2022.</p>
+                <div class="summary">
+                    <p><strong>"The Poor Man's Treacle"</strong> — Nature's most potent antibiotic. Famous for its foul
+                        smell but miraculous ability to destroy respiratory pathogens, thin the blood, and eject mucus.
+                    </p>
+                </div>
+                <div class="full-content">
+                    <h4>🌿 Ancient Wisdom & Scripture</h4>
+                    <p>The Israelites longed for the garlic of Egypt during the Exodus (Numbers 11:5). Roman soldiers
+                        ate it for courage. Hippocrates prescribed it for pulmonary complaints. During WWII, it was used
+                        as "Russian Penicillin" when drugs ran out.</p>
+
+                    <h4>🫁 Respiratory & Healing Power</h4>
+                    <p>When crushed, garlic releases **Allicin**, a volatile compound that is excreted *through the
+                        lungs* (hence garlic breath). This means it physically bathes the lung tissue in antimicrobial
+                        vapor, killing bacteria and viruses on contact. It acts as a surfactant, thinning thick mucus.
+                    </p>
+
+                    <h4>🍵 Dosage & Preparation</h4>
+                    <ul>
+                        <li><strong>Raw & Crushed:</strong> MUST be crushed and left to sit for 10 minutes to activate
+                            Allicin before eating. 1-2 cloves daily.</li>
+                        <li><strong>Garlic Honey:</strong> Ferment cloves in raw honey for 1 month; take a spoonful for
+                            coughs.</li>
+                        <li><strong>Oxymel:</strong> Apple cider vinegar + honey + garlic.</li>
+                    </ul>
+
+                    <h4>⚠️ Safety & Contraindications</h4>
+                    <p>Potent blood thinner (caution with Warfarin). Can irritate the stomach lining. Avoid large
+                        amounts before surgery.</p>
+
+                    <p><strong>Sources:</strong> Numbers 11:5 • *Journal of Nutrition* (Immune function) • Pasteur
+                        Institute.</p>
+                </div>
+                <button class="read-more-btn" onclick="toggleCard(this)">Read More</button>
             </div>
 
             <!-- CAYENNE -->
+            <!-- CAYENNE (Expanded) -->
             <div class="card" data-tags="circulation pain respiratory cayenne capsicum">
                 <img src="cayenne.jpg" alt="Cayenne">
-                <h3>Cayenne Pepper (Capsicum annuum)</h3>
-                <p>Capsaicin improves lung circulation and clears sinuses.</p>
-                <p><strong>Dosage:</strong> ¼ tsp in water. <strong>Caution:</strong> Stomach irritation.</p>
-                <p><strong>Sources:</strong> Dr. Christopher, Phytotherapy Research.</p>
+                <h3>Cayenne (Capsicum annuum)</h3>
+                <div class="summary">
+                    <p><strong>"The Catalyst"</strong> — A fiery stimulant that drives other herbs deeper into the
+                        tissues. It clears sinuses instantly and equalizes blood pressure.</p>
+                </div>
+                <div class="full-content">
+                    <h4>🌿 Ancient Wisdom & Scripture</h4>
+                    <p>Used by Native South Americans for thousands of years. Famous herbalist Dr. John Christopher
+                        famously said, "In 35 years of practice... I have never lost one heart attack patient" due to
+                        his use of Cayenne tea to revive the system.</p>
+
+                    <h4>🫁 Respiratory & Healing Power</h4>
+                    <p><strong>Capsaicin</strong> thins mucus significantly, making it runnable and easy to expel. It
+                        stimulates the "cilia" (hairs) in the lungs to sweep out debris. By increasing body temperature
+                        (diaphoretic), it helps burn out viruses.</p>
+
+                    <h4>🍵 Dosage & Preparation</h4>
+                    <ul>
+                        <li><strong>Acute:</strong> 1/4 to 1/2 teaspoon of powder in a cup of hot water. Drink warm.
+                        </li>
+                        <li><strong>Daily:</strong> Start with a pinch and work up to build tolerance.</li>
+                        <li><strong>Tincture:</strong> 5-10 drops in water.</li>
+                    </ul>
+
+                    <h4>⚠️ Safety & Contraindications</h4>
+                    <p>Irritating to sensitive stomachs (start low). Wash hands thoroughly after handling (do not touch
+                        eyes!). High doses can be temporarily painful but are generally not damaging to tissue.</p>
+
+                    <p><strong>Sources:</strong> *New England Journal of Medicine* • Dr. John Christopher (School of
+                        Natural Healing).</p>
+                </div>
+                <button class="read-more-btn" onclick="toggleCard(this)">Read More</button>
             </div>
 
             <!-- ELDERBERRY -->
+            <!-- ELDERBERRY (Expanded) -->
             <div class="card" data-tags="respiratory immune flu elderberry">
                 <img src="elderberry.jpg" alt="Elderberry">
                 <h3>Elderberry (Sambucus nigra)</h3>
-                <p>Shortens flu by 3–4 days in RCTs. Hippocrates’ “medicine chest.”</p>
-                <p><strong>Dosage:</strong> Syrup at onset. <strong>Caution:</strong> Cook berries.</p>
-                <p><strong>Sources:</strong> Cochrane Review 2014.</p>
+                <div class="summary">
+                    <p><strong>"The Medicine Chest"</strong> — Hippocrates called the Elder tree his "medicine chest"
+                        because every part of the tree was used. Today, it is the premier antiviral for stopping the flu
+                        in its tracks.</p>
+                </div>
+                <div class="full-content">
+                    <h4>🌿 Ancient Wisdom & Scripture</h4>
+                    <p>In European folklore, the Elder tree was inhabited by the "Elder Mother," a spirit of protection.
+                        It was planted near homes to ward off evil and disease. Native Americans used the berries for
+                        food and medicine for centuries.</p>
+
+                    <h4>🫁 Respiratory & Healing Power</h4>
+                    <p>Elderberries contain <strong>hemagglutinin protein</strong> which stops a virus's capability to
+                        replicate and penetrate the walls of cells. It is clinically proven to shorten duration of flu
+                        symptoms by 3-4 days. It is also a diaphoretic (induces sweating) to help break fevers.</p>
+
+                    <h4>🍵 Dosage & Preparation</h4>
+                    <ul>
+                        <li><strong>Syrup:</strong> 1 tbsp every 3-4 hours at the first sign of illness. (Daily: 1 tsp).
+                        </li>
+                        <li><strong>Tea:</strong> Dried berries simmered for 20 minutes with cinnamon.</li>
+                        <li><strong>Gummies:</strong> Popular for children (ensure low sugar).</li>
+                    </ul>
+
+                    <h4>⚠️ Safety & Contraindications</h4>
+                    <p><strong>IMPORTANT:</strong> Never eat raw elderberries (they contain cyanide-inducing
+                        glycosides). Always cook them. Stems and leaves are toxic. Safe for children when prepared
+                        correctly.</p>
+
+                    <p><strong>Sources:</strong> *Journal of International Medical Research* • *BMC Complementary
+                        Medicine* • Hippocrates.</p>
+                </div>
+                <button class="read-more-btn" onclick="toggleCard(this)">Read More</button>
             </div>
 
             <!-- THYME -->
+            <!-- THYME (Expanded) -->
             <div class="card" data-tags="respiratory lungs immune thyme expectorant">
                 <img src="thyme.jpg" alt="Thyme">
                 <h3>Thyme (Thymus vulgaris)</h3>
-                <p>Thymol antibiotic/expectorant used since Egyptian embalming.</p>
-                <p><strong>Dosage:</strong> 1 tsp tea 3× daily. <strong>Caution:</strong> Safe in food amounts.</p>
-                <p><strong>Sources:</strong> Ebers Papyrus, EMA monograph.</p>
+                <div class="summary">
+                    <p><strong>"The Bacterial Destroyer"</strong> — A humble kitchen herb that packs a pharmaceutical
+                        punch. Its essential oils are so potent they were used to sterilize operating rooms before
+                        modern antibiotics.</p>
+                </div>
+                <div class="full-content">
+                    <h4>🌿 Ancient Wisdom & Scripture</h4>
+                    <p>Ancient Egyptians used Thyme for embalming due to its preservative power. Greek soldiers bathed
+                        in thyme water for courage (*thymos* means courage/spirit). It is a key antimicrobial in
+                        traditional herbalism.</p>
+
+                    <h4>🫁 Respiratory & Healing Power</h4>
+                    <p>The active compound **Thymol** is a potent antiseptic that is excreted through the lungs, killing
+                        bacteria deep in the bronchial tubes. It is excellent for **whooping cough**, bronchitis, and
+                        deep-seated infections. It is also an antispasmodic, helping to stop coughing fits.</p>
+
+                    <h4>🍵 Dosage & Preparation</h4>
+                    <ul>
+                        <li><strong>Steam:</strong> Handful of fresh/dried thyme in a bowl of hot water; inhale steam to
+                            disinfect the lungs.</li>
+                        <li><strong>Tea:</strong> 1 tsp dried herb steeped for 10 min. Sweeten with honey.</li>
+                        <li><strong>Oil:</strong> Diluted only! powerful irritant if used neat.</li>
+                    </ul>
+
+                    <h4>⚠️ Safety & Contraindications</h4>
+                    <p>Generally safe in culinary amounts. Medicinal doses of essential oil can be toxic to the liver if
+                        not diluted. Safe for children as a weak tea.</p>
+
+                    <p><strong>Sources:</strong> *Ebers Papyrus* • German Commission E (Approved for Bronchitis) •
+                        *Letters in Applied Microbiology*.</p>
+                </div>
+                <button class="read-more-btn" onclick="toggleCard(this)">Read More</button>
             </div>
 
             <!-- OREGANO -->
+            <!-- OREGANO (Expanded) -->
             <div class="card" data-tags="respiratory immune oregano oil">
                 <img src="oregano.jpg" alt="Oregano">
                 <h3>Oregano (Origanum vulgare)</h3>
-                <p>Carvacrol destroys respiratory pathogens.</p>
-                <p><strong>Dosage:</strong> Diluted oil or tea. <strong>Caution:</strong> Avoid pregnancy.</p>
-                <p><strong>Sources:</strong> Hippocrates, Journal of Applied Microbiology.</p>
+                <div class="summary">
+                    <p><strong>"Joy of the Mountain"</strong> — The heavy artillery of the herbal world. When other
+                        herbs fail, Oregano Oil is often brought in to nuke difficult viral and bacterial infections.
+                    </p>
+                </div>
+                <div class="full-content">
+                    <h4>🌿 Ancient Wisdom & Scripture</h4>
+                    <p>Used by Hippocrates for respiratory and digestive ailments. In Biblical times, "Hyssop" (often
+                        believed to be a species of Origanum) was used for ritual cleansing: "Purge me with hyssop, and
+                        I shall be clean" (Psalm 51:7).</p>
+
+                    <h4>🫁 Respiratory & Healing Power</h4>
+                    <p>**Carvacrol** and **Thymol** in oregano oil break down the cell membranes of bacteria and strip
+                        the protective coating off viruses. It effectively clears pneumonia-causing bacteria and candida
+                        (yeast) in the lungs.</p>
+
+                    <h4>🍵 Dosage & Preparation</h4>
+                    <ul>
+                        <li><strong>Oil of Oregano:</strong> 2-3 drops diluted in a carrier oil or capsule. NEVER take
+                            straight (burns).</li>
+                        <li><strong>Steam:</strong> 1 drop in boiling water for sinus infections.</li>
+                        <li><strong>Tea:</strong> Fresh leaves for a milder immune boost.</li>
+                    </ul>
+
+                    <h4>⚠️ Safety & Contraindications</h4>
+                    <p><strong>HOT HERB:</strong> Can burn mucous membranes. Do not use for more than 2 weeks
+                        consecutively (disrupts gut flora). Avoid during pregnancy (emmenagogue).</p>
+
+                    <p><strong>Sources:</strong> Psalm 51:7 (Hyssop connection) • *Journal of Applied Microbiology* •
+                        *Phytotherapy Research*.</p>
+                </div>
+                <button class="read-more-btn" onclick="toggleCard(this)">Read More</button>
             </div>
 
             <!-- HOLY BASIL -->
+            <!-- HOLY BASIL (Expanded) -->
             <div class="card" data-tags="respiratory stress immune tulsi">
                 <img src="holy-basil.jpg" alt="Holy Basil">
                 <h3>Holy Basil (Ocimum sanctum)</h3>
-                <p>“Queen of herbs” for prana; adaptogen for stress-related breathing issues.</p>
-                <p><strong>Dosage:</strong> 300–600 mg extract. <strong>Caution:</strong> May lower blood sugar.</p>
-                <p><strong>Sources:</strong> Charaka Samhita, Phytomedicine 2017.</p>
+                <div class="summary">
+                    <p><strong>"The Queen of Herbs"</strong> — Known as *Tulsi* in India. It is worshipped as a goddess
+                        and is arguably the premier adaptogen for respiratory stress and "air hunger."</p>
+                </div>
+                <div class="full-content">
+                    <h4>🌿 Ancient Wisdom & Scripture</h4>
+                    <p>In the *Charaka Samhita*, it is described as the "elixir of life." Every traditional Hindu home
+                        has a Tulsi plant in the courtyard to purify the air. It opens the heart and lungs to *Prana*
+                        (life force).</p>
+
+                    <h4>🫁 Respiratory & Healing Power</h4>
+                    <p>Tulsi is unique because it treats the **stress component** of breathing. For asthma triggered by
+                        anxiety or "air hunger," Tulsi lowers cortisol while simultaneously opening the airways. It is
+                        immunomodulatory and expectorant.</p>
+
+                    <h4>🍵 Dosage & Preparation</h4>
+                    <ul>
+                        <li><strong>Tea:</strong> The best way. Steep fresh or dried leaves for 5-10 minutes. Drink
+                            freely (very safe).</li>
+                        <li><strong>Fresh:</strong> Chew 5 leaves morning and evening for immunity.</li>
+                        <li><strong>Ghee:</strong> Infused in ghee for nasal drynees (*Nasya*).</li>
+                    </ul>
+
+                    <h4>⚠️ Safety & Contraindications</h4>
+                    <p>Very safe. Slight blood-thinning effect (caution with surgery). May lower blood sugar (beneficial
+                        for diabetics, but monitor).</p>
+
+                    <p><strong>Sources:</strong> *Charaka Samhita* • *Journal of Ayurveda and Integrative Medicine* •
+                        *Phytomedicine*.</p>
+                </div>
+                <button class="read-more-btn" onclick="toggleCard(this)">Read More</button>
             </div>
 
             <!-- PEPPERMINT -->
+            <!-- PEPPERMINT (Expanded) -->
             <div class="card" data-tags="respiratory digestion peppermint menthol">
                 <img src="peppermint.jpg" alt="Peppermint">
                 <h3>Peppermint (Mentha piperita)</h3>
-                <p>Menthol opens airways; classic for sinus and IBS-related breathing.</p>
-                <p><strong>Dosage:</strong> Tea or inhalation. <strong>Caution:</strong> GERD aggravation.</p>
-                <p><strong>Sources:</strong> Ebers Papyrus, American Family Physician.</p>
+                <div class="summary">
+                    <p><strong>"The Cooling Opener"</strong> — The world's most familiar flavor is actually a potent
+                        drug. The high menthol content freezes pain and snaps open bronchial passages instantly.</p>
+                </div>
+                <div class="full-content">
+                    <h4>🌿 Ancient Wisdom & Scripture</h4>
+                    <p>Found in Egyptian pyramids dating to 1000 BC. The Pharisees paid tithes in Mint (Luke 11:42),
+                        showing its economic value. Pliny the Elder stated, "The smell of mint stirs up the mind and
+                        appetite."</p>
+
+                    <h4>🫁 Respiratory & Healing Power</h4>
+                    <p>**Menthol** is an antispasmodic for the smooth muscles of the lungs. It relaxes the "cough
+                        reflex," making it useful for dry, tickly coughs. It also clears the nasal turbinates, providing
+                        a sensation of increased airflow.</p>
+
+                    <h4>🍵 Dosage & Preparation</h4>
+                    <ul>
+                        <li><strong>Inhalation:</strong> Essential oil diffused or in steam.</li>
+                        <li><strong>Tea:</strong> Excellent for digestion-related breathing issues (when bloating
+                            presses on the diaphragm).</li>
+                        <li><strong>Topical:</strong> Diluted oil rubbed on temples for headaches.</li>
+                    </ul>
+
+                    <h4>⚠️ Safety & Contraindications</h4>
+                    <p>Avoid in GERD (Acid Reflux) as it relaxes the esophageal sphincter. Do not apply oil near the
+                        nose of infants (can cause spasm).</p>
+
+                    <p><strong>Sources:</strong> Luke 11:42 • *American Family Physician* • *Phytotherapy Research*.</p>
+                </div>
+                <button class="read-more-btn" onclick="toggleCard(this)">Read More</button>
             </div>
 
             <!-- MARSHMALLOW ROOT -->
+            <!-- MARSHMALLOW ROOT (Expanded) -->
             <div class="card" data-tags="respiratory throat lungs marshmallow mucilage">
                 <img src="marshmallow-root.jpg" alt="Marshmallow Root">
                 <h3>Marshmallow Root (Althaea officinalis)</h3>
-                <p>Soothing mucilage for dry cough and throat irritation.</p>
-                <p><strong>Dosage:</strong> Cold infusion. <strong>Caution:</strong> May delay drug absorption.</p>
-                <p><strong>Sources:</strong> Dioscorides, Commission E.</p>
+                <div class="summary">
+                    <p><strong>"The Soother"</strong> — Its botanical name *Althaea* comes from the Greek "to heal." It
+                        is pure mucilage—a slimy, soothing substance that coats dry, irritated tissues like a cool balm.
+                    </p>
+                </div>
+                <div class="full-content">
+                    <h4>🌿 Ancient Wisdom & Scripture</h4>
+                    <p>Mentioned in Job 6:6 ("Is there any taste in the white of an egg/marshmallow?"). Originally used
+                        to make the confection (utilizing the sticky root sap), it has been a primary remedy for sore
+                        throats since antiquity.</p>
+
+                    <h4>🫁 Respiratory & Healing Power</h4>
+                    <p>By a reflex action, swallowing the mucilage soothes the vagus nerve, which in turn reduces the
+                        urge to cough. It is specific for **hot, dry conditions**—dry cough, sore throat, and
+                        laryngitis. It hydrates the lungs from the inside out.</p>
+
+                    <h4>🍵 Dosage & Preparation</h4>
+                    <ul>
+                        <li><strong>Cold Infusion:</strong> **CRITICAL:** Marshmallow root extracts best in COLD water
+                            based overnight (heat kills the mucilage). Strain and drink.</li>
+                        <li><strong>Powder:</strong> Mixed into honey or applesauce.</li>
+                        <li><strong>Syrup:</strong> Often mixed with elderberry for coughs.</li>
+                    </ul>
+
+                    <h4>⚠️ Safety & Contraindications</h4>
+                    <p>Can delay the absorption of other medications (because it coats the stomach). Take away from
+                        prescription drugs.</p>
+
+                    <p><strong>Sources:</strong> Job 6:6 • *International Journal of Pharmaceutics* • German Commission
+                        E.</p>
+                </div>
+                <button class="read-more-btn" onclick="toggleCard(this)">Read More</button>
             </div>
 
             <!-- LICORICE ROOT -->
+            <!-- LICORICE ROOT (Expanded) -->
             <div class="card" data-tags="respiratory adrenal lungs licorice glycyrrhiza">
                 <img src="licorice-root.jpg" alt="Licorice Root">
                 <h3>Licorice Root (Glycyrrhiza glabra)</h3>
-                <p>TCM harmonizer for cough and adrenal support.</p>
-                <p><strong>Dosage:</strong> 1–5 g tea; DGL for long-term. <strong>Caution:</strong> Hypertension risk.
-                </p>
-                <p><strong>Sources:</strong> Shen Nong Ben Cao Jing, WHO Monographs.</p>
+                <div class="summary">
+                    <p><strong>"The Great Harmonizer"</strong> — Called *Gan Cao* in TCM, it is found in more formulas
+                        than any other herb. It sweetens the breath, moistens the lungs, and restores adrenal function.
+                    </p>
+                </div>
+                <div class="full-content">
+                    <h4>🌿 Ancient Wisdom & Scripture</h4>
+                    <p>Found in vast quantities in King Tut's tomb. The Scythian armies used it to survive marches
+                        without water (it helps retain fluid). In TCM, it "harmonizes" all other herbs, making them work
+                        together without conflict.</p>
+
+                    <h4>🫁 Respiratory & Healing Power</h4>
+                    <p><strong>Glycyrrhizin</strong> has a structure similar to cortisol. It acts as an
+                        anti-inflammatory and expectorant. It is incredibly soothing for a raw throat and helps the body
+                        handle stress. It also inhibits viral replication (SARS-CoV studies).</p>
+
+                    <h4>🍵 Dosage & Preparation</h4>
+                    <ul>
+                        <li><strong>Tea:</strong> 1 tsp dried root. Very sweet on its own.</li>
+                        <li><strong>DGL:</strong> Deglycyrrhizinated Licorice (safe for high blood pressure).</li>
+                        <li><strong>Tincture:</strong> In formulas for asthma/cough.</li>
+                    </ul>
+
+                    <h4>⚠️ Safety & Contraindications</h4>
+                    <p><strong>WARNING:</strong> Long-term use of whole licorice can raise blood pressure and deplete
+                        potassium. Avoid if you have hypertension or heart conditions (use DGL instead). Do not use for
+                        >6 weeks.</p>
+
+                    <p><strong>Sources:</strong> *Shen Nong Ben Cao Jing* • *The Lancet* (SARS research) • WHO
+                        Monographs.</p>
+                </div>
+                <button class="read-more-btn" onclick="toggleCard(this)">Read More</button>
             </div>
 
             <!-- LOBELIA -->
+            <!-- LOBELIA (Expanded) -->
             <div class="card" data-tags="respiratory asthma lungs lobelia">
                 <img src="lobelia.jpg" alt="Lobelia">
                 <h3>Lobelia (Lobelia inflata)</h3>
-                <p>“Asthma weed” relaxes bronchioles in emergencies.</p>
-                <p><strong>Dosage:</strong> 5–10 drops tincture. <strong>Caution:</strong> Professional supervision.</p>
-                <p><strong>Sources:</strong> Samuel Thomson, Eclectic Medicine.</p>
+                <div class="summary">
+                    <p><strong>"The Intelligence of the Wild"</strong> — Often called "Puke Weed" or "Asthma Weed." It
+                        is the most powerful relaxant in the Western herbal materia medica. It knows exactly where to go
+                        in the body to break tension.</p>
+                </div>
+                <div class="full-content">
+                    <h4>🌿 Ancient Wisdom & Scripture</h4>
+                    <p>Popularized by Samuel Thomson in the 19th century, who based his entire system of medicine on it.
+                        He called it the "emetic herb" that would cleanse the stomach and restore internal heat. Native
+                        Americans smoked it for asthma for centuries.</p>
+
+                    <h4>🫁 Respiratory & Healing Power</h4>
+                    <p><strong>Lobeline</strong> is a respiratory stimulant *and* relaxant. It latches onto nicotine
+                        receptors (helpful for quitting smoking) and instantly relaxes the smooth muscles of the
+                        bronchial tubes. It acts as a "thinking herb"—if you have too much mucus, it makes you vomit; if
+                        you are tight, it relaxes you.</p>
+
+                    <h4>🍵 Dosage & Preparation</h4>
+                    <ul>
+                        <li><strong>Tincture (Vinegar):</strong> Best extracted in apple cider vinegar. 5-10 drops
+                            during an acute asthma attack.</li>
+                        <li><strong>Syrup:</strong> Often added to cough syrups in small amounts.</li>
+                        <li><strong>Topical:</strong> Mixed with other oils for spasmodic croup.</li>
+                    </ul>
+
+                    <h4>⚠️ Safety & Contraindications</h4>
+                    <p><strong>POTENT HERB:</strong> Do not overdose. High doses cause nausea and vomiting (hence the
+                        name Puke Weed). Not for long-term daily use. Contraindicated in weak heart conditions.</p>
+
+                    <p><strong>Sources:</strong> *Samuel Thomson's New Guide to Health* • *Journal of Restorative
+                        Medicine*.</p>
+                </div>
+                <button class="read-more-btn" onclick="toggleCard(this)">Read More</button>
             </div>
 
             <!-- COLTSFOOT -->
+            <!-- COLTSFOOT (Expanded) -->
             <div class="card" data-tags="respiratory cough lungs coltsfoot">
                 <img src="coltsfoot.jpg" alt="Coltsfoot">
                 <h3>Coltsfoot (Tussilago farfara)</h3>
-                <p>Mucilage for dry cough; historically smoked for asthma.</p>
-                <p><strong>Dosage:</strong> 1–2 g tea. <strong>Caution:</strong> Short-term only.</p>
-                <p><strong>Sources:</strong> Culpeper, German Commission E.</p>
+                <div class="summary">
+                    <p><strong>"Son Before Father"</strong> — Because the flowers appear before the leaves. Its Latin
+                        name *Tussilago* means "Cough Dispeller." It has been the primary cough remedy in Europe for
+                        2,500 years.</p>
+                </div>
+                <div class="full-content">
+                    <h4>🌿 Ancient Wisdom & Scripture</h4>
+                    <p>Pliny recommended burning the dried leaves and inhaling the smoke through a reed for coughs.
+                        Culpeper associated it with Venus, soothing the "hot and dry" conditions of the lungs.</p>
+
+                    <h4>🫁 Respiratory & Healing Power</h4>
+                    <p>Specific for <strong>spasmodic, dry, irritating coughs</strong>. It contains soothing mucilage
+                        and antispasmodic compounds. It paralyzes the cilia momentarily to stop the "tickle" and allows
+                        the lung tissue to heal. Good for whooping cough and emphysema.</p>
+
+                    <h4>🍵 Dosage & Preparation</h4>
+                    <ul>
+                        <li><strong>Tea:</strong> 1-2 tsp dried leaves steeped.</li>
+                        <li><strong>Smoke:</strong> Traditional method for asthma relief.</li>
+                        <li><strong>Syrup:</strong> Honey-coltsfoot syrup is a classic preparation.</li>
+                    </ul>
+
+                    <h4>⚠️ Safety & Contraindications</h4>
+                    <p><strong>CAUTION:</strong> Contains Pyrrolizidine Alkaloids (PAs) which can damage the liver in
+                        high doses. Use only short-term (2-4 weeks max). Avoid if you have liver disease. Many
+                        commercial sources sell "PA-free" coltsfoot.</p>
+
+                    <p><strong>Sources:</strong> *Pliny the Elder* • *German Commission E* (Approved for coughs).</p>
+                </div>
+                <button class="read-more-btn" onclick="toggleCard(this)">Read More</button>
             </div>
 
             <!-- PLANTAIN -->
+            <!-- PLANTAIN (Expanded) -->
             <div class="card" data-tags="respiratory skin lungs plantain">
                 <img src="plantain.jpg" alt="Plantain">
                 <h3>Plantain (Plantago major)</h3>
-                <p>“Life medicine” for lung bleeding and wounds.</p>
-                <p><strong>Dosage:</strong> Leaf tea or poultice. <strong>Caution:</strong> Generally safe.</p>
-                <p><strong>Sources:</strong> Native American ethnobotany, King’s Dispensatory.</p>
+                <div class="summary">
+                    <p><strong>"The Green Bandage"</strong> — The weed that grows in every crack in the sidewalk. It is
+                        nature's drawing salve, pulling out toxins, stingers, and infection from both skin and lungs.
+                    </p>
+                </div>
+                <div class="full-content">
+                    <h4>🌿 Ancient Wisdom & Scripture</h4>
+                    <p>Called "White Man's Footprint" by Native Americans because it thrived wherever settlers went.
+                        Shakespeare mentioned it in *Romeo and Juliet* and *Love’s Labour’s Lost* as a healer of broken
+                        shins and wounds.</p>
+
+                    <h4>🫁 Respiratory & Healing Power</h4>
+                    <p>It is a "vulnerary" for the lungs—meaning it heals wounds. Use it for **leaky gut** and **leaky
+                        lung** conditions. It soothes inflamed mucous membranes and has a gentle antimicrobial effect.
+                        Great for children's coughs.</p>
+
+                    <h4>🍵 Dosage & Preparation</h4>
+                    <ul>
+                        <li><strong>Tea:</strong> Strong infusion of fresh leaves.</li>
+                        <li><strong>Spit Poultice:</strong> Chew up a leaf and place it on a bee sting or spider bite
+                            (draws out poison).</li>
+                        <li><strong>Juice:</strong> Fresh juice mixed with honey for lung ulcers.</li>
+                    </ul>
+
+                    <h4>⚠️ Safety & Contraindications</h4>
+                    <p>Extremely safe. One of the safest herbs on the planet. Can be eaten as a salad green (young
+                        leaves).</p>
+
+                    <p><strong>Sources:</strong> *King’s American Dispensatory* • *Journal of Ethnopharmacology*.</p>
+                </div>
+                <button class="read-more-btn" onclick="toggleCard(this)">Read More</button>
             </div>
 
             <!-- DANDELION -->
+            <!-- DANDELION (Expanded) -->
             <div class="card" data-tags="liver lungs detox dandelion">
                 <img src="dandelion.jpg" alt="Dandelion">
                 <h3>Dandelion (Taraxacum officinale)</h3>
-                <p>Passover bitter herb; supports liver/lung detox.</p>
-                <p><strong>Dosage:</strong> Root tea. <strong>Caution:</strong> Gallbladder issues.</p>
-                <p><strong>Sources:</strong> Exodus 12:8, EMA.</p>
+                <div class="summary">
+                    <p><strong>"The Lion's Tooth"</strong> — A master detoxifier. While famous for the liver, in TCM the
+                        liver "insults" the lungs. By clearing the liver, Dandelion prevents heat and toxins from rising
+                        to the chest.</p>
+                </div>
+                <div class="full-content">
+                    <h4>🌿 Ancient Wisdom & Scripture</h4>
+                    <p>One of the "bitter herbs" of Passover (Exodus 12:8) eaten to simulate the bitterness of slavery
+                        and cleanse the system. Avicenna used it to clear obstructions in the liver and spleen.</p>
+
+                    <h4>🫁 Respiratory & Healing Power</h4>
+                    <p>It is a diuretic (leaf) and hepatic (root). By improving liver function, it reduces systemic
+                        inflammation which benefits asthma sufferers. It is often used in "lung cleansing" protocols to
+                        open the elimination pathways so the lungs don't have to do all the work.</p>
+
+                    <h4>🍵 Dosage & Preparation</h4>
+                    <ul>
+                        <li><strong>Root:</strong> Roasted root makes a great coffee substitute (detoxifying).</li>
+                        <li><strong>Leaf:</strong> Eat fresh in salads (diuretic).</li>
+                        <li><strong>Stem:</strong> The white sap kills warts.</li>
+                    </ul>
+
+                    <h4>⚠️ Safety & Contraindications</h4>
+                    <p>Generally safe. Avoid if you have blockage of the bile ducts or gallstones (stimulates bile
+                        flow). Diuretic effect can increase urination.</p>
+
+                    <p><strong>Sources:</strong> Exodus 12:8 • *The Lancet* (Diuretic study) • *European Medicines
+                        Agency*.</p>
+                </div>
+                <button class="read-more-btn" onclick="toggleCard(this)">Read More</button>
             </div>
 
             <!-- NETTLE -->
+            <!-- NETTLE (Expanded) -->
             <div class="card" data-tags="respiratory allergies lungs nettle">
                 <img src="nettle.jpg" alt="Nettle">
                 <h3>Stinging Nettle (Urtica dioica)</h3>
-                <p>Antihistamine for seasonal allergies and nasal congestion.</p>
-                <p><strong>Dosage:</strong> 2–4 g tea. <strong>Caution:</strong> Gloves when fresh.</p>
-                <p><strong>Sources:</strong> Phytotherapy Research 2016.</p>
+                <div class="summary">
+                    <p><strong>"The Iron Plant"</strong> — A mineral-rich powerhouse. It stings you to say hello, but
+                        once dried/cooked, it is the premier remedy for allergies and "building the blood."</p>
+                </div>
+                <div class="full-content">
+                    <h4>🌿 Ancient Wisdom & Scripture</h4>
+                    <p>Roman soldiers brought nettle seeds to Britain to rub on their bodies to keep warm
+                        ("urtication"). Milarepa, the Tibetan saint, lived on nothing but nettle soup for years, turning
+                        his skin green but giving him immense energy.</p>
+
+                    <h4>🫁 Respiratory & Healing Power</h4>
+                    <p>Nettle is Nature's **Antihistamine**. It contains quercetin and other compounds that stabilize
+                        mast cells, preventing them from releasing histamine. This stops the sneezing, itching, and
+                        congestion of hay fever immediately.</p>
+
+                    <h4>🍵 Dosage & Preparation</h4>
+                    <ul>
+                        <li><strong>Nourishing Infusion:</strong> Place 1 cup of dried nettle in a quart jar. Fill with
+                            boiling water. Cap and let sit 4 hours or overnight. Drink the mineral-rich black liquid.
+                        </li>
+                        <li><strong>Freeze-Dried:</strong> Best form for acute allergy relief (capsules).</li>
+                        <li><strong>Food:</strong> Substitute for spinach in lasagna/pesto.</li>
+                    </ul>
+
+                    <h4>⚠️ Safety & Contraindications</h4>
+                    <p>Wear gloves when harvesting fresh! The "sting" is formic acid. Once dried or cooked, the sting is
+                        gone. Diuretic effect. Caution with kidney dialysis.</p>
+
+                    <p><strong>Sources:</strong> *Phytotherapy Research* • *Journal of Herbal Medicine*.</p>
+                </div>
+                <button class="read-more-btn" onclick="toggleCard(this)">Read More</button>
             </div>
 
             <!-- ASTRAGALUS -->
+            <!-- ASTRAGALUS (Expanded) -->
             <div class="card" data-tags="immune lungs qi astragalus">
                 <img src="astragalus.jpg" alt="Astragalus">
                 <h3>Astragalus (Astragalus membranaceus)</h3>
-                <p>TCM “yellow leader” for lung qi and immunity.</p>
-                <p><strong>Dosage:</strong> 9–15 g decoction. <strong>Caution:</strong> Avoid acute infection.</p>
-                <p><strong>Sources:</strong> Ben Cao Gang Mu, Journal of Ethnopharmacology.</p>
+                <div class="summary">
+                    <p><strong>"The Yellow Leader"</strong> — Known as *Huang Qi* in TCM. It is the great protector of
+                        "Wei Qi" (Defensive Energy). It strengthens the lungs against viral invasion and builds
+                        endurance.</p>
+                </div>
+                <div class="full-content">
+                    <h4>🌿 Ancient Wisdom & Scripture</h4>
+                    <p>Referenced in the *Shen Nong Ben Cao Jing* (Divine Farmer's Materia Medica) as a superior herb
+                        for prolonging life. It is said to "hold the lungs" and prevent sweating from weakness.</p>
+
+                    <h4>🫁 Respiratory & Healing Power</h4>
+                    <p>Astragalus is a deep immune builder. It increases the production of white blood cells and
+                        interferon (antiviral). It is specific for **shortness of breath**, spontaneous sweating, and
+                        frequent colds. It strengthens the "energy" of the lungs to hold breath longer.</p>
+
+                    <h4>🍵 Dosage & Preparation</h4>
+                    <ul>
+                        <li><strong>Decoction:</strong> Simmer huge slices of the root (looks like tongue depressors) in
+                            soups or stews for hours. Remove before eating.</li>
+                        <li><strong>Daily:</strong> 9-15 grams daily during flu season.</li>
+                        <li><strong>Tincture:</strong> 4-5 ml, 2x daily.</li>
+                    </ul>
+
+                    <h4>⚠️ Safety & Contraindications</h4>
+                    <p><strong>TCM Rule:</strong> Do NOT use Astragalus during an acute infection (fever/flu) if you
+                        haven't been taking it beforehand. It "locks" the invader inside. Use it to *prevent*, not to
+                        treat acute fever.</p>
+
+                    <p><strong>Sources:</strong> *Ben Cao Gang Mu* • *Journal of Ethnopharmacology*.</p>
+                </div>
+                <button class="read-more-btn" onclick="toggleCard(this)">Read More</button>
             </div>
 
             <!-- REISHI -->
+            <!-- REISHI (Expanded) -->
             <div class="card" data-tags="immune lungs spirit reishi ganoderma">
                 <img src="reishi.jpg" alt="Reishi">
                 <h3>Reishi Mushroom (Ganoderma lucidum)</h3>
-                <p>“Mushroom of immortality” for breath and longevity.</p>
-                <p><strong>Dosage:</strong> 1–3 g powder tea. <strong>Caution:</strong> May thin blood.</p>
-                <p><strong>Sources:</strong> Shen Nong, Advances in Pharmacology.</p>
+                <div class="summary">
+                    <p><strong>"The Mushroom of Immortality"</strong> — *Ling Zhi*. A spiritual powerhouse that bridges
+                        the gap between the lungs (breath) and the kidneys (root energy). It calms the spirit and
+                        nourishes the lungs.</p>
+                </div>
+                <div class="full-content">
+                    <h4>🌿 Ancient Wisdom & Scripture</h4>
+                    <p>Reserved for Emperors in ancient China. Taoist monks used it to calm the mind for meditation and
+                        levitation practices. It is the premier herb for "Shen" (Spirit) disturbance.</p>
+
+                    <h4>🫁 Respiratory & Healing Power</h4>
+                    <p>Reishi is anti-allergenic and anti-inflammatory. It inhibits histamine release and relaxes
+                        bronchial smooth muscle. Excellent for **asthma** where there is an emotional/stress trigger. It
+                        oxygenates the blood, improving high-altitude performance.</p>
+
+                    <h4>🍵 Dosage & Preparation</h4>
+                    <ul>
+                        <li><strong>Tea:</strong> The woody mushroom must be boiled for at least 1-2 hours to extract
+                            the medicinal polysaccharides. Bitter taste!</li>
+                        <li><strong>Extract:</strong> Dual-extract (alcohol + water) is best.</li>
+                        <li><strong>Powder:</strong> Mixed into coffee or cacao.</li>
+                    </ul>
+
+                    <h4>⚠️ Safety & Contraindications</h4>
+                    <p>Very safe. Can have a mild blood-thinning effect. If you have a mushroom allergy, avoid. Dry
+                        mouth/throat is a rare side effect.</p>
+
+                    <p><strong>Sources:</strong> *Shen Nong Ben Cao Jing* • *Advances in Pharmacology*.</p>
+                </div>
+                <button class="read-more-btn" onclick="toggleCard(this)">Read More</button>
             </div>
 
             <!-- ASHWAGANDHA -->
+            <!-- ASHWAGANDHA (Expanded) -->
             <div class="card" data-tags="stress lungs thyroid ashwagandha">
                 <img src="ashwagandha.jpg" alt="Ashwagandha">
                 <h3>Ashwagandha (Withania somnifera)</h3>
-                <p>“Horse strength” for stress-related breathing.</p>
-                <p><strong>Dosage:</strong> 300–600 mg extract. <strong>Caution:</strong> Nightshade family.</p>
-                <p><strong>Sources:</strong> Charaka Samhita, Journal of Alternative Medicine.</p>
+                <div class="summary">
+                    <p><strong>"Smell of the Horse"</strong> — Implies it gives the strength and stamina of a stallion.
+                        The premier Ayurvedic adaptogen for rebuilding a body shattered by stress and exhaustion.</p>
+                </div>
+                <div class="full-content">
+                    <h4>🌿 Ancient Wisdom & Scripture</h4>
+                    <p>Used in India for 4,000 years as a *Rasayana* (Rejuvenator). It is said to give the user enough
+                        energy to "hold the breath of a horse" (endurance).</p>
+
+                    <h4>🫁 Respiratory & Healing Power</h4>
+                    <p>While known for stress, Ashwagandha is an immunomodulator that improves respiratory endurance. By
+                        lowering cortisol, it allows the immune system to reset. High cortisol shuts down immune
+                        function; Ashwagandha reverses this. Great for recovery *after* a long lung illness.</p>
+
+                    <h4>🍵 Dosage & Preparation</h4>
+                    <ul>
+                        <li><strong>Moon Milk:</strong> Powder simmered in milk with nutmeg and honey before bed for
+                            sleep.</li>
+                        <li><strong>Extract:</strong> KSM-66 or Sensoril are studied types (300-600mg).</li>
+                    </ul>
+
+                    <h4>⚠️ Safety & Contraindications</h4>
+                    <p>Nightshade family (avoid if sensitive). Can increase thyroid function (good for hypothyroid,
+                        caution for hyperthyroid). Not for pregnancy.</p>
+
+                    <p><strong>Sources:</strong> *Charaka Samhita* • *Journal of Alternative and Complementary
+                        Medicine*.</p>
+                </div>
+                <button class="read-more-btn" onclick="toggleCard(this)">Read More</button>
             </div>
 
             <!-- MULLEIN FLOWERS -->
+            <!-- MULLEIN FLOWERS (Expanded) -->
             <div class="card" data-tags="respiratory ears lungs mullein">
                 <img src="mullein-flowers.jpg" alt="Mullein Flowers">
                 <h3>Mullein Flowers (Verbascum thapsus)</h3>
-                <p>Oil for earaches and sinus-linked chest issues.</p>
-                <p><strong>Dosage:</strong> Infused oil. <strong>Caution:</strong> Test for allergy.</p>
-                <p><strong>Sources:</strong> Traditional European herbalism.</p>
+                <div class="summary">
+                    <p><strong>"The Golden Ear Drops"</strong> — The bright yellow flowers of the Mullein plant are
+                        distinct from the leaves. They are primarily used for earaches (often linked to
+                        sinus/respiratory infection) and as a nerve sedative.</p>
+                </div>
+                <div class="full-content">
+                    <h4>🌿 Ancient Wisdom & Scripture</h4>
+                    <p>Medieval herbalists steeped the flowers in olive oil and left them in the sun for 2 weeks. This
+                        "oil of mullein" was the standard treatment for ear infections in children for centuries.</p>
+
+                    <h4>🫁 Respiratory & Healing Power</h4>
+                    <p>While the leaves treat the lungs, the flowers treat the **nerve pain** associated with coughing
+                        suitable for viral infections that travel to the ears (otitis media). They are antiviral and
+                        analgesic (pain-killing).</p>
+
+                    <h4>🍵 Dosage & Preparation</h4>
+                    <ul>
+                        <li><strong>Garlic-Mullein Oil:</strong> The gold standard for earaches. Mullein flowers +
+                            Garlic cloves infused in olive oil. 2-3 drops in the ear (WARM) unless the eardrum is
+                            perforated.</li>
+                        <li><strong>Tea:</strong> The flowers can be added to the leaf tea for a sedative effect.</li>
+                    </ul>
+
+                    <h4>⚠️ Safety & Contraindications</h4>
+                    <p><strong>Ear Safety:</strong> NEVER put oil in an ear if you suspect the eardrum has burst (pain
+                        followed by drainage). Otherwise, very safe.</p>
+
+                    <p><strong>Sources:</strong> *Traditional European Herbalism* • *Archives of Pediatrics and
+                        Adolescent Medicine*.</p>
+                </div>
+                <button class="read-more-btn" onclick="toggleCard(this)">Read More</button>
             </div>
 
         </div>
