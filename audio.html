@@ -1,491 +1,391 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>R/L Audio Editor - RapBattleCast</title>
+    <title>Multi-track Editor - RapBattleCast</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.min.js"></script>
+    <script src="https://unpkg.com/wavesurfer.js@7/dist/plugins/record.min.js"></script>
     <style>
-        body { background: #1a1a1a; }
-        canvas { width: 100%; height: 100px; background: #333; }
-        progress { 
-            width: 100%; 
-            height: 20px; 
-            background: #333; 
-            border: 2px solid #facc15; /* yellow-400 */
-            border-radius: 5px; 
+        body {
+            background: #1a1a1a;
+            font-family: 'Inter', sans-serif;
         }
-        progress::-webkit-progress-bar { 
-            background: #333; 
-            border-radius: 5px; 
+
+        .waveform-container {
+            background: #252525;
+            border: 1px solid #333;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
-        progress::-webkit-progress-value { 
-            background: #facc15; /* yellow-400 */
-            border-radius: 5px; 
+
+        .track-label {
+            color: #facc15;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 800;
+            padding: 0.5rem 1rem;
+            background: #1a1a1a;
+            border-bottom: 1px solid #333;
         }
-        progress::-moz-progress-bar { 
-            background: #facc15; /* yellow-400 */
-            border-radius: 5px; 
+
+        .control-panel {
+            background: #252525;
+            border: 1px solid #333;
+            border-radius: 16px;
+            padding: 1.5rem;
         }
-        input[type="range"] {
-            appearance: none; /* Standard property */
-            -webkit-appearance: none;
-            width: 100%;
-            height: 8px;
-            background: #333;
-            border-radius: 5px;
-            outline: none;
+
+        .btn {
+            border-radius: 9999px;
+            font-weight: 700;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 1.5rem;
         }
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
-            background: #facc15; /* yellow-400 */
-            border-radius: 50%;
+
+        .btn-primary {
+            background: #facc15;
+            color: #1a1a1a;
+        }
+
+        .btn-primary:hover {
+            background: #eab308;
+            transform: scale(1.05);
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: scale(1.05);
+        }
+
+        .btn-secondary {
+            background: #4b5563;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #374151;
+        }
+
+        /* Toggle Switch Custom */
+        .toggle-container {
+            display: flex;
+            background: #1a1a1a;
+            border-radius: 9999px;
+            padding: 0.25rem;
+            border: 1px solid #333;
+        }
+
+        .toggle-option {
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
             cursor: pointer;
+            font-size: 0.875rem;
+            transition: background 0.3s;
         }
-        input[type="range"]::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            background: #facc15; /* yellow-400 */
-            border-radius: 50%;
-            cursor: pointer;
+
+        .toggle-option.active {
+            background: #facc15;
+            color: #1a1a1a;
         }
     </style>
 </head>
+
 <body class="text-white">
     <header class="fixed w-full z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800 top-0">
         <nav class="container mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
-                <a href="https://iamalready2022.github.io/rapbattlecast/" class="text-4xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent hover:scale-105 transition-transform duration-300">
-                    <img src="iamalready.logo.png" alt="RapBattleCast Logo" class="h-16 w-16 inline-block mr-2">RapBattleCast
+                <a href="https://iamalready2022.github.io/rapbattlecast/"
+                    class="text-3xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent transition-all">
+                    <img src="iamalready.logo.png" alt="Logo" class="h-12 w-12 inline-block mr-2">RapBattleCast
                 </a>
-                <nav class="hidden md:flex space-x-8">
-                    <a href="index.html" class="text-gray-300 hover:text-white hover:scale-105 transition-all duration-300">Home</a>
-                    <a href="about.html" class="text-gray-300 hover:text-white hover:scale-105 transition-all duration-300">About</a>
-                    <a href="battles.html" class="text-gray-300 hover:text-white hover:scale-105 transition-all duration-300">Battles</a>
-                    <a href="tools.html" class="text-gray-300 hover:text-white hover:scale-105 transition-all duration-300">Tools</a>
-                    <a href="facts.html" class="text-gray-300 hover:text-white hover:scale-105 transition-all duration-300">Facts</a>
-                </nav>
-                <button class="mobile-menu-button md:hidden" aria-label="Toggle mobile menu">
-                    <svg class="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                </button>
-            </div>
-            <div class="mobile-menu hidden md:hidden mt-4 bg-gray-800 rounded-lg p-4">
-                <a href="index.html" class="block py-2 text-gray-300 hover:text-white">Home</a>
-                <a href="about.html" class="block py-2 text-gray-300 hover:text-white">About</a>
-                <a href="battles.html" class="block py-2 text-gray-300 hover:text-white">Battles</a>
-                <a href="tools.html" class="block py-2 text-gray-300 hover:text-white">Tools</a>
-                <a href="facts.html" class="block py-2 text-gray-300 hover:text-white">Facts</a>
             </div>
         </nav>
     </header>
-    <div class="h-24"></div>
-    <main class="container mx-auto px-6 py-4 min-h-screen">
-        <h1 class="text-3xl font-bold text-yellow-400">R/L Audio Editor</h1>
-        <p class="mt-2 text-gray-300">Upload and edit WAV or MP3 files with frequency, pitch, and channel controls.</p>
-        <div class="mt-4">
-            <input type="file" accept=".wav,.mp3" id="audio-upload" class="text-gray-300">
-            <div class="mt-2 flex items-center space-x-2">
-                <p id="upload-status" class="text-gray-300"></p>
-                <button id="repeat-btn" class="bg-yellow-400 text-gray-900 px-2 py-1 rounded hover:bg-yellow-500 hidden">Repeat</button>
+
+    <div class="h-28"></div>
+
+    <main class="container mx-auto px-6 py-4 max-w-5xl">
+        <div class="flex justify-between items-end mb-8">
+            <div>
+                <h1 class="text-4xl font-extrabold text-white">Multi-track Editor</h1>
+                <p class="text-gray-400 mt-1">L/R Precision Recording & Binaural Sync</p>
             </div>
-            <div class="mt-4 flex items-center space-x-4">
-                <label for="hz-slider" class="text-gray-300">Frequency (Hz):</label>
-                <input type="range" id="hz-slider" min="20" max="20000" step="1" value="20000" class="w-full">
-                <input type="number" id="hz-number" min="20" max="20000" value="20000" class="w-24 bg-gray-800 text-gray-300 border border-gray-600 rounded px-2">
-                <span id="hz-value" class="text-gray-300">20000 Hz</span>
+            <div class="text-right">
+                <label class="text-xs text-gray-500 block mb-1">REFERENCE</label>
+                <div class="text-yellow-400 font-mono font-bold" id="ref-status">6Hz THETA FLOW</div>
             </div>
-            <div class="mt-4">
-                <label for="pitch-slider" class="text-gray-300">Pitch (Semitones):</label>
-                <input type="range" id="pitch-slider" min="-12" max="12" step="0.1" value="0" class="w-full">
-                <span id="pitch-value" class="text-gray-300">0 Semitones</span>
+        </div>
+
+        <!-- Track 1 Area -->
+        <div class="flex items-center space-x-4 mb-2">
+            <span class="text-sm font-bold text-gray-400">TRACK 1</span>
+            <input type="file" id="file-upload" class="hidden">
+            <button onclick="document.getElementById('file-upload').click()"
+                class="text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded text-gray-300 transition">+ LOAD
+                TRACK</button>
+        </div>
+        <div class="waveform-container">
+            <div id="waveform-1"></div>
+        </div>
+
+        <!-- Track 2 Area -->
+        <div class="flex items-center space-x-4 mb-2">
+            <span class="text-sm font-bold text-gray-400">TRACK 2 (VOCAL)</span>
+            <button id="clear-vocal" class="text-xs text-red-400 hover:text-red-300 transition">CLEAR</button>
+        </div>
+        <div class="waveform-container">
+            <div id="waveform-2"></div>
+        </div>
+
+        <!-- Control Console -->
+        <div class="control-panel grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Transport -->
+            <div class="space-y-4">
+                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest">Transport</h3>
+                <div class="flex space-x-3">
+                    <button id="play-btn" class="btn btn-primary flex-1">
+                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                        </svg>PLAY
+                    </button>
+                    <button id="stop-btn" class="btn btn-secondary lg:px-8">
+                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M5.25 4a.75.75 0 00-.75.75v10.5c0 .414.336.75.75.75h9.5a.75.75 0 00.75-.75V4.75a.75.75 0 00-.75-.75h-9.5z" />
+                        </svg>STOP
+                    </button>
+                </div>
+                <button id="download-record-btn" class="btn btn-secondary w-full py-3" disabled>DOWNLOAD TRACK
+                    2</button>
             </div>
-            <div class="mt-4">
-                <label for="left-volume" class="text-gray-300">Left Channel Volume:</label>
-                <input type="range" id="left-volume" min="0" max="1" step="0.01" value="1" class="w-full">
-                <label for="right-volume" class="text-gray-300">Right Channel Volume:</label>
-                <input type="range" id="right-volume" min="0" max="1" step="0.01" value="1" class="w-full">
+
+            <!-- Recording Engine -->
+            <div class="space-y-4">
+                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest">Recording Engine</h3>
+                <div class="flex space-x-3">
+                    <button id="record-btn" class="btn btn-danger flex-1">
+                        <span id="record-dot" class="w-3 h-3 bg-white rounded-full mr-2 hidden animate-pulse"></span>
+                        <span id="record-text">RECORD</span>
+                    </button>
+                    <button id="pause-record-btn" class="btn btn-secondary" disabled>PAUSE</button>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="toggle-container w-full" id="pan-toggle">
+                        <div class="toggle-option active flex-1 text-center" data-pan="-1">LEFT</div>
+                        <div class="toggle-option flex-1 text-center" data-pan="1">RIGHT</div>
+                    </div>
+                </div>
             </div>
-            <div class="mt-4">
-                <label for="white-noise-volume" class="text-gray-300">White Noise Volume:</label>
-                <input type="range" id="white-noise-volume" min="0" max="1" step="0.01" value="0.3" class="w-full">
-                <label for="rain-volume" class="text-gray-300">Rain Volume:</label>
-                <input type="range" id="rain-volume" min="0" max="1" step="0.01" value="0.3" class="w-full">
-            </div>
-            <div class="mt-4">
-                <label class="text-gray-300">Progress:</label>
-                <progress id="progress-bar" max="100" value="0" class="w-full"></progress>
-            </div>
-            <div class="mt-4">
-                <canvas id="waveform" class="mt-2"></canvas>
-            </div>
-            <div class="mt-4 flex space-x-4">
-                <button id="play-btn" class="bg-yellow-400 text-gray-900 px-4 py-2 rounded hover:bg-yellow-500">Play</button>
-                <button id="pause-btn" class="bg-yellow-400 text-gray-900 px-4 py-2 rounded hover:bg-yellow-500">Pause</button>
-                <button id="stop-btn" class="bg-yellow-400 text-gray-900 px-4 py-2 rounded hover:bg-yellow-500">Stop</button>
-                <button id="download-btn" class="bg-yellow-400 text-gray-900 px-4 py-2 rounded hover:bg-yellow-500">Download</button>
-                <button id="white-noise-btn" class="bg-yellow-400 text-gray-900 px-4 py-2 rounded hover:bg-yellow-500 flex items-center">
-                    <span class="mr-2">-</span>White Noise<span class="ml-2">+</span>
-                </button>
-                <button id="rain-btn" class="bg-yellow-400 text-gray-900 px-4 py-2 rounded hover:bg-yellow-500 flex items-center">
-                    <span class="mr-2">-</span>Rain Sounds<span class="ml-2">+</span>
-                </button>
+
+            <!-- Environment -->
+            <div class="space-y-4">
+                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest">Binaural Flow</h3>
+                <div>
+                    <div class="flex justify-between text-xs text-gray-400 mb-2">
+                        <span>CENTER</span>
+                        <span id="hz-display" class="text-yellow-400 font-bold">200 Hz</span>
+                    </div>
+                    <input type="range" id="hz-slider" min="60" max="600" step="1" value="200" class="w-full">
+                </div>
+                <p class="text-[10px] text-gray-600 italic">Reference frequencies are locked to a 6Hz Delta-Theta offset
+                    for maximum creative focus.</p>
             </div>
         </div>
     </main>
-    <footer class="bg-gray-800/50 border-t border-gray-800">
-        <div class="container mx-auto px-6 py-2">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                    <h3 class="text-lg font-bold mb-2">RapBattleCast</h3>
-                    <p class="text-gray-400 text-sm">Elevating battle rap culture since 2025.</p>
-                </div>
-                <div>
-                    <h4 class="font-semibold mb-2">Contact</h4>
-                    <a href="mailto:breadcrumbsflow@gmail.com" class="text-gray-400 hover:text-white transition-colors duration-300 text-sm">
-                        breadcrumbsflow@gmail.com
-                    </a>
-                </div>
-                <div>
-                    <h4 class="font-semibold mb-2">Legal</h4>
-                    <div class="space-y-1">
-                        <a href="terms.html" class="block text-gray-400 hover:text-white transition-colors duration-300 text-sm">Terms of Service</a>
-                        <a href="disclaimer.html" class="block text-gray-400 hover:text-white transition-colors duration-300 text-sm">Disclaimer</a>
-                        <a href="blog/post1.html" class="block text-gray-400 hover:text-white transition-colors duration-300 text-sm">Blog</a>
-                    </div>
-                </div>
-                <div>
-                    <h4 class="font-semibold mb-2">Follow Us</h4>
-                    <div class="flex flex-wrap gap-2">
-                        <a href="https://www.youtube.com/@iamalready2022" target="_blank" class="text-gray-400 hover:text-white transition-colors duration-300 text-sm">YouTube</a>
-                        <a href="https://bio.site/Iamalready" target="_blank" class="text-gray-400 hover:text-white transition-colors duration-300 text-sm">Bio.site</a>
-                        <a href="https://www.facebook.com/iamalready2023/" target="_blank" class="text-gray-400 hover:text-white transition-colors duration-300 text-sm">Facebook</a>
-                        <a href="https://www.tiktok.com/@iamalready2022?lang=en" target="_blank" class="text-gray-400 hover:text-white transition-colors duration-300 text-sm">TikTok</a>
-                        <a href="https://www.linkedin.com/in/james-hughes-365daysayear/" target="_blank" class="text-gray-400 hover:text-white transition-colors duration-300 text-sm">LinkedIn</a>
-                        <a href="https://x.com/iamalready2022" target="_blank" class="text-gray-400 hover:text-white transition-colors duration-300 text-sm">X</a>
-                        <a href="https://www.instagram.com/iamalready2022/" target="_blank" class="text-gray-400 hover:text-white transition-colors duration-300 text-sm">Instagram</a>
-                    </div>
-                </div>
-            </div>
-            <div class="mt-4 pt-2 border-t border-gray-800 text-center text-gray-400 text-sm">
-                <p>© 2025 RapBattleCast. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
+
     <script>
-        // Audio editor with fixes
-        const audioUpload = document.getElementById('audio-upload');
-        const uploadStatus = document.getElementById('upload-status');
-        const repeatBtn = document.getElementById('repeat-btn');
+        // --- WAVE SURFER SETUP ---
+        const ws1 = WaveSurfer.create({
+            container: '#waveform-1',
+            waveColor: '#4f46e5', progressColor: '#818cf8', cursorColor: '#facc15',
+            height: 120, barWidth: 2, barGap: 1, barRadius: 2,
+        });
+
+        const ws2 = WaveSurfer.create({
+            container: '#waveform-2',
+            waveColor: '#ef4444', progressColor: '#fca5a5', cursorColor: '#ffffff',
+            height: 120, barWidth: 2, barGap: 1, barRadius: 2,
+        });
+
+        const recordPlugin = ws2.registerPlugin(WaveSurfer.Record.create({
+            scrollingWaveform: true, renderRecordedAudio: true, continuousWaveform: true,
+        }));
+
+        // --- ELEMENTS ---
+        const fileUpload = document.getElementById('file-upload');
         const playBtn = document.getElementById('play-btn');
-        const pauseBtn = document.getElementById('pause-btn');
         const stopBtn = document.getElementById('stop-btn');
-        const downloadBtn = document.getElementById('download-btn');
-        const whiteNoiseBtn = document.getElementById('white-noise-btn');
-        const rainBtn = document.getElementById('rain-btn');
+        const recordBtn = document.getElementById('record-btn');
+        const pauseRecordBtn = document.getElementById('pause-record-btn');
+        const downloadBtn = document.getElementById('download-record-btn');
+        const panOptions = document.querySelectorAll('.toggle-option');
         const hzSlider = document.getElementById('hz-slider');
-        const hzNumber = document.getElementById('hz-number');
-        const hzValue = document.getElementById('hz-value');
-        const pitchSlider = document.getElementById('pitch-slider');
-        const pitchValue = document.getElementById('pitch-value');
-        const leftVolume = document.getElementById('left-volume');
-        const rightVolume = document.getElementById('right-volume');
-        const whiteNoiseVolume = document.getElementById('white-noise-volume');
-        const rainVolume = document.getElementById('rain-volume');
-        const progressBar = document.getElementById('progress-bar');
-        const canvas = document.getElementById('waveform');
-        const ctx = canvas.getContext('2d');
-        let audioContext = null;
-        let source = null;
-        let audioElement = null;
-        let filter = null;
-        let stereoPanner = null;
-        let analyser = null;
-        let whiteNoiseSource = null;
-        let rainSource = null;
-        let currentFile = null;
+        const hzDisplay = document.getElementById('hz-display');
+        const clearVocal = document.getElementById('clear-vocal');
 
-        // Throttle for smooth slider
-        function throttle(fn, wait) {
-            let lastCall = 0;
-            return function (...args) {
-                const now = Date.now();
-                if (now - lastCall >= wait) {
-                    lastCall = now;
-                    fn(...args);
-                }
-            };
+        // --- BINAURAL SYNTH ---
+        let audioCtx = null;
+        let leftOsc, rightOsc, leftPanner, rightPanner;
+
+        function initBinaural() {
+            if (!audioCtx) audioCtx = new AudioContext();
+            if (leftOsc) { leftOsc.stop(); rightOsc.stop(); }
+
+            const baseHz = parseFloat(hzSlider.value);
+            leftOsc = audioCtx.createOscillator();
+            rightOsc = audioCtx.createOscillator();
+            leftPanner = audioCtx.createStereoPanner();
+            rightPanner = audioCtx.createStereoPanner();
+
+            leftPanner.pan.value = -1;
+            rightPanner.pan.value = 1;
+
+            leftOsc.frequency.value = baseHz;
+            rightOsc.frequency.value = baseHz + 6;
+
+            leftOsc.connect(leftPanner).connect(audioCtx.destination);
+            rightOsc.connect(rightPanner).connect(audioCtx.destination);
+
+            leftOsc.start();
+            rightOsc.start();
         }
 
-        // Initialize audio context
-        function initAudioContext() {
-            audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            filter = audioContext.createBiquadFilter();
-            filter.type = 'lowpass';
-            filter.frequency.setValueAtTime(hzSlider.value, audioContext.currentTime);
-            filter.Q.setValueAtTime(1, audioContext.currentTime);
-            stereoPanner = audioContext.createStereoPanner();
-            analyser = audioContext.createAnalyser();
-            analyser.fftSize = 2048;
-        }
-
-        // Waveform visualization
-        function drawWaveform() {
-            if (!analyser) return;
-            const bufferLength = analyser.frequencyBinCount;
-            const dataArray = new Uint8Array(bufferLength);
-            analyser.getByteTimeDomainData(dataArray);
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = '#facc15'; // yellow-400
-            ctx.beginPath();
-            const sliceWidth = canvas.width / bufferLength;
-            for (let i = 0; i < bufferLength; i++) {
-                const v = (dataArray[i] / 128.0 - 1) * 2;
-                const y = (v * canvas.height) / 4 + canvas.height / 2;
-                if (i === 0) ctx.moveTo(0, y);
-                else ctx.lineTo(i * sliceWidth, y);
-            }
-            ctx.stroke();
-            requestAnimationFrame(drawWaveform);
-        }
-
-        // File upload
-        audioUpload.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                currentFile = file;
-                uploadStatus.textContent = `Loaded: ${file.name}`;
-                repeatBtn.classList.remove('hidden');
-                console.log(`File selected: ${file.name}, Size: ${file.size} bytes`);
-                const url = URL.createObjectURL(file);
-                audioElement = new Audio(url);
-                initAudioContext();
-                source = audioContext.createMediaElementSource(audioElement);
-                source.connect(filter).connect(stereoPanner).connect(analyser).connect(audioContext.destination);
-                drawWaveform();
-                audioElement.addEventListener('timeupdate', updateProgress);
-            } else {
-                uploadStatus.textContent = 'No file selected.';
-                repeatBtn.classList.add('hidden');
-                console.log('No file selected.');
+        hzSlider.addEventListener('input', () => {
+            hzDisplay.textContent = `${hzSlider.value} Hz`;
+            if (leftOsc) {
+                leftOsc.frequency.setTargetAtTime(parseFloat(hzSlider.value), audioCtx.currentTime, 0.1);
+                rightOsc.frequency.setTargetAtTime(parseFloat(hzSlider.value) + 6, audioCtx.currentTime, 0.1);
             }
         });
 
-        // Repeat
-        repeatBtn.addEventListener('click', () => {
-            if (currentFile && audioElement) {
-                audioElement.pause();
-                audioElement.currentTime = 0;
-                audioElement.play();
-                console.log('Repeating audio');
-            }
+        // --- PAN TOGGLE ---
+        let currentPan = -1;
+        panOptions.forEach(opt => {
+            opt.addEventListener('click', () => {
+                panOptions.forEach(o => o.classList.remove('active'));
+                opt.classList.add('active');
+                currentPan = parseFloat(opt.dataset.pan);
+            });
         });
 
-        // Progress bar update
-        function updateProgress() {
-            if (audioElement && audioElement.duration) {
-                progressBar.value = (audioElement.currentTime / audioElement.duration) * 100;
-                console.log(`Progress: ${progressBar.value}%`);
-            }
-        }
-
-        // Play
-        playBtn.addEventListener('click', () => {
-            if (audioContext && audioElement) {
-                audioContext.resume();
-                audioElement.play();
-                console.log('Playing audio');
-            } else {
-                uploadStatus.textContent = 'Please upload a WAV or MP3 file first.';
-                console.log('No audio loaded');
-            }
+        // --- FILE HANDLING ---
+        fileUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) ws1.load(URL.createObjectURL(file));
         });
 
-        // Pause
-        pauseBtn.addEventListener('click', () => {
-            if (audioContext && audioElement) {
-                audioContext.suspend();
-                audioElement.pause();
-                console.log('Paused audio');
-            }
+        clearVocal.addEventListener('click', () => {
+            ws2.empty();
+            downloadBtn.disabled = true;
         });
 
-        // Stop
-        stopBtn.addEventListener('click', () => {
-            if (audioContext && audioElement) {
-                audioElement.pause();
-                audioElement.currentTime = 0;
-                audioContext.close();
-                audioContext = null;
-                source = null;
-                audioElement = null;
-                analyser = null;
-                progressBar.value = 0;
-                uploadStatus.textContent = 'Stopped. Upload a new file.';
-                repeatBtn.classList.add('hidden');
-                console.log('Stopped audio');
-            }
-            if (whiteNoiseSource) {
-                whiteNoiseSource.stop();
-                whiteNoiseSource = null;
-            }
-            if (rainSource) {
-                rainSource.stop();
-                rainSource = null;
-            }
-        });
+        // --- RECORDING CORE ---
+        let micStream = null;
+        let pannerNode = null;
 
-        // Download
-        downloadBtn.addEventListener('click', async () => {
-            if (audioElement && currentFile) {
-                const ext = currentFile.name.endsWith('.mp3') ? '.mp3' : '.wav';
-                const defaultName = `edited_binaural_rap${ext}`;
-                try {
-                    if (window.showSaveFilePicker) {
-                        const handle = await window.showSaveFilePicker({
-                            suggestedName: defaultName,
-                            types: [
-                                { description: 'WAV Audio', accept: { 'audio/wav': ['.wav'] } },
-                                { description: 'MP3 Audio', accept: { 'audio/mpeg': ['.mp3'] } }
-                            ]
-                        });
-                        const writable = await handle.createWritable();
-                        const response = await fetch(audioElement.src);
-                        const blob = await response.blob();
-                        await writable.write(blob);
-                        await writable.close();
-                        console.log(`Downloaded as ${handle.name}`);
-                    } else {
-                        const a = document.createElement('a');
-                        a.href = audioElement.src;
-                        a.download = defaultName;
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        console.log(`Downloaded as ${defaultName} (fallback)`);
-                    }
-                } catch (err) {
-                    uploadStatus.textContent = 'Download failed. Try again.';
-                    console.error('Download error:', err);
-                }
-            } else {
-                uploadStatus.textContent = 'Please upload a WAV or MP3 file first.';
-                console.log('No audio to download');
-            }
-        });
-
-        // Hz slider and number input
-        const updateHz = throttle((value) => {
-            hzValue.textContent = `${value} Hz`;
-            hzSlider.value = value;
-            hzNumber.value = value;
-            if (filter) filter.frequency.setValueAtTime(value, audioContext.currentTime);
-            console.log(`Hz set to: ${value}`);
-        }, 1);
-
-        hzSlider.addEventListener('input', () => updateHz(hzSlider.value));
-        hzNumber.addEventListener('input', () => {
-            const value = Math.min(Math.max(hzNumber.value, 20), 20000);
-            updateHz(value);
-        });
-
-        // Pitch slider
-        pitchSlider.addEventListener('input', () => {
-            const semitones = parseFloat(pitchSlider.value);
-            pitchValue.textContent = `${semitones} Semitones`;
-            if (audioElement) {
-                audioElement.playbackRate = Math.pow(2, semitones / 12);
-                console.log(`Pitch set to: ${semitones} semitones`);
-            }
-        });
-
-        // Volume sliders
-        leftVolume.addEventListener('input', () => {
-            if (stereoPanner) stereoPanner.pan.setValueAtTime(rightVolume.value - leftVolume.value, audioContext.currentTime);
-            console.log(`Pan: ${rightVolume.value - leftVolume.value}`);
-        });
-        rightVolume.addEventListener('input', () => {
-            if (stereoPanner) stereoPanner.pan.setValueAtTime(rightVolume.value - leftVolume.value, audioContext.currentTime);
-            console.log(`Pan: ${rightVolume.value - leftVolume.value}`);
-        });
-
-        // White noise
-        whiteNoiseBtn.addEventListener('click', () => {
-            if (whiteNoiseSource) {
-                whiteNoiseSource.stop();
-                whiteNoiseSource = null;
-                console.log('Stopped white noise');
+        recordBtn.addEventListener('click', async () => {
+            if (recordPlugin.isRecording()) {
+                recordPlugin.stopRecording();
+                ws1.stop();
+                if (leftOsc) { leftOsc.stop(); rightOsc.stop(); }
+                finalizeRecording();
                 return;
             }
-            if (!audioContext) initAudioContext();
-            const bufferSize = audioContext.sampleRate * 2;
-            const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
-            const output = buffer.getChannelData(0);
-            for (let i = 0; i < bufferSize; i++) output[i] = (Math.random() * 2 - 1) * 0.3;
-            whiteNoiseSource = audioContext.createBufferSource();
-            whiteNoiseSource.buffer = buffer;
-            whiteNoiseSource.loop = true;
-            const gainNode = audioContext.createGain();
-            gainNode.gain.setValueAtTime(whiteNoiseVolume.value, audioContext.currentTime);
-            whiteNoiseSource.connect(gainNode).connect(analyser).connect(audioContext.destination);
-            whiteNoiseSource.start();
-            console.log('Playing white noise');
-        });
 
-        whiteNoiseVolume.addEventListener('input', () => {
-            if (whiteNoiseSource) {
-                const gainNode = whiteNoiseSource.context.destination.previousSibling;
-                gainNode.gain.setValueAtTime(whiteNoiseVolume.value, audioContext.currentTime);
-                console.log(`White noise volume: ${whiteNoiseVolume.value}`);
-            }
-        });
+            if (!audioCtx) audioCtx = new AudioContext();
+            if (audioCtx.state === 'suspended') await audioCtx.resume();
 
-        // Rain sounds
-        rainBtn.addEventListener('click', () => {
-            if (rainSource) {
-                rainSource.stop();
-                rainSource = null;
-                console.log('Stopped rain sounds');
-                return;
-            }
-            if (!audioContext) initAudioContext();
-            const bufferSize = audioContext.sampleRate * 2;
-            const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
-            const output = buffer.getChannelData(0);
-            for (let i = 0; i < bufferSize; i++) {
-                const noise = Math.random() * 0.03 - 0.015;
-                const envelope = 0.8 + 0.2 * Math.sin(i * 0.0003);
-                output[i] = noise * envelope * 0.08;
-            }
-            rainSource = audioContext.createBufferSource();
-            rainSource.buffer = buffer;
-            rainSource.loop = true;
-            const gainNode = audioContext.createGain();
-            gainNode.gain.setValueAtTime(rainVolume.value, audioContext.currentTime);
-            const rainFilter = audioContext.createBiquadFilter();
-            rainFilter.type = 'lowpass';
-            rainFilter.frequency.setValueAtTime(300, audioContext.currentTime);
-            rainFilter.Q.setValueAtTime(0.1, audioContext.currentTime);
-            rainSource.connect(rainFilter).connect(gainNode).connect(analyser).connect(audioContext.destination);
+            initBinaural(); // FLOW START
+
             try {
-                rainSource.start();
-                console.log('Playing rain sounds');
+                micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const source = audioCtx.createMediaStreamSource(micStream);
+                pannerNode = audioCtx.createStereoPanner();
+                pannerNode.pan.value = currentPan;
+
+                const dest = audioCtx.createMediaStreamDestination();
+                source.connect(pannerNode).connect(dest);
+
+                recordPlugin.startRecording({ stream: dest.stream });
+                ws1.play();
+
+                updateUIStart();
             } catch (err) {
-                console.error('Rain sound error:', err);
-                uploadStatus.textContent = 'Error playing rain sounds.';
+                alert("Microphone access required for flow.");
             }
         });
 
-        rainVolume.addEventListener('input', () => {
-            if (rainSource) {
-                const gainNode = rainSource.context.destination.previousSibling.previousSibling;
-                gainNode.gain.setValueAtTime(rainVolume.value, audioContext.currentTime);
-                console.log(`Rain volume: ${rainVolume.value}`);
+        pauseRecordBtn.addEventListener('click', () => {
+            if (recordPlugin.isPaused()) {
+                recordPlugin.resumeRecording();
+                ws1.play();
+                pauseRecordBtn.textContent = 'PAUSE';
+            } else {
+                recordPlugin.pauseRecording();
+                ws1.pause();
+                pauseRecordBtn.textContent = 'RESUME';
             }
         });
+
+        function updateUIStart() {
+            document.getElementById('record-dot').classList.remove('hidden');
+            document.getElementById('record-text').textContent = 'STOP';
+            pauseRecordBtn.disabled = false;
+        }
+
+        function finalizeRecording() {
+            document.getElementById('record-dot').classList.add('hidden');
+            document.getElementById('record-text').textContent = 'RECORD';
+            pauseRecordBtn.textContent = 'PAUSE';
+            pauseRecordBtn.disabled = true;
+            downloadBtn.disabled = false;
+        }
+
+        recordPlugin.on('record-end', (blob) => {
+            const url = URL.createObjectURL(blob);
+            ws2.load(url);
+            downloadBtn.onclick = () => {
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `rapbattlecast_${currentPan < 0 ? 'Left' : 'Right'}_track.wav`;
+                a.click();
+            };
+        });
+
+        // --- GLOBAL TRANSPORT ---
+        playBtn.addEventListener('click', () => {
+            initBinaural();
+            ws1.play();
+            ws2.play();
+        });
+
+        stopBtn.addEventListener('click', () => {
+            ws1.stop();
+            ws2.stop();
+            if (leftOsc) { leftOsc.stop(); rightOsc.stop(); }
+        });
+
+        // --- SYNCHRONIZATION ---
+        ws1.on('seek', (p) => ws2.setTime(p * ws2.getDuration()));
+        ws2.on('seek', (p) => ws1.setTime(p * ws1.getDuration()));
+
     </script>
 </body>
+
 </html>
