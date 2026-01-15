@@ -3,12 +3,12 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Aiken Laboratory - Command Console</title>
+    <title>Aiken Laboratory - Command Console V2.2</title>
     <style>
         body {
-            background: #0a0a0a;
+            background: #050505;
             color: #00ff41;
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Courier New', monospace;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -16,115 +16,92 @@
         }
 
         .console-box {
-            border: 2px solid #00ff41;
-            padding: 30px;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 1200px;
-            box-shadow: 0 0 20px #00ff4133;
+            border: 3px solid #00ff41;
+            padding: 40px;
+            border-radius: 15px;
+            width: 95%;
+            max-width: 1300px;
+            box-shadow: 0 0 30px #00ff4122;
         }
 
-        h1 {
-            text-align: center;
-            font-size: 2.5em;
-            text-transform: uppercase;
-            letter-spacing: 5px;
-        }
-
-        /* Large high-contrast controls for 32" Monitor */
         .controls {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin: 20px 0;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin: 25px 0;
         }
 
         button {
             background: #00ff41;
             color: #000;
             border: none;
-            padding: 15px;
-            font-size: 1.2em;
+            padding: 20px;
+            font-size: 1.3em;
             font-weight: bold;
             cursor: pointer;
-            border-radius: 5px;
+            border-radius: 8px;
             text-transform: uppercase;
+            transition: 0.3s;
         }
 
         button:hover {
-            background: #00cc33;
-            box-shadow: 0 0 15px #00ff41;
-        }
-
-        button.recording {
-            background: #ff0000;
-            color: #fff;
-            animation: pulse 1s infinite;
+            background: #fff;
+            box-shadow: 0 0 20px #00ff41;
         }
 
         .slider-group {
-            background: #1a1a1a;
+            background: #111;
+            padding: 20px;
+            border: 1px solid #00ff4144;
+            border-radius: 8px;
+        }
+
+        input[type="text"] {
+            background: #000;
+            color: #00ff41;
+            border: 1px solid #00ff41;
             padding: 15px;
+            width: 90%;
+            font-size: 1.2em;
             border-radius: 5px;
-            border: 1px solid #333;
         }
 
-        label {
-            display: block;
-            margin-bottom: 10px;
+        select {
+            background: #000;
+            color: #00ff41;
+            border: 1px solid #00ff41;
+            padding: 15px;
             font-size: 1.1em;
-            color: #fff;
-        }
-
-        input[type="range"] {
-            width: 100%;
-            cursor: pointer;
-            accent-color: #00ff41;
-        }
-
-        #waveforms {
-            width: 100%;
-            margin-top: 20px;
-        }
-
-        .track-label {
-            margin-top: 10px;
-            color: #888;
-            font-size: 0.9em;
+            border-radius: 5px;
         }
 
         canvas {
             background: #000;
-            border: 1px solid #00ff4155;
+            border: 1px solid #00ff4188;
             width: 100%;
-            height: 120px;
-            margin-bottom: 10px;
-            border-radius: 4px;
+            height: 150px;
+            margin-top: 10px;
+            border-radius: 8px;
         }
 
         #security-log {
             width: 100%;
-            height: 150px;
+            height: 200px;
             background: #000;
             color: #00ff41;
             border: 1px solid #00ff41;
-            padding: 10px;
-            margin-top: 20px;
-            font-family: monospace;
+            padding: 20px;
+            margin-top: 30px;
+            font-size: 1.2em;
+            border-radius: 8px;
+            line-height: 1.5;
         }
 
-        @keyframes pulse {
-            0% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.5;
-            }
-
-            100% {
-                opacity: 1;
-            }
+        .track-label {
+            margin-top: 20px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: #fff;
         }
     </style>
 </head>
@@ -132,168 +109,143 @@
 <body>
 
     <div class="console-box">
-        <h1>Observer Command Console</h1>
+        <h1>Aiken Master Console</h1>
 
         <div class="controls">
-            <button id="loadBtn">Load Track 1 (Light)</button>
-            <button id="syncPlayBtn">Sync Play / Pause</button>
-            <button id="recordBtn">Record Track 2 (Voice)</button>
-            <button id="mergeBtn" style="background: #ffd700;">Merge & Download Master</button>
+            <button id="loadBtn">1. Load Music (Light)</button>
+            <button id="syncPlayBtn">2. Sync Play / Pause</button>
+            <button id="recordBtn">3. Record Observer Voice</button>
         </div>
 
         <div class="controls">
             <div class="slider-group">
-                <label>Binaural Frequency (6Hz Target)</label>
-                <input type="range" id="freqSlider" min="60" max="600" value="100">
-                <span id="freqLabel">100Hz / 106Hz</span>
-            </div>
-            <div class="slider-group">
-                <label>Binaural Volume (Kill Hum Here)</label>
+                <label>Binaural Volume (Hum-Killer)</label>
                 <input type="range" id="binauralGain" min="0" max="0.5" step="0.01" value="0">
             </div>
+            <div class="slider-group">
+                <label>Master Filename</label>
+                <input type="text" id="fileNameInput" placeholder="Enter session name...">
+            </div>
+            <div class="slider-group">
+                <label>Format</label>
+                <select id="formatSelect">
+                    <option value="audio/wav">Master (.WAV)</option>
+                    <option value="audio/mpeg">Compressed (.MP3)</option>
+                </select>
+            </div>
         </div>
 
-        <div id="waveforms">
-            <div class="track-label">TRACK 1: MUSIC / LIGHT</div>
-            <canvas id="canvas1"></canvas>
-            <div class="track-label">TRACK 2: OBSERVER VOICE</div>
-            <canvas id="canvas2"></canvas>
-        </div>
+        <div class="track-label">SYNCED WAVEFORM MONITOR</div>
+        <canvas id="waveCanvas"></canvas>
 
-        <textarea id="security-log"
-            placeholder="SECURITY LOG: Enter session notes (164 lbs, Fasting hours, White Light session stats)..."></textarea>
-        <button onclick="saveLog()" style="margin-top:10px; font-size: 0.8em; padding: 10px;">Save Log to
-            LocalStorage</button>
+        <button id="mergeBtn"
+            style="width:100%; background: #ffd700; color: #000; margin-top: 30px; font-size: 1.5em;">Generate &
+            Download Master File</button>
+
+        <div class="track-label">AFFIRMATION PROMPTER / SESSION LOG</div>
+        <textarea id="security-log" placeholder="Enter your 'I AM' instructions here..."></textarea>
     </div>
 
     <script>
-        let audioCtx, track1Buffer, track2Blob, track1Source;
-        let osc1, osc2, binauralGainNode;
-        let isPlaying = false;
-        let isRecording = false;
-        let mediaRecorder;
+        let audioCtx, track1Buffer, track1Source, osc1, osc2, binauralGain, mixer, recorder;
+        let isPlaying = false, isRecording = false;
         let recordedChunks = [];
-        let startTime = 0;
-        let pausedTime = 0;
+        let canvas = document.getElementById('waveCanvas'), ctx = canvas.getContext('2d');
+        let animationId;
 
-        const syncPlayBtn = document.getElementById('syncPlayBtn');
-        const binauralGainSlider = document.getElementById('binauralGain');
-        const logArea = document.getElementById('security-log');
-
-        // Initialize Audio Context on click
         function initAudio() {
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                setupBinaural();
+                mixer = audioCtx.createMediaStreamDestination();
+
+                osc1 = audioCtx.createOscillator();
+                osc2 = audioCtx.createOscillator();
+                binauralGain = audioCtx.createGain();
+                binauralGain.gain.value = 0;
+
+                osc1.frequency.value = 100;
+                osc2.frequency.value = 106;
+
+                osc1.connect(binauralGain);
+                osc2.connect(binauralGain);
+                binauralGain.connect(audioCtx.destination);
+                binauralGain.connect(mixer);
+
+                osc1.start();
+                osc2.start();
             }
         }
 
-        function setupBinaural() {
-            osc1 = audioCtx.createOscillator();
-            osc2 = audioCtx.createOscillator();
-            binauralGainNode = audioCtx.createGain();
-            binauralGainNode.gain.value = 0; // Starts at 0 to kill the hum
-
-            const panner1 = audioCtx.createStereoPanner();
-            const panner2 = audioCtx.createStereoPanner();
-            panner1.pan.value = -1;
-            panner2.pan.value = 1;
-
-            osc1.connect(panner1).connect(binauralGainNode);
-            osc2.connect(panner2).connect(binauralGainNode);
-            binauralGainNode.connect(audioCtx.destination);
-
-            osc1.start();
-            osc2.start();
-            updateFrequencies();
-        }
-
-        function updateFrequencies() {
-            const baseFreq = parseInt(document.getElementById('freqSlider').value);
-            osc1.frequency.value = baseFreq;
-            osc2.frequency.value = baseFreq + 6; // The 6Hz Theta Offset
-            document.getElementById('freqLabel').innerText = `${baseFreq}Hz / ${baseFreq + 6}Hz`;
-        }
-
-        document.getElementById('freqSlider').oninput = updateFrequencies;
-        binauralGainSlider.oninput = (e) => { binauralGainNode.gain.value = e.target.value; };
-
-        // File Loading
         document.getElementById('loadBtn').onclick = async () => {
             initAudio();
             const [fileHandle] = await window.showOpenFilePicker();
             const file = await fileHandle.getFile();
             const arrayBuffer = await file.arrayBuffer();
             track1Buffer = await audioCtx.decodeAudioData(arrayBuffer);
-            alert("Track 1 Loaded & Synced");
+            requestAnimationFrame(draw);
         };
 
-        // SYNC PLAYBACK LOGIC
-        syncPlayBtn.onclick = () => {
-            if (!audioCtx || !track1Buffer) return alert("Load Track 1 First");
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = '#00ff41';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height / 2);
+            // Visualizer logic here
+            ctx.lineTo(canvas.width, canvas.height / 2);
+            ctx.stroke();
+            requestAnimationFrame(draw);
+        }
 
+        document.getElementById('syncPlayBtn').onclick = () => {
+            if (!track1Buffer) return alert("Load Music First");
             if (isPlaying) {
                 track1Source.stop();
-                pausedTime += audioCtx.currentTime - startTime;
                 isPlaying = false;
-                syncPlayBtn.innerText = "Sync Play";
             } else {
                 track1Source = audioCtx.createBufferSource();
                 track1Source.buffer = track1Buffer;
                 track1Source.connect(audioCtx.destination);
-
-                startTime = audioCtx.currentTime;
-                track1Source.start(0, pausedTime % track1Buffer.duration);
+                track1Source.connect(mixer);
+                track1Source.start(0);
                 isPlaying = true;
-                syncPlayBtn.innerText = "Sync Stop";
             }
         };
 
-        // Recording Logic
         document.getElementById('recordBtn').onclick = async () => {
             initAudio();
             if (!isRecording) {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, autoGainControl: false, noiseSuppression: false } });
-                mediaRecorder = new MediaRecorder(stream);
-                mediaRecorder.ondataavailable = e => recordedChunks.push(e.data);
-                mediaRecorder.onstop = () => {
-                    track2Blob = new Blob(recordedChunks, { type: 'audio/wav' });
-                    alert("Voice Captured");
-                };
-                recordedChunks = [];
-                mediaRecorder.start();
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const voiceSource = audioCtx.createMediaStreamSource(stream);
+                voiceSource.connect(mixer);
+
+                recorder = new MediaRecorder(mixer.stream);
+                recorder.ondataavailable = e => recordedChunks.push(e.data);
+                recorder.start();
                 isRecording = true;
-                document.getElementById('recordBtn').classList.add('recording');
-                document.getElementById('recordBtn').innerText = "Stop Recording";
+                document.getElementById('recordBtn').style.background = "red";
             } else {
-                mediaRecorder.stop();
+                recorder.stop();
                 isRecording = false;
-                document.getElementById('recordBtn').classList.remove('recording');
-                document.getElementById('recordBtn').innerText = "Record Track 2";
+                document.getElementById('recordBtn').style.background = "#00ff41";
             }
         };
 
-        // Placeholder for Merge logic - will trigger download
         document.getElementById('mergeBtn').onclick = () => {
-            if (!track2Blob) return alert("Record Track 2 First");
-            const url = URL.createObjectURL(track2Blob);
+            const name = document.getElementById('fileNameInput').value || "Aiken_Session";
+            const format = document.getElementById('formatSelect').value;
+            const blob = new Blob(recordedChunks, { type: format });
+            const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = "Aiken_Master_JuneM5.wav";
+            a.download = name + (format === 'audio/wav' ? '.wav' : '.mp3');
             a.click();
         };
 
-        function saveLog() {
-            localStorage.setItem('aikenSecurityLog', logArea.value);
-            alert("Log Saved to LocalStorage");
-        }
-
-        // Load log on start
-        window.onload = () => {
-            logArea.value = localStorage.getItem('aikenSecurityLog') || "";
+        document.getElementById('binauralGain').oninput = (e) => {
+            if (binauralGain) binauralGain.gain.value = e.target.value;
         };
     </script>
-
 </body>
 
 </html>
