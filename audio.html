@@ -3,389 +3,297 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi-track Editor - RapBattleCast</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.min.js"></script>
-    <script src="https://unpkg.com/wavesurfer.js@7/dist/plugins/record.min.js"></script>
+    <title>Aiken Laboratory - Command Console</title>
     <style>
         body {
-            background: #1a1a1a;
-            font-family: 'Inter', sans-serif;
+            background: #0a0a0a;
+            color: #00ff41;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
         }
 
-        .waveform-container {
-            background: #252525;
+        .console-box {
+            border: 2px solid #00ff41;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 1200px;
+            box-shadow: 0 0 20px #00ff4133;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+        }
+
+        /* Large high-contrast controls for 32" Monitor */
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        button {
+            background: #00ff41;
+            color: #000;
+            border: none;
+            padding: 15px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            text-transform: uppercase;
+        }
+
+        button:hover {
+            background: #00cc33;
+            box-shadow: 0 0 15px #00ff41;
+        }
+
+        button.recording {
+            background: #ff0000;
+            color: #fff;
+            animation: pulse 1s infinite;
+        }
+
+        .slider-group {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 5px;
             border: 1px solid #333;
-            border-radius: 12px;
-            margin-bottom: 1.5rem;
-            overflow: hidden;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            color: #fff;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+            accent-color: #00ff41;
+        }
+
+        #waveforms {
+            width: 100%;
+            margin-top: 20px;
         }
 
         .track-label {
-            color: #facc15;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            font-weight: 800;
-            padding: 0.5rem 1rem;
-            background: #1a1a1a;
-            border-bottom: 1px solid #333;
+            margin-top: 10px;
+            color: #888;
+            font-size: 0.9em;
         }
 
-        .control-panel {
-            background: #252525;
-            border: 1px solid #333;
-            border-radius: 16px;
-            padding: 1.5rem;
+        canvas {
+            background: #000;
+            border: 1px solid #00ff4155;
+            width: 100%;
+            height: 120px;
+            margin-bottom: 10px;
+            border-radius: 4px;
         }
 
-        .btn {
-            border-radius: 9999px;
-            font-weight: 700;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0.5rem 1.5rem;
+        #security-log {
+            width: 100%;
+            height: 150px;
+            background: #000;
+            color: #00ff41;
+            border: 1px solid #00ff41;
+            padding: 10px;
+            margin-top: 20px;
+            font-family: monospace;
         }
 
-        .btn-primary {
-            background: #facc15;
-            color: #1a1a1a;
-        }
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
 
-        .btn-primary:hover {
-            background: #eab308;
-            transform: scale(1.05);
-        }
+            50% {
+                opacity: 0.5;
+            }
 
-        .btn-danger {
-            background: #ef4444;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #dc2626;
-            transform: scale(1.05);
-        }
-
-        .btn-secondary {
-            background: #4b5563;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #374151;
-        }
-
-        /* Toggle Switch Custom */
-        .toggle-container {
-            display: flex;
-            background: #1a1a1a;
-            border-radius: 9999px;
-            padding: 0.25rem;
-            border: 1px solid #333;
-        }
-
-        .toggle-option {
-            padding: 0.5rem 1rem;
-            border-radius: 9999px;
-            cursor: pointer;
-            font-size: 0.875rem;
-            transition: background 0.3s;
-        }
-
-        .toggle-option.active {
-            background: #facc15;
-            color: #1a1a1a;
+            100% {
+                opacity: 1;
+            }
         }
     </style>
 </head>
 
-<body class="text-white">
-    <header class="fixed w-full z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800 top-0">
-        <nav class="container mx-auto px-6 py-4">
-            <div class="flex items-center justify-between">
-                <a href="https://iamalready2022.github.io/rapbattlecast/"
-                    class="text-3xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent transition-all">
-                    <img src="iamalready.logo.png" alt="Logo" class="h-12 w-12 inline-block mr-2">RapBattleCast
-                </a>
-            </div>
-        </nav>
-    </header>
+<body>
 
-    <div class="h-28"></div>
+    <div class="console-box">
+        <h1>Observer Command Console</h1>
 
-    <main class="container mx-auto px-6 py-4 max-w-5xl">
-        <div class="flex justify-between items-end mb-8">
-            <div>
-                <h1 class="text-4xl font-extrabold text-white">Multi-track Editor</h1>
-                <p class="text-gray-400 mt-1">L/R Precision Recording & Binaural Sync</p>
+        <div class="controls">
+            <button id="loadBtn">Load Track 1 (Light)</button>
+            <button id="syncPlayBtn">Sync Play / Pause</button>
+            <button id="recordBtn">Record Track 2 (Voice)</button>
+            <button id="mergeBtn" style="background: #ffd700;">Merge & Download Master</button>
+        </div>
+
+        <div class="controls">
+            <div class="slider-group">
+                <label>Binaural Frequency (6Hz Target)</label>
+                <input type="range" id="freqSlider" min="60" max="600" value="100">
+                <span id="freqLabel">100Hz / 106Hz</span>
             </div>
-            <div class="text-right">
-                <label class="text-xs text-gray-500 block mb-1">REFERENCE</label>
-                <div class="text-yellow-400 font-mono font-bold" id="ref-status">6Hz THETA FLOW</div>
+            <div class="slider-group">
+                <label>Binaural Volume (Kill Hum Here)</label>
+                <input type="range" id="binauralGain" min="0" max="0.5" step="0.01" value="0">
             </div>
         </div>
 
-        <!-- Track 1 Area -->
-        <div class="flex items-center space-x-4 mb-2">
-            <span class="text-sm font-bold text-gray-400">TRACK 1</span>
-            <input type="file" id="file-upload" class="hidden">
-            <button onclick="document.getElementById('file-upload').click()"
-                class="text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded text-gray-300 transition">+ LOAD
-                TRACK</button>
-        </div>
-        <div class="waveform-container">
-            <div id="waveform-1"></div>
+        <div id="waveforms">
+            <div class="track-label">TRACK 1: MUSIC / LIGHT</div>
+            <canvas id="canvas1"></canvas>
+            <div class="track-label">TRACK 2: OBSERVER VOICE</div>
+            <canvas id="canvas2"></canvas>
         </div>
 
-        <!-- Track 2 Area -->
-        <div class="flex items-center space-x-4 mb-2">
-            <span class="text-sm font-bold text-gray-400">TRACK 2 (VOCAL)</span>
-            <button id="clear-vocal" class="text-xs text-red-400 hover:text-red-300 transition">CLEAR</button>
-        </div>
-        <div class="waveform-container">
-            <div id="waveform-2"></div>
-        </div>
-
-        <!-- Control Console -->
-        <div class="control-panel grid grid-cols-1 md:grid-cols-3 gap-8">
-            <!-- Transport -->
-            <div class="space-y-4">
-                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest">Transport</h3>
-                <div class="flex space-x-3">
-                    <button id="play-btn" class="btn btn-primary flex-1">
-                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path
-                                d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-                        </svg>PLAY
-                    </button>
-                    <button id="stop-btn" class="btn btn-secondary lg:px-8">
-                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path
-                                d="M5.25 4a.75.75 0 00-.75.75v10.5c0 .414.336.75.75.75h9.5a.75.75 0 00.75-.75V4.75a.75.75 0 00-.75-.75h-9.5z" />
-                        </svg>STOP
-                    </button>
-                </div>
-                <button id="download-record-btn" class="btn btn-secondary w-full py-3" disabled>DOWNLOAD TRACK
-                    2</button>
-            </div>
-
-            <!-- Recording Engine -->
-            <div class="space-y-4">
-                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest">Recording Engine</h3>
-                <div class="flex space-x-3">
-                    <button id="record-btn" class="btn btn-danger flex-1">
-                        <span id="record-dot" class="w-3 h-3 bg-white rounded-full mr-2 hidden animate-pulse"></span>
-                        <span id="record-text">RECORD</span>
-                    </button>
-                    <button id="pause-record-btn" class="btn btn-secondary" disabled>PAUSE</button>
-                </div>
-                <div class="flex flex-col items-center">
-                    <div class="toggle-container w-full" id="pan-toggle">
-                        <div class="toggle-option active flex-1 text-center" data-pan="-1">LEFT</div>
-                        <div class="toggle-option flex-1 text-center" data-pan="1">RIGHT</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Environment -->
-            <div class="space-y-4">
-                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest">Binaural Flow</h3>
-                <div>
-                    <div class="flex justify-between text-xs text-gray-400 mb-2">
-                        <span>CENTER</span>
-                        <span id="hz-display" class="text-yellow-400 font-bold">200 Hz</span>
-                    </div>
-                    <input type="range" id="hz-slider" min="60" max="600" step="1" value="200" class="w-full">
-                </div>
-                <p class="text-[10px] text-gray-600 italic">Reference frequencies are locked to a 6Hz Delta-Theta offset
-                    for maximum creative focus.</p>
-            </div>
-        </div>
-    </main>
+        <textarea id="security-log"
+            placeholder="SECURITY LOG: Enter session notes (164 lbs, Fasting hours, White Light session stats)..."></textarea>
+        <button onclick="saveLog()" style="margin-top:10px; font-size: 0.8em; padding: 10px;">Save Log to
+            LocalStorage</button>
+    </div>
 
     <script>
-        // --- WAVE SURFER SETUP ---
-        const ws1 = WaveSurfer.create({
-            container: '#waveform-1',
-            waveColor: '#4f46e5', progressColor: '#818cf8', cursorColor: '#facc15',
-            height: 120, barWidth: 2, barGap: 1, barRadius: 2,
-        });
+        let audioCtx, track1Buffer, track2Blob, track1Source;
+        let osc1, osc2, binauralGainNode;
+        let isPlaying = false;
+        let isRecording = false;
+        let mediaRecorder;
+        let recordedChunks = [];
+        let startTime = 0;
+        let pausedTime = 0;
 
-        const ws2 = WaveSurfer.create({
-            container: '#waveform-2',
-            waveColor: '#ef4444', progressColor: '#fca5a5', cursorColor: '#ffffff',
-            height: 120, barWidth: 2, barGap: 1, barRadius: 2,
-        });
+        const syncPlayBtn = document.getElementById('syncPlayBtn');
+        const binauralGainSlider = document.getElementById('binauralGain');
+        const logArea = document.getElementById('security-log');
 
-        const recordPlugin = ws2.registerPlugin(WaveSurfer.Record.create({
-            scrollingWaveform: true, renderRecordedAudio: true, continuousWaveform: true,
-        }));
-
-        // --- ELEMENTS ---
-        const fileUpload = document.getElementById('file-upload');
-        const playBtn = document.getElementById('play-btn');
-        const stopBtn = document.getElementById('stop-btn');
-        const recordBtn = document.getElementById('record-btn');
-        const pauseRecordBtn = document.getElementById('pause-record-btn');
-        const downloadBtn = document.getElementById('download-record-btn');
-        const panOptions = document.querySelectorAll('.toggle-option');
-        const hzSlider = document.getElementById('hz-slider');
-        const hzDisplay = document.getElementById('hz-display');
-        const clearVocal = document.getElementById('clear-vocal');
-
-        // --- BINAURAL SYNTH ---
-        let audioCtx = null;
-        let leftOsc, rightOsc, leftPanner, rightPanner;
-
-        function initBinaural() {
-            if (!audioCtx) audioCtx = new AudioContext();
-            if (leftOsc) { leftOsc.stop(); rightOsc.stop(); }
-
-            const baseHz = parseFloat(hzSlider.value);
-            leftOsc = audioCtx.createOscillator();
-            rightOsc = audioCtx.createOscillator();
-            leftPanner = audioCtx.createStereoPanner();
-            rightPanner = audioCtx.createStereoPanner();
-
-            leftPanner.pan.value = -1;
-            rightPanner.pan.value = 1;
-
-            leftOsc.frequency.value = baseHz;
-            rightOsc.frequency.value = baseHz + 6;
-
-            leftOsc.connect(leftPanner).connect(audioCtx.destination);
-            rightOsc.connect(rightPanner).connect(audioCtx.destination);
-
-            leftOsc.start();
-            rightOsc.start();
+        // Initialize Audio Context on click
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                setupBinaural();
+            }
         }
 
-        hzSlider.addEventListener('input', () => {
-            hzDisplay.textContent = `${hzSlider.value} Hz`;
-            if (leftOsc) {
-                leftOsc.frequency.setTargetAtTime(parseFloat(hzSlider.value), audioCtx.currentTime, 0.1);
-                rightOsc.frequency.setTargetAtTime(parseFloat(hzSlider.value) + 6, audioCtx.currentTime, 0.1);
-            }
-        });
+        function setupBinaural() {
+            osc1 = audioCtx.createOscillator();
+            osc2 = audioCtx.createOscillator();
+            binauralGainNode = audioCtx.createGain();
+            binauralGainNode.gain.value = 0; // Starts at 0 to kill the hum
 
-        // --- PAN TOGGLE ---
-        let currentPan = -1;
-        panOptions.forEach(opt => {
-            opt.addEventListener('click', () => {
-                panOptions.forEach(o => o.classList.remove('active'));
-                opt.classList.add('active');
-                currentPan = parseFloat(opt.dataset.pan);
-            });
-        });
+            const panner1 = audioCtx.createStereoPanner();
+            const panner2 = audioCtx.createStereoPanner();
+            panner1.pan.value = -1;
+            panner2.pan.value = 1;
 
-        // --- FILE HANDLING ---
-        fileUpload.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) ws1.load(URL.createObjectURL(file));
-        });
+            osc1.connect(panner1).connect(binauralGainNode);
+            osc2.connect(panner2).connect(binauralGainNode);
+            binauralGainNode.connect(audioCtx.destination);
 
-        clearVocal.addEventListener('click', () => {
-            ws2.empty();
-            downloadBtn.disabled = true;
-        });
+            osc1.start();
+            osc2.start();
+            updateFrequencies();
+        }
 
-        // --- RECORDING CORE ---
-        let micStream = null;
-        let pannerNode = null;
+        function updateFrequencies() {
+            const baseFreq = parseInt(document.getElementById('freqSlider').value);
+            osc1.frequency.value = baseFreq;
+            osc2.frequency.value = baseFreq + 6; // The 6Hz Theta Offset
+            document.getElementById('freqLabel').innerText = `${baseFreq}Hz / ${baseFreq + 6}Hz`;
+        }
 
-        recordBtn.addEventListener('click', async () => {
-            if (recordPlugin.isRecording()) {
-                recordPlugin.stopRecording();
-                ws1.stop();
-                if (leftOsc) { leftOsc.stop(); rightOsc.stop(); }
-                finalizeRecording();
-                return;
-            }
+        document.getElementById('freqSlider').oninput = updateFrequencies;
+        binauralGainSlider.oninput = (e) => { binauralGainNode.gain.value = e.target.value; };
 
-            if (!audioCtx) audioCtx = new AudioContext();
-            if (audioCtx.state === 'suspended') await audioCtx.resume();
+        // File Loading
+        document.getElementById('loadBtn').onclick = async () => {
+            initAudio();
+            const [fileHandle] = await window.showOpenFilePicker();
+            const file = await fileHandle.getFile();
+            const arrayBuffer = await file.arrayBuffer();
+            track1Buffer = await audioCtx.decodeAudioData(arrayBuffer);
+            alert("Track 1 Loaded & Synced");
+        };
 
-            initBinaural(); // FLOW START
+        // SYNC PLAYBACK LOGIC
+        syncPlayBtn.onclick = () => {
+            if (!audioCtx || !track1Buffer) return alert("Load Track 1 First");
 
-            try {
-                micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                const source = audioCtx.createMediaStreamSource(micStream);
-                pannerNode = audioCtx.createStereoPanner();
-                pannerNode.pan.value = currentPan;
-
-                const dest = audioCtx.createMediaStreamDestination();
-                source.connect(pannerNode).connect(dest);
-
-                recordPlugin.startRecording({ stream: dest.stream });
-                ws1.play();
-
-                updateUIStart();
-            } catch (err) {
-                alert("Microphone access required for flow.");
-            }
-        });
-
-        pauseRecordBtn.addEventListener('click', () => {
-            if (recordPlugin.isPaused()) {
-                recordPlugin.resumeRecording();
-                ws1.play();
-                pauseRecordBtn.textContent = 'PAUSE';
+            if (isPlaying) {
+                track1Source.stop();
+                pausedTime += audioCtx.currentTime - startTime;
+                isPlaying = false;
+                syncPlayBtn.innerText = "Sync Play";
             } else {
-                recordPlugin.pauseRecording();
-                ws1.pause();
-                pauseRecordBtn.textContent = 'RESUME';
+                track1Source = audioCtx.createBufferSource();
+                track1Source.buffer = track1Buffer;
+                track1Source.connect(audioCtx.destination);
+
+                startTime = audioCtx.currentTime;
+                track1Source.start(0, pausedTime % track1Buffer.duration);
+                isPlaying = true;
+                syncPlayBtn.innerText = "Sync Stop";
             }
-        });
+        };
 
-        function updateUIStart() {
-            document.getElementById('record-dot').classList.remove('hidden');
-            document.getElementById('record-text').textContent = 'STOP';
-            pauseRecordBtn.disabled = false;
+        // Recording Logic
+        document.getElementById('recordBtn').onclick = async () => {
+            initAudio();
+            if (!isRecording) {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, autoGainControl: false, noiseSuppression: false } });
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.ondataavailable = e => recordedChunks.push(e.data);
+                mediaRecorder.onstop = () => {
+                    track2Blob = new Blob(recordedChunks, { type: 'audio/wav' });
+                    alert("Voice Captured");
+                };
+                recordedChunks = [];
+                mediaRecorder.start();
+                isRecording = true;
+                document.getElementById('recordBtn').classList.add('recording');
+                document.getElementById('recordBtn').innerText = "Stop Recording";
+            } else {
+                mediaRecorder.stop();
+                isRecording = false;
+                document.getElementById('recordBtn').classList.remove('recording');
+                document.getElementById('recordBtn').innerText = "Record Track 2";
+            }
+        };
+
+        // Placeholder for Merge logic - will trigger download
+        document.getElementById('mergeBtn').onclick = () => {
+            if (!track2Blob) return alert("Record Track 2 First");
+            const url = URL.createObjectURL(track2Blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "Aiken_Master_JuneM5.wav";
+            a.click();
+        };
+
+        function saveLog() {
+            localStorage.setItem('aikenSecurityLog', logArea.value);
+            alert("Log Saved to LocalStorage");
         }
 
-        function finalizeRecording() {
-            document.getElementById('record-dot').classList.add('hidden');
-            document.getElementById('record-text').textContent = 'RECORD';
-            pauseRecordBtn.textContent = 'PAUSE';
-            pauseRecordBtn.disabled = true;
-            downloadBtn.disabled = false;
-        }
-
-        recordPlugin.on('record-end', (blob) => {
-            const url = URL.createObjectURL(blob);
-            ws2.load(url);
-            downloadBtn.onclick = () => {
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `rapbattlecast_${currentPan < 0 ? 'Left' : 'Right'}_track.wav`;
-                a.click();
-            };
-        });
-
-        // --- GLOBAL TRANSPORT ---
-        playBtn.addEventListener('click', () => {
-            initBinaural();
-            ws1.play();
-            ws2.play();
-        });
-
-        stopBtn.addEventListener('click', () => {
-            ws1.stop();
-            ws2.stop();
-            if (leftOsc) { leftOsc.stop(); rightOsc.stop(); }
-        });
-
-        // --- SYNCHRONIZATION ---
-        ws1.on('seek', (p) => ws2.setTime(p * ws2.getDuration()));
-        ws2.on('seek', (p) => ws1.setTime(p * ws1.getDuration()));
-
+        // Load log on start
+        window.onload = () => {
+            logArea.value = localStorage.getItem('aikenSecurityLog') || "";
+        };
     </script>
+
 </body>
 
 </html>
