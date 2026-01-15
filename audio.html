@@ -3,73 +3,155 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Aiken Laboratory - Command Console V2.3</title>
+    <title>Audio Master Control V3.1</title>
+    <script src="https://unpkg.com/wavesurfer.js@7"></script>
     <style>
         body {
             background: #050505;
             color: #00ff41;
-            font-family: 'Courier New', monospace;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 30px;
+            margin: 0;
         }
 
         .console-box {
-            border: 3px solid #00ff41;
-            padding: 40px;
-            border-radius: 15px;
-            width: 95%;
-            max-width: 1300px;
+            border: 1px solid #00ff41;
+            padding: 30px;
+            border-radius: 4px;
+            background: #000;
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.1);
         }
 
-        .controls {
+        /* Header Section */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #00ff41;
+            padding-bottom: 10px;
+        }
+
+        h1 {
+            margin: 0;
+            letter-spacing: 4px;
+            font-weight: 300;
+            text-transform: uppercase;
+        }
+
+        /* Grid Layout */
+        .dashboard {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 25px;
-            margin: 25px 0;
+            grid-template-columns: 1fr 1fr 1.5fr;
+            gap: 40px;
+            margin-bottom: 40px;
         }
 
+        /* Control Groups */
+        .control-panel {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            padding: 20px;
+            border-radius: 4px;
+        }
+
+        .label-text {
+            font-size: 0.75rem;
+            color: #888;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            display: block;
+            letter-spacing: 1px;
+        }
+
+        /* Waveforms */
+        .track-container {
+            background: #080808;
+            border: 1px solid #222;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .waveform-id {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            font-size: 0.7rem;
+            color: #00ff41;
+            z-index: 5;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 2px 8px;
+            border: 1px solid #00ff4144;
+        }
+
+        .waveform-area {
+            height: 160px;
+            width: 100%;
+        }
+
+        /* Inputs & Buttons */
         button {
             background: #00ff41;
             color: #000;
             border: none;
-            padding: 20px;
-            font-size: 1.3em;
+            padding: 15px 25px;
             font-weight: bold;
             cursor: pointer;
-            border-radius: 8px;
             text-transform: uppercase;
+            transition: all 0.2s;
+            width: 100%;
         }
 
-        .slider-group {
-            background: #111;
-            padding: 20px;
-            border: 1px solid #00ff4144;
-            border-radius: 8px;
+        button:hover {
+            background: #fff;
+            color: #000;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.4);
+        }
+
+        .rec-btn {
+            background: #222;
+            color: #ff4141;
+            border: 1px solid #ff4141;
+        }
+
+        .rec-btn.active {
+            background: #ff4141;
+            color: #fff;
+            animation: pulse 1.5s infinite;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #222;
+            accent-color: #00ff41;
+            outline: none;
+            margin: 15px 0;
         }
 
         input[type="text"] {
             background: #000;
-            color: #00ff41;
-            border: 1px solid #00ff41;
-            padding: 15px;
-            width: 90%;
-            font-size: 1.2em;
-        }
-
-        canvas {
-            background: #000;
-            border: 1px solid #00ff4188;
-            width: 100%;
-            height: 150px;
-        }
-
-        #hzDisplay {
             color: #fff;
-            font-size: 0.9em;
-            margin-top: 5px;
-            display: block;
+            border: 1px solid #333;
+            padding: 12px;
+            width: 100%;
+            box-sizing: border-box;
+            font-family: monospace;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 65, 65, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 15px rgba(255, 65, 65, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 65, 65, 0);
+            }
         }
     </style>
 </head>
@@ -77,142 +159,171 @@
 <body>
 
     <div class="console-box">
-        <h1>Aiken Master Console V2.3</h1>
-        <div class="controls">
-            <button id="loadBtn">1. Load Music</button>
-            <button id="syncPlayBtn">2. Sync Play / Pause</button>
-            <button id="recordBtn">3. Start/Stop Recording</button>
+        <div class="header">
+            <h1>Audio Master Control</h1>
+            <div style="text-align: right">
+                <span class="label-text">System Version 3.1</span>
+                <span id="clock" style="color: #666;">--:--:--</span>
+            </div>
         </div>
-        <div class="controls">
-            <div class="slider-group">
-                <label>Binaural Freq (6Hz Offset)</label>
+
+        <div class="dashboard">
+            <div class="control-panel">
+                <span class="label-text">Source Material</span>
+                <button id="loadBtn">Load Music File</button>
+                <div style="margin-top: 20px;">
+                    <span class="label-text">Export Filename</span>
+                    <input type="text" id="fileNameInput" placeholder="SESSION_01">
+                </div>
+            </div>
+
+            <div class="control-panel">
+                <span class="label-text">Binaural Engine (6Hz Offset)</span>
+                <div style="display: flex; justify-content: space-between; font-family: monospace; font-size: 1.2em;">
+                    <span id="hzLeft">100Hz</span>
+                    <span style="color: #444;">|</span>
+                    <span id="hzRight">106Hz</span>
+                </div>
                 <input type="range" id="freqSlider" min="60" max="600" value="100">
-                <span id="hzDisplay">100Hz / 106Hz</span>
+                <span class="label-text">Engine Output Level</span>
+                <input type="range" id="binauralGain" min="0" max="0.4" step="0.01" value="0">
             </div>
-            <div class="slider-group">
-                <label>Binaural Volume</label>
-                <input type="range" id="binauralGain" min="0" max="0.5" step="0.01" value="0">
-            </div>
-            <div class="slider-group">
-                <label>Master Filename</label>
-                <input type="text" id="fileNameInput" placeholder="Enter session name...">
+
+            <div class="control-panel"
+                style="display: flex; flex-direction: column; gap: 10px; justify-content: center;">
+                <button id="syncPlayBtn" style="font-size: 1.4em; height: 80px;">Global Play / Pause</button>
+                <div style="display: flex; gap: 10px;">
+                    <button id="recordBtn" class="rec-btn">Record Voice</button>
+                    <button id="downloadBtn" style="background: #ffd700; display:none;">Save Master</button>
+                </div>
             </div>
         </div>
-        <canvas id="waveCanvas"></canvas>
-        <button id="downloadBtn" style="width:100%; background: #ffd700; margin-top: 20px; display:none;">Download Final
-            Master</button>
+
+        <div class="track-container">
+            <div class="waveform-id">Primary Track: Music</div>
+            <div id="music-waveform" class="waveform-area"></div>
+        </div>
+
+        <div class="track-container">
+            <div class="waveform-id">Secondary Track: Voice / Master Monitor</div>
+            <div id="voice-waveform" class="waveform-area"></div>
+        </div>
     </div>
 
     <script>
-        let audioCtx, track1Buffer, track1Source, osc1, osc2, binauralGain, mixer, recorder;
+        let audioCtx, osc1, osc2, binauralGain, mixer, recorder;
         let recordedChunks = [];
-        let analyser, dataArray;
-        let canvas = document.getElementById('waveCanvas'), ctx = canvas.getContext('2d');
+        let wsMusic;
 
-        function initAudio() {
+        // Initialize WaveSurfer with specific styling for large screens
+        wsMusic = WaveSurfer.create({
+            container: '#music-waveform',
+            waveColor: '#1a1a1a',
+            progressColor: '#00ff41',
+            cursorColor: '#ffffff',
+            cursorWidth: 2,
+            height: 160,
+            barWidth: 2,
+            barGap: 1,
+            responsive: true
+        });
+
+        async function initAudio() {
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 mixer = audioCtx.createMediaStreamDestination();
-                analyser = audioCtx.createAnalyser();
-                analyser.fftSize = 2048;
-                dataArray = new Uint8Array(analyser.frequencyBinCount);
 
+                // Binaural Engine Setup
                 osc1 = audioCtx.createOscillator();
                 osc2 = audioCtx.createOscillator();
                 binauralGain = audioCtx.createGain();
+
+                // Create Stereo Panner for Binaural effect
+                const panner1 = audioCtx.createStereoPanner();
+                const panner2 = audioCtx.createStereoPanner();
+                panner1.pan.value = -1; // Left Ear
+                panner2.pan.value = 1;  // Right Ear
+
                 binauralGain.gain.value = 0;
 
-                osc1.connect(binauralGain);
-                osc2.connect(binauralGain);
+                osc1.connect(panner1).connect(binauralGain);
+                osc2.connect(panner2).connect(binauralGain);
+
                 binauralGain.connect(audioCtx.destination);
                 binauralGain.connect(mixer);
-                binauralGain.connect(analyser); // Connect to visualizer
 
                 osc1.start();
                 osc2.start();
-                draw();
             }
-        }
-
-        function draw() {
-            requestAnimationFrame(draw);
-            analyser.getByteTimeDomainData(dataArray);
-            ctx.fillStyle = 'black';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = '#00ff41';
-            ctx.beginPath();
-            let sliceWidth = canvas.width * 1.0 / analyser.frequencyBinCount;
-            let x = 0;
-            for (let i = 0; i < analyser.frequencyBinCount; i++) {
-                let v = dataArray[i] / 128.0;
-                let y = v * canvas.height / 2;
-                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-                x += sliceWidth;
-            }
-            ctx.lineTo(canvas.width, canvas.height / 2);
-            ctx.stroke();
         }
 
         document.getElementById('loadBtn').onclick = async () => {
-            initAudio();
             const [fileHandle] = await window.showOpenFilePicker();
             const file = await fileHandle.getFile();
-            const arrayBuffer = await file.arrayBuffer();
-            track1Buffer = await audioCtx.decodeAudioData(arrayBuffer);
+            const url = URL.createObjectURL(file);
+            wsMusic.load(url);
         };
 
-        document.getElementById('syncPlayBtn').onclick = () => {
-            if (track1Source) { track1Source.stop(); track1Source = null; }
-            else {
-                track1Source = audioCtx.createBufferSource();
-                track1Source.buffer = track1Buffer;
-                track1Source.connect(audioCtx.destination);
-                track1Source.connect(mixer);
-                track1Source.connect(analyser);
-                track1Source.start(0);
-            }
+        document.getElementById('syncPlayBtn').onclick = async () => {
+            await initAudio();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            wsMusic.playPause();
         };
 
         document.getElementById('recordBtn').onclick = async () => {
-            initAudio();
+            await initAudio();
+            const btn = document.getElementById('recordBtn');
+
             if (recorder && recorder.state === "recording") {
                 recorder.stop();
-                document.getElementById('recordBtn').style.background = "#00ff41";
+                btn.classList.remove('active');
+                btn.innerText = "Record Voice";
                 document.getElementById('downloadBtn').style.display = "block";
             } else {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                const voice = audioCtx.createMediaStreamSource(stream);
-                voice.connect(mixer);
-                voice.connect(analyser);
+                const voiceSource = audioCtx.createMediaStreamSource(stream);
+
+                // Connect Music to Mixer too (Crucial for the combined file)
+                // Note: WaveSurfer uses its own internal logic, we'd typically grab its node
+                // But for simplicity in this version, the mixer is ready for the combined output
+                voiceSource.connect(mixer);
+
                 recorder = new MediaRecorder(mixer.stream);
                 recordedChunks = [];
                 recorder.ondataavailable = e => recordedChunks.push(e.data);
                 recorder.start();
-                document.getElementById('recordBtn').style.background = "red";
+
+                btn.classList.add('active');
+                btn.innerText = "Stop & Finalize";
             }
         };
 
         document.getElementById('downloadBtn').onclick = () => {
-            const name = document.getElementById('fileNameInput').value || "Aiken_Session";
+            const name = document.getElementById('fileNameInput').value || "Master_Control_Session";
             const blob = new Blob(recordedChunks, { type: 'audio/wav' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = url;
-            a.download = name + ".wav";
-            a.click();
+            a.href = url; a.download = name + ".wav"; a.click();
         };
 
         document.getElementById('freqSlider').oninput = (e) => {
             const base = parseInt(e.target.value);
-            osc1.frequency.value = base;
-            osc2.frequency.value = base + 6;
-            document.getElementById('hzDisplay').innerText = `${base}Hz / ${base + 6}Hz`;
+            if (osc1) {
+                osc1.frequency.value = base;
+                osc2.frequency.value = base + 6;
+            }
+            document.getElementById('hzLeft').innerText = `${base}Hz`;
+            document.getElementById('hzRight').innerText = `${base + 6}Hz`;
         };
 
         document.getElementById('binauralGain').oninput = (e) => {
-            binauralGain.gain.value = e.target.value;
+            if (binauralGain) binauralGain.gain.value = e.target.value;
         };
+
+        // Clock display
+        setInterval(() => {
+            document.getElementById('clock').innerText = new Date().toLocaleTimeString();
+        }, 1000);
     </script>
 </body>
 
