@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Audio Master Control V5.4 - Professional Multitrack Console</title>
+    <title>Audio Master Control V5.5 - Professional Multitrack Console</title>
     <style>
         body {
             background: #000;
@@ -200,7 +200,7 @@
 
     <div class="console">
         <div class="header">
-            <h1>Audio Master Control V5.4</h1>
+            <h1>Audio Master Control V5.5</h1>
             <div id="clock">--:--:--</div>
         </div>
 
@@ -311,6 +311,16 @@
 
             wsMusic.on('interaction', (newTime) => wsVoice.setTime(newTime));
             wsMusic.on('seeking', (time) => wsVoice.setTime(time));
+
+            // AUTO-STOP & POST-ROLL LOGIC
+            wsMusic.on('finish', () => {
+                if (isRecording) {
+                    document.getElementById('status-indicator').innerText = "MUSIC ENDED - BUFFERING 1.5s...";
+                    setTimeout(() => {
+                        stopAndDownload();
+                    }, 1500);
+                }
+            });
         }
 
         async function setupAudio() {
@@ -325,7 +335,7 @@
             mixer.channelCount = 2;
 
             latencyDelay = audioCtx.createDelay(1.0);
-            latencyDelay.delayTime.value = 0.050; // 50ms compensation for recording alignment
+            latencyDelay.delayTime.value = 0.050; // 50ms alignment
 
             // --- BINAURAL ENGINE ---
             osc1 = audioCtx.createOscillator();
@@ -347,8 +357,7 @@
             // --- MIC SETUP ---
             micPanner = audioCtx.createStereoPanner();
             vocalGain = audioCtx.createGain();
-            vocalGain.gain.value = 0; // Default off for click-free start
-
+            vocalGain.gain.value = 0;
             micPanner.connect(vocalGain).connect(mixer);
 
             initWaveSurfers(audioCtx);
@@ -387,32 +396,20 @@
             if (!audioCtx) { alert("Load source first."); return; }
             if (audioCtx.state === 'suspended') await audioCtx.resume();
 
-            const leftBtn = document.getElementById('recLeft');
-            const rightBtn = document.getElementById('recRight');
-
             if (isRecording && currentRecSide === side) {
-                isRecording = false;
-                currentRecSide = null;
-                recordPlugin.stopRecording();
-                if (recorder && recorder.state === "recording") recorder.stop();
-                vocalGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.01); // Fade out
-
-                leftBtn.classList.remove('active');
-                rightBtn.classList.remove('active');
-                document.getElementById('downloadBtn').style.display = "block";
-                document.getElementById('status-indicator').innerText = "REC STOPPED";
+                stopAndDownload();
                 return;
             }
 
             if (isRecording && currentRecSide !== side) {
                 micPanner.pan.value = (side === 'left' ? -1 : 1);
                 currentRecSide = side;
-                leftBtn.classList.toggle('active', side === 'left');
-                rightBtn.classList.toggle('active', side === 'right');
+                document.getElementById('recLeft').classList.toggle('active', side === 'left');
+                document.getElementById('recRight').classList.toggle('active', side === 'right');
                 return;
             }
 
-            // --- START NEW RECORDING ---
+            // --- START ---
             isRecording = true;
             currentRecSide = side;
             micPanner.pan.value = (side === 'left' ? -1 : 1);
@@ -429,33 +426,51 @@
             const startTime = wsMusic.getCurrentTime();
             wsVoice.setTime(startTime);
 
-            // PRE-ROLL: Start recorder, wait 100ms, then start music
             recorder.start();
             recordPlugin.startRecording();
 
-            // Click-free fade in
             vocalGain.gain.setValueAtTime(0, audioCtx.currentTime);
-            vocalGain.gain.linearRampToValueAtTime(1, audioCtx.currentTime + 0.010); // 10ms smooth rise
+            vocalGain.gain.linearRampToValueAtTime(1, audioCtx.currentTime + 0.010);
 
-            // Force immediate visual update
             wsVoice.renderer.render();
 
             setTimeout(() => {
-                if (!wsMusic.isPlaying()) {
-                    wsMusic.play();
-                    wsVoice.play();
-                }
+                if (!wsMusic.isPlaying()) { wsMusic.play(); wsVoice.play(); }
             }, 100);
 
-            leftBtn.classList.toggle('active', side === 'left');
-            rightBtn.classList.toggle('active', side === 'right');
+            document.getElementById('recLeft').classList.toggle('active', side === 'left');
+            document.getElementById('recRight').classList.toggle('active', side === 'right');
             document.getElementById('status-indicator').innerText = `REC ACTIVE [${side.toUpperCase()}]`;
+        }
+
+        function stopAndDownload() {
+            if (!isRecording) return;
+
+            isRecording = false;
+            currentRecSide = null;
+
+            recordPlugin.stopRecording();
+            if (recorder && recorder.state === "recording") recorder.stop();
+            vocalGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.01);
+
+            document.getElementById('recLeft').classList.remove('active');
+            document.getElementById('recRight').classList.remove('active');
+
+            const downloadBtn = document.getElementById('downloadBtn');
+            downloadBtn.style.display = "block";
+            document.getElementById('status-indicator').innerText = "EXPORT READY";
+
+            // Auto-trigger Download
+            setTimeout(() => {
+                downloadBtn.click();
+            }, 500);
         }
 
         document.getElementById('recLeft').onclick = () => toggleRecording('left');
         document.getElementById('recRight').onclick = () => toggleRecording('right');
 
         document.getElementById('downloadBtn').onclick = () => {
+            if (recordedChunks.length === 0) return;
             const blob = new Blob(recordedChunks, { type: 'audio/wav' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
