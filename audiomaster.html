@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Audio Master Control V5.5 - Professional Multitrack Console</title>
+    <title>Audio Master Control V5.6 - Professional Multitrack Console</title>
     <style>
         body {
             background: #000;
@@ -52,6 +52,7 @@
             padding: 20px;
             background: #050505;
             border-radius: 4px;
+            position: relative;
         }
 
         .label {
@@ -150,11 +151,6 @@
             margin-top: 5px;
         }
 
-        input[type="text"]:focus {
-            outline: none;
-            border-color: #00ff41;
-        }
-
         #wave-music,
         #wave-voice {
             height: 160px;
@@ -188,10 +184,45 @@
             font-size: 0.7em;
             margin-top: 5px;
             color: #666;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .ready {
             color: #00ff41 !important;
+        }
+
+        #rec-light {
+            width: 12px;
+            height: 12px;
+            background: #330000;
+            border-radius: 50%;
+            transition: 0.3s;
+            display: inline-block;
+        }
+
+        #rec-light.on {
+            background: #ff0000;
+            box-shadow: 0 0 10px #ff0000;
+            animation: pulse-mini 1s infinite;
+        }
+
+        @keyframes pulse-mini {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.2);
+                opacity: 0.7;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
     </style>
 </head>
@@ -200,7 +231,7 @@
 
     <div class="console">
         <div class="header">
-            <h1>Audio Master Control V5.5</h1>
+            <h1>Audio Master Control V5.6</h1>
             <div id="clock">--:--:--</div>
         </div>
 
@@ -208,7 +239,10 @@
             <div class="panel">
                 <span class="label">1. SOURCE MATERIAL</span>
                 <button id="loadBtn">LOAD MASTER SOURCE</button>
-                <div id="status-indicator">SYSTEM IDLE</div>
+                <div id="status-indicator">
+                    <span id="rec-light"></span>
+                    <span id="status-text">SYSTEM IDLE</span>
+                </div>
                 <div style="margin-top: 15px;">
                     <span class="label">FILE IDENTIFIER</span>
                     <input type="text" id="fileName" placeholder="SESSION_ALPHA_01">
@@ -260,6 +294,7 @@
         let isRecording = false;
         let currentRecSide = null;
         let wsMusic, wsVoice, recordPlugin;
+        let hardStopTime = null;
 
         const SYNC_PX_PER_SEC = 50;
 
@@ -297,30 +332,32 @@
                 renderRecordedAudio: true
             }));
 
-            // Sync Loop
-            function syncLoop() {
-                if (wsMusic && wsVoice && wsMusic.isPlaying()) {
+            // Sync Loop & Hard Stop Monitor
+            function mainLoop() {
+                if (wsMusic && wsVoice) {
                     const musicTime = wsMusic.getCurrentTime();
-                    if (Math.abs(wsVoice.getCurrentTime() - musicTime) > 0.01) {
-                        wsVoice.setTime(musicTime);
+
+                    // Playhead Sync
+                    if (wsMusic.isPlaying()) {
+                        if (Math.abs(wsVoice.getCurrentTime() - musicTime) > 0.01) {
+                            wsVoice.setTime(musicTime);
+                        }
+                    }
+
+                    // --- HARD STOP MONITOR ---
+                    if (isRecording && hardStopTime !== null) {
+                        if (musicTime >= hardStopTime) {
+                            stopAndDownload();
+                            hardStopTime = null; // Prevent multiple triggers
+                        }
                     }
                 }
-                requestAnimationFrame(syncLoop);
+                requestAnimationFrame(mainLoop);
             }
-            requestAnimationFrame(syncLoop);
+            requestAnimationFrame(mainLoop);
 
             wsMusic.on('interaction', (newTime) => wsVoice.setTime(newTime));
             wsMusic.on('seeking', (time) => wsVoice.setTime(time));
-
-            // AUTO-STOP & POST-ROLL LOGIC
-            wsMusic.on('finish', () => {
-                if (isRecording) {
-                    document.getElementById('status-indicator').innerText = "MUSIC ENDED - BUFFERING 1.5s...";
-                    setTimeout(() => {
-                        stopAndDownload();
-                    }, 1500);
-                }
-            });
         }
 
         async function setupAudio() {
@@ -333,36 +370,30 @@
 
             mixer = audioCtx.createMediaStreamDestination();
             mixer.channelCount = 2;
-
             latencyDelay = audioCtx.createDelay(1.0);
-            latencyDelay.delayTime.value = 0.050; // 50ms alignment
+            latencyDelay.delayTime.value = 0.050;
 
-            // --- BINAURAL ENGINE ---
-            osc1 = audioCtx.createOscillator();
-            osc2 = audioCtx.createOscillator();
-            gainL = audioCtx.createGain();
-            gainR = audioCtx.createGain();
-            binauralMasterGain = audioCtx.createGain();
-            binauralMasterGain.gain.value = 0;
-
+            // --- BINAURAL ---
+            osc1 = audioCtx.createOscillator(); osc2 = audioCtx.createOscillator();
+            gainL = audioCtx.createGain(); gainR = audioCtx.createGain();
+            binauralMasterGain = audioCtx.createGain(); binauralMasterGain.gain.value = 0;
             const pL = audioCtx.createStereoPanner(); pL.pan.value = -1;
             const pR = audioCtx.createStereoPanner(); pR.pan.value = 1;
-
             osc1.connect(gainL).connect(pL).connect(binauralMasterGain);
             osc2.connect(gainR).connect(pR).connect(binauralMasterGain);
             binauralMasterGain.connect(audioCtx.destination);
             binauralMasterGain.connect(mixer);
             osc1.start(); osc2.start();
 
-            // --- MIC SETUP ---
+            // --- MIC ---
             micPanner = audioCtx.createStereoPanner();
             vocalGain = audioCtx.createGain();
             vocalGain.gain.value = 0;
             micPanner.connect(vocalGain).connect(mixer);
 
             initWaveSurfers(audioCtx);
-            document.getElementById('status-indicator').innerText = "SYSTEM ARMED";
-            document.getElementById('status-indicator').classList.add('ready');
+            document.getElementById('status-text').innerText = "SYSTEM ARMED";
+            document.getElementById('status-text').classList.add('ready');
         }
 
         initWaveSurfers();
@@ -382,7 +413,7 @@
                 musicSource.connect(audioCtx.destination);
                 musicSource.connect(latencyDelay).connect(mixer);
 
-                document.getElementById('status-indicator').innerText = "SOURCE: " + file.name;
+                document.getElementById('status-text').innerText = "SOURCE: " + file.name;
             } catch (err) { console.error("Load failed", err); }
         };
 
@@ -409,10 +440,14 @@
                 return;
             }
 
-            // --- START ---
+            // --- START SESSION ---
             isRecording = true;
             currentRecSide = side;
             micPanner.pan.value = (side === 'left' ? -1 : 1);
+
+            // Record Duration Calculation (Music + 2s Buffer)
+            const duration = wsMusic.getDuration();
+            hardStopTime = duration + 2.0;
 
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             if (!micSource) micSource = audioCtx.createMediaStreamSource(stream);
@@ -432,38 +467,37 @@
             vocalGain.gain.setValueAtTime(0, audioCtx.currentTime);
             vocalGain.gain.linearRampToValueAtTime(1, audioCtx.currentTime + 0.010);
 
-            wsVoice.renderer.render();
+            // UI: REC LIGHT ON
+            document.getElementById('rec-light').classList.add('on');
+            document.getElementById('recLeft').classList.toggle('active', side === 'left');
+            document.getElementById('recRight').classList.toggle('active', side === 'right');
+            document.getElementById('status-text').innerText = `REC ACTIVE [${side.toUpperCase()}]`;
 
             setTimeout(() => {
                 if (!wsMusic.isPlaying()) { wsMusic.play(); wsVoice.play(); }
             }, 100);
-
-            document.getElementById('recLeft').classList.toggle('active', side === 'left');
-            document.getElementById('recRight').classList.toggle('active', side === 'right');
-            document.getElementById('status-indicator').innerText = `REC ACTIVE [${side.toUpperCase()}]`;
         }
 
         function stopAndDownload() {
             if (!isRecording) return;
-
             isRecording = false;
             currentRecSide = null;
+            hardStopTime = null;
 
             recordPlugin.stopRecording();
             if (recorder && recorder.state === "recording") recorder.stop();
             vocalGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.01);
 
+            // UI: REC LIGHT OFF
+            document.getElementById('rec-light').classList.remove('on');
             document.getElementById('recLeft').classList.remove('active');
             document.getElementById('recRight').classList.remove('active');
 
             const downloadBtn = document.getElementById('downloadBtn');
             downloadBtn.style.display = "block";
-            document.getElementById('status-indicator').innerText = "EXPORT READY";
+            document.getElementById('status-text').innerText = "SESSION COMPLETE";
 
-            // Auto-trigger Download
-            setTimeout(() => {
-                downloadBtn.click();
-            }, 500);
+            setTimeout(() => { downloadBtn.click(); }, 500);
         }
 
         document.getElementById('recLeft').onclick = () => toggleRecording('left');
