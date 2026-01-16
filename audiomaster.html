@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Audio Master Control V4.6 - Stereo Enforcement</title>
+    <title>Audio Master Control V5.0 - Professional Multitrack Console</title>
     <style>
         body {
             background: #050505;
@@ -11,6 +11,7 @@
             font-family: 'Courier New', monospace;
             padding: 20px;
             margin: 0;
+            overflow-x: hidden;
         }
 
         .console {
@@ -28,13 +29,14 @@
             align-items: center;
             border-bottom: 2px solid #00ff41;
             margin-bottom: 25px;
-            padding-bottom: 10px;
+            padding-bottom: 15px;
         }
 
         h1 {
             margin: 0;
             letter-spacing: 5px;
-            font-size: 1.8em;
+            font-size: 1.6em;
+            text-transform: uppercase;
         }
 
         .grid {
@@ -58,6 +60,7 @@
             text-transform: uppercase;
             margin-bottom: 15px;
             display: block;
+            opacity: 0.8;
         }
 
         .track {
@@ -66,6 +69,7 @@
             margin-top: 15px;
             position: relative;
             border-radius: 4px;
+            overflow: hidden;
         }
 
         .track-id {
@@ -76,7 +80,8 @@
             font-size: 10px;
             z-index: 10;
             background: rgba(0, 0, 0, 0.8);
-            padding: 2px 6px;
+            padding: 2px 8px;
+            border: 1px solid #00ff4144;
         }
 
         button {
@@ -87,39 +92,36 @@
             width: 100%;
             font-weight: bold;
             cursor: pointer;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             text-transform: uppercase;
             transition: 0.2s;
+            font-family: inherit;
         }
 
         button:hover {
             background: #fff;
-            box-shadow: 0 0 15px #00ff41;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.5);
         }
 
-        .test-grid {
+        button:active {
+            transform: translateY(2px);
+        }
+
+        .rec-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
-            margin-top: 15px;
         }
 
-        .test-btn {
-            background: #111;
-            color: #00ff41;
-            border: 1px solid #00ff41;
-            font-size: 0.8em;
-            padding: 10px;
+        .rec-btn {
+            background: #222;
+            color: #ff4141;
+            border: 1px solid #ff4141;
+            font-size: 0.9em;
         }
 
-        .test-btn:active,
-        .test-btn.active {
-            background: #00ff41;
-            color: #000;
-        }
-
-        .rec-active {
-            background: #ff0000 !important;
+        .rec-btn.active {
+            background: #ff4141 !important;
             color: #fff !important;
             animation: pulse 1.5s infinite;
         }
@@ -127,36 +129,49 @@
         input[type="range"] {
             width: 100%;
             accent-color: #00ff41;
-            margin: 10px 0;
+            margin: 12px 0;
         }
 
         input[type="text"] {
             width: 100%;
             background: #000;
             color: #00ff41;
-            border: 1px solid #00ff41;
-            padding: 10px;
+            border: 1px solid #00ff4144;
+            padding: 12px;
             box-sizing: border-box;
-            margin-top: 10px;
+            font-family: inherit;
+            margin-top: 5px;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #00ff41;
         }
 
         #wave-music,
         #wave-voice {
-            height: 150px;
+            height: 160px;
+            width: 100%;
         }
 
         @keyframes pulse {
             0% {
-                box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7);
+                box-shadow: 0 0 0 0 rgba(255, 65, 65, 0.7);
             }
 
             70% {
-                box-shadow: 0 0 0 15px rgba(255, 0, 0, 0);
+                box-shadow: 0 0 0 15px rgba(255, 65, 65, 0);
             }
 
             100% {
-                box-shadow: 0 0 0 0 rgba(255, 0, 0, 0);
+                box-shadow: 0 0 0 0 rgba(255, 65, 65, 0);
             }
+        }
+
+        #clock {
+            color: #666;
+            font-size: 0.9em;
+            letter-spacing: 2px;
         }
     </style>
 </head>
@@ -165,46 +180,51 @@
 
     <div class="console">
         <div class="header">
-            <h1>AIKEN MASTER CONTROL V4.6</h1>
-            <div id="clock" style="color: #666; font-size: 0.9em;">--:--:--</div>
+            <h1>Audio Master Control V5.0</h1>
+            <div id="clock">--:--:--</div>
         </div>
 
         <div class="grid">
             <div class="panel">
-                <span class="label">1. SOURCE INPUT</span>
-                <button id="loadBtn">LOAD MUSIC FILE</button>
-                <input type="text" id="fileName" placeholder="SESSION_ID_01">
+                <span class="label">1. SOURCE MATERIAL</span>
+                <button id="loadBtn">LOAD MASTER SOURCE</button>
+                <div style="margin-top: 15px;">
+                    <span class="label">FILE IDENTIFIER</span>
+                    <input type="text" id="fileName" placeholder="SESSION_ALPHA_01">
+                </div>
             </div>
 
             <div class="panel">
-                <span class="label">2. BINAURAL ENGINE (STEREO)</span>
-                <div id="hzNote" style="text-align:center; margin-bottom:10px; font-size: 1.2em;">100Hz | 106Hz</div>
+                <span class="label">2. BINAURAL ENGINE</span>
+                <div id="hzNote" style="text-align:center; margin-bottom:10px; font-size: 1.2em; letter-spacing: 2px;">
+                    100Hz | 6Hz FLOW</div>
                 <input type="range" id="freqSlider" min="60" max="400" value="100">
                 <input type="range" id="volSlider" min="0" max="0.5" step="0.01" value="0">
-                <div class="test-grid">
-                    <button id="testLeft" class="test-btn">TEST LEFT</button>
-                    <button id="testRight" class="test-btn">TEST RIGHT</button>
+                <div style="display: flex; justify-content: space-between; font-size: 0.7em; opacity: 0.6;">
+                    <span>60Hz</span>
+                    <span>400Hz</span>
                 </div>
             </div>
 
             <div class="panel">
-                <span class="label">3. ANALOG TRANSPORT</span>
-                <button id="playBtn" style="height: 60px; font-size: 1.2em;">PLAY / PAUSE</button>
-                <div style="display: flex; gap: 10px;">
-                    <button id="recBtn" class="rec-btn"
-                        style="background: #222; color: #ff0000; border: 1px solid #ff0000;">RECORD</button>
-                    <button id="downloadBtn" style="background:#ffd700; display:none;">SAVE MASTER</button>
+                <span class="label">3. MULTITRACK TRANSPORT</span>
+                <button id="playBtn" style="height: 50px; font-size: 1.1em;">MASTER PLAY / PAUSE</button>
+                <div class="rec-grid">
+                    <button id="recLeft" class="rec-btn">REC LEFT</button>
+                    <button id="recRight" class="rec-btn">REC RIGHT</button>
                 </div>
+                <button id="downloadBtn" style="background:#ffd700; display:none; margin-top: 10px;">SAVE SESSION
+                    MASTER</button>
             </div>
         </div>
 
         <div class="track">
-            <div class="track-id">PRIMARY: MUSIC</div>
+            <div class="track-id">D-01: MASTER MUSIC (STEREO)</div>
             <div id="wave-music"></div>
         </div>
 
         <div class="track">
-            <div class="track-id">SECONDARY: VOICE / MASTER</div>
+            <div class="track-id">V-01: VOCAL CHANNEL (PANNED)</div>
             <div id="wave-voice"></div>
         </div>
     </div>
@@ -215,29 +235,32 @@
 
         let audioCtx, osc1, osc2, gainL, gainR, binauralMasterGain, mixer, recorder;
         let recordedChunks = [];
-        let musicSource; // Persistent music source node
-        let soloL = false, soloR = false;
+        let musicSource, micSource, micPanner;
+        let isRecording = false;
+
+        const SYNC_PX_PER_SEC = 50; // Force exact same pixel scale for visual sync
 
         const commonOptions = {
-            waveColor: '#004411',
             progressColor: '#00ff41',
             cursorColor: '#fff',
-            height: 150,
+            height: 160,
             barWidth: 3,
             barGap: 2,
-            responsive: true
+            responsive: true,
+            minPxPerSec: SYNC_PX_PER_SEC,
+            hideScrollbar: false,
         };
 
         const wsMusic = WaveSurfer.create({
             ...commonOptions,
             container: '#wave-music',
+            waveColor: '#004411',
         });
 
         const wsVoice = WaveSurfer.create({
             ...commonOptions,
             container: '#wave-voice',
             waveColor: '#440000',
-            progressColor: '#ff0000'
         });
 
         const record = wsVoice.registerPlugin(RecordPlugin.create({
@@ -247,27 +270,24 @@
 
         async function setupAudio() {
             if (!audioCtx) {
-                // Force Stereo Context
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)({
                     latencyHint: 'interactive',
                     sampleRate: 44100
                 });
 
-                // Force Stereo Mixer
                 mixer = audioCtx.createMediaStreamDestination();
                 mixer.channelCount = 2;
 
-                // Binaural Processor Chain - Precise Stereo
+                // --- BINAURAL SETUP ---
                 osc1 = audioCtx.createOscillator();
                 osc2 = audioCtx.createOscillator();
-
                 gainL = audioCtx.createGain();
                 gainR = audioCtx.createGain();
                 binauralMasterGain = audioCtx.createGain();
                 binauralMasterGain.gain.value = 0;
 
-                const pL = audioCtx.createStereoPanner(); pL.pan.value = -1; // 100% Left
-                const pR = audioCtx.createStereoPanner(); pR.pan.value = 1;  // 100% Right
+                const pL = audioCtx.createStereoPanner(); pL.pan.value = -1;
+                const pR = audioCtx.createStereoPanner(); pR.pan.value = 1;
 
                 osc1.connect(gainL).connect(pL).connect(binauralMasterGain);
                 osc2.connect(gainR).connect(pR).connect(binauralMasterGain);
@@ -276,8 +296,24 @@
                 binauralMasterGain.connect(mixer);
 
                 osc1.start(); osc2.start();
+
+                // --- MIC SETUP ---
+                micPanner = audioCtx.createStereoPanner();
+                micPanner.connect(mixer); // Only goes to mixer for the master file, monitor usually avoided to prevent loop
             }
         }
+
+        // --- MASTER SYNC LOGIC ---
+        // Every playhead movement in Music drives Voice
+        wsMusic.on('timeupdate', (currentTime) => {
+            if (!isRecording) {
+                wsVoice.setTime(currentTime);
+            }
+        });
+
+        wsMusic.on('seeking', (time) => {
+            wsVoice.setTime(time);
+        });
 
         document.getElementById('loadBtn').onclick = async () => {
             const [fileHandle] = await window.showOpenFilePicker();
@@ -289,7 +325,6 @@
             await setupAudio();
             if (audioCtx.state === 'suspended') await audioCtx.resume();
 
-            // CRITICAL: Music Routing to Mixer (Universal Plug)
             const mediaElement = wsMusic.getMediaElement();
             mediaElement.crossOrigin = "anonymous";
 
@@ -297,30 +332,44 @@
                 musicSource = audioCtx.createMediaElementSource(mediaElement);
             }
 
-            // Re-establish connections for guaranteed fresh routing
+            // Re-connect to ensure stereo mix isn't lost
             musicSource.disconnect();
-            musicSource.connect(audioCtx.destination);
-            musicSource.connect(mixer);
+            musicSource.connect(audioCtx.destination); // Play in both ears (Stereo)
+            musicSource.connect(mixer); // Include in master file
 
             wsMusic.playPause();
+            // Sync play state
+            if (wsMusic.isPlaying()) {
+                wsVoice.play();
+            } else {
+                wsVoice.pause();
+            }
         };
 
-        document.getElementById('recBtn').onclick = async () => {
+        async function triggerRecording(panValue, btnId) {
             await setupAudio();
-            const btn = document.getElementById('recBtn');
+            const btn = document.getElementById(btnId);
 
-            if (record.isRecording()) {
+            if (isRecording) {
                 record.stopRecording();
                 if (recorder && recorder.state === "recording") recorder.stop();
-                btn.classList.remove('rec-active');
-                btn.innerText = "RECORD";
-                document.getElementById('downloadBtn').style.display = "block";
-            } else {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                const micSource = audioCtx.createMediaStreamSource(stream);
-                micSource.connect(mixer);
+                isRecording = false;
 
-                // Force 2 Channels in MediaRecorder
+                document.querySelectorAll('.rec-btn').forEach(b => {
+                    b.classList.remove('active');
+                    b.disabled = false;
+                });
+                document.getElementById('downloadBtn').style.display = "block";
+                wsMusic.pause();
+            } else {
+                isRecording = true;
+                micPanner.pan.value = panValue;
+
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                if (!micSource) micSource = audioCtx.createMediaStreamSource(stream);
+                micSource.disconnect();
+                micSource.connect(micPanner);
+
                 recorder = new MediaRecorder(mixer.stream, {
                     mimeType: 'audio/webm;codecs=opus',
                     audioBitsPerSecond: 128000
@@ -328,62 +377,33 @@
 
                 recordedChunks = [];
                 recorder.ondataavailable = e => recordedChunks.push(e.data);
-                recorder.start();
 
+                // Universal Play Sync
+                wsMusic.setTime(0);
+                wsVoice.setTime(0);
+                wsMusic.play();
+
+                recorder.start();
                 record.startRecording();
-                btn.classList.add('rec-active');
-                btn.innerText = "STOP";
+
+                btn.classList.add('active');
+                document.querySelectorAll('.rec-btn').forEach(b => {
+                    if (b.id !== btnId) b.disabled = true;
+                });
             }
-        };
+        }
+
+        document.getElementById('recLeft').onclick = () => triggerRecording(-1, 'recLeft');
+        document.getElementById('recRight').onclick = () => triggerRecording(1, 'recRight');
 
         document.getElementById('downloadBtn').onclick = () => {
             const blob = new Blob(recordedChunks, { type: 'audio/wav' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `${document.getElementById('fileName').value || 'Master'}.wav`;
+            a.download = `${document.getElementById('fileName').value || 'Audio_Master_Session'}.wav`;
             a.click();
         };
-
-        // Solo Test Logic - Strict Channel Killing
-        document.getElementById('testLeft').onclick = async () => {
-            await setupAudio();
-            soloL = !soloL;
-            soloR = false;
-            updateSoloState();
-        };
-
-        document.getElementById('testRight').onclick = async () => {
-            await setupAudio();
-            soloR = !soloR;
-            soloL = false;
-            updateSoloState();
-        };
-
-        function updateSoloState() {
-            const btnL = document.getElementById('testLeft');
-            const btnR = document.getElementById('testRight');
-
-            btnL.classList.toggle('active', soloL);
-            btnR.classList.toggle('active', soloR);
-
-            if (!soloL && !soloR) {
-                // Normal Binaural Operation
-                gainL.gain.setTargetAtTime(1, audioCtx.currentTime, 0.05);
-                gainR.gain.setTargetAtTime(1, audioCtx.currentTime, 0.05);
-                binauralMasterGain.gain.setTargetAtTime(document.getElementById('volSlider').value, audioCtx.currentTime, 0.1);
-            } else if (soloL) {
-                // KILL RIGHT CHANNEL for Binaural
-                gainL.gain.setTargetAtTime(1, audioCtx.currentTime, 0.05);
-                gainR.gain.setTargetAtTime(0, audioCtx.currentTime, 0.01); // Instant kill
-                binauralMasterGain.gain.setTargetAtTime(0.4, audioCtx.currentTime, 0.1);
-            } else if (soloR) {
-                // KILL LEFT CHANNEL for Binaural
-                gainL.gain.setTargetAtTime(0, audioCtx.currentTime, 0.01); // Instant kill
-                gainR.gain.setTargetAtTime(1, audioCtx.currentTime, 0.05);
-                binauralMasterGain.gain.setTargetAtTime(0.4, audioCtx.currentTime, 0.1);
-            }
-        }
 
         document.getElementById('freqSlider').oninput = (e) => {
             const val = parseInt(e.target.value);
@@ -391,11 +411,11 @@
                 osc1.frequency.setTargetAtTime(val, audioCtx.currentTime, 0.05);
                 osc2.frequency.setTargetAtTime(val + 6, audioCtx.currentTime, 0.05);
             }
-            document.getElementById('hzNote').innerText = `${val}Hz | ${val + 6}Hz`;
+            document.getElementById('hzNote').innerText = `${val}Hz | 6Hz FLOW`;
         };
 
         document.getElementById('volSlider').oninput = (e) => {
-            if (binauralMasterGain && !soloL && !soloR) {
+            if (binauralMasterGain) {
                 binauralMasterGain.gain.setTargetAtTime(e.target.value, audioCtx.currentTime, 0.05);
             }
         };
