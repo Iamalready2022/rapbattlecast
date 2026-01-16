@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Audio Master Control V5.3 - Professional Multitrack Console</title>
+    <title>Audio Master Control V5.4 - Professional Multitrack Console</title>
     <style>
         body {
             background: #000;
@@ -200,7 +200,7 @@
 
     <div class="console">
         <div class="header">
-            <h1>Audio Master Control V5.3</h1>
+            <h1>Audio Master Control V5.4</h1>
             <div id="clock">--:--:--</div>
         </div>
 
@@ -256,7 +256,7 @@
 
         let audioCtx, osc1, osc2, gainL, gainR, binauralMasterGain, mixer, recorder;
         let recordedChunks = [];
-        let musicSource, micSource, micPanner, latencyDelay;
+        let musicSource, micSource, micPanner, vocalGain, latencyDelay;
         let isRecording = false;
         let currentRecSide = null;
         let wsMusic, wsVoice, recordPlugin;
@@ -297,7 +297,7 @@
                 renderRecordedAudio: true
             }));
 
-            // Auto-Seek & High Precision Sync
+            // Sync Loop
             function syncLoop() {
                 if (wsMusic && wsVoice && wsMusic.isPlaying()) {
                     const musicTime = wsMusic.getCurrentTime();
@@ -309,14 +309,8 @@
             }
             requestAnimationFrame(syncLoop);
 
-            // Interaction Sync (Auto-Seek)
-            wsMusic.on('interaction', (newTime) => {
-                wsVoice.setTime(newTime);
-            });
-
-            wsMusic.on('seeking', (time) => {
-                wsVoice.setTime(time);
-            });
+            wsMusic.on('interaction', (newTime) => wsVoice.setTime(newTime));
+            wsMusic.on('seeking', (time) => wsVoice.setTime(time));
         }
 
         async function setupAudio() {
@@ -330,9 +324,8 @@
             mixer = audioCtx.createMediaStreamDestination();
             mixer.channelCount = 2;
 
-            // --- LATENCY CORRECTION ---
             latencyDelay = audioCtx.createDelay(1.0);
-            latencyDelay.delayTime.value = 0.050; // 50ms compensation
+            latencyDelay.delayTime.value = 0.050; // 50ms compensation for recording alignment
 
             // --- BINAURAL ENGINE ---
             osc1 = audioCtx.createOscillator();
@@ -347,18 +340,18 @@
 
             osc1.connect(gainL).connect(pL).connect(binauralMasterGain);
             osc2.connect(gainR).connect(pR).connect(binauralMasterGain);
-
             binauralMasterGain.connect(audioCtx.destination);
             binauralMasterGain.connect(mixer);
-
             osc1.start(); osc2.start();
 
             // --- MIC SETUP ---
             micPanner = audioCtx.createStereoPanner();
-            micPanner.connect(mixer); // MIC ISOLATION: No connection to audioCtx.destination
+            vocalGain = audioCtx.createGain();
+            vocalGain.gain.value = 0; // Default off for click-free start
+
+            micPanner.connect(vocalGain).connect(mixer);
 
             initWaveSurfers(audioCtx);
-
             document.getElementById('status-indicator').innerText = "SYSTEM ARMED";
             document.getElementById('status-indicator').classList.add('ready');
         }
@@ -371,35 +364,23 @@
                 const [fileHandle] = await window.showOpenFilePicker();
                 const file = await fileHandle.getFile();
                 const url = URL.createObjectURL(file);
-
                 await wsMusic.load(url);
 
                 const mediaElement = wsMusic.getMediaElement();
                 mediaElement.crossOrigin = "anonymous";
-                if (!musicSource) {
-                    musicSource = audioCtx.createMediaElementSource(mediaElement);
-                }
+                if (!musicSource) { musicSource = audioCtx.createMediaElementSource(mediaElement); }
                 musicSource.disconnect();
-                musicSource.connect(audioCtx.destination); // Direct to ear (Zero Latency)
-                musicSource.connect(latencyDelay).connect(mixer); // Delayed to mixer (Corrected Alignment)
+                musicSource.connect(audioCtx.destination);
+                musicSource.connect(latencyDelay).connect(mixer);
 
                 document.getElementById('status-indicator').innerText = "SOURCE: " + file.name;
-            } catch (err) {
-                console.error("Load failed", err);
-            }
+            } catch (err) { console.error("Load failed", err); }
         };
 
         document.getElementById('playBtn').onclick = async () => {
             if (!audioCtx) { alert("Load source first."); return; }
             if (audioCtx.state === 'suspended') await audioCtx.resume();
-
-            if (wsMusic.isPlaying()) {
-                wsMusic.pause();
-                wsVoice.pause();
-            } else {
-                wsMusic.play();
-                wsVoice.play();
-            }
+            if (wsMusic.isPlaying()) { wsMusic.pause(); wsVoice.pause(); } else { wsMusic.play(); wsVoice.play(); }
         };
 
         async function toggleRecording(side) {
@@ -414,10 +395,10 @@
                 currentRecSide = null;
                 recordPlugin.stopRecording();
                 if (recorder && recorder.state === "recording") recorder.stop();
+                vocalGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.01); // Fade out
 
                 leftBtn.classList.remove('active');
                 rightBtn.classList.remove('active');
-
                 document.getElementById('downloadBtn').style.display = "block";
                 document.getElementById('status-indicator').innerText = "REC STOPPED";
                 return;
@@ -431,6 +412,7 @@
                 return;
             }
 
+            // --- START NEW RECORDING ---
             isRecording = true;
             currentRecSide = side;
             micPanner.pan.value = (side === 'left' ? -1 : 1);
@@ -447,13 +429,23 @@
             const startTime = wsMusic.getCurrentTime();
             wsVoice.setTime(startTime);
 
+            // PRE-ROLL: Start recorder, wait 100ms, then start music
             recorder.start();
             recordPlugin.startRecording();
 
-            if (!wsMusic.isPlaying()) {
-                wsMusic.play();
-                wsVoice.play();
-            }
+            // Click-free fade in
+            vocalGain.gain.setValueAtTime(0, audioCtx.currentTime);
+            vocalGain.gain.linearRampToValueAtTime(1, audioCtx.currentTime + 0.010); // 10ms smooth rise
+
+            // Force immediate visual update
+            wsVoice.renderer.render();
+
+            setTimeout(() => {
+                if (!wsMusic.isPlaying()) {
+                    wsMusic.play();
+                    wsVoice.play();
+                }
+            }, 100);
 
             leftBtn.classList.toggle('active', side === 'left');
             rightBtn.classList.toggle('active', side === 'right');
@@ -475,7 +467,6 @@
         document.getElementById('freqSlider').oninput = async (e) => {
             if (!audioCtx) await setupAudio();
             if (audioCtx.state === 'suspended') await audioCtx.resume();
-
             const val = parseInt(e.target.value);
             osc1.frequency.setTargetAtTime(val, audioCtx.currentTime, 0.05);
             osc2.frequency.setTargetAtTime(val + 6, audioCtx.currentTime, 0.05);
