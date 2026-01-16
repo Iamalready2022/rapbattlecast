@@ -3,15 +3,32 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Audio Master Control V5.6 - Professional Multitrack Console</title>
+    <title>Audio Master Control V5.7 - Professional Multitrack Console</title>
     <style>
         body {
             background: #000;
             color: #00ff41;
             font-family: 'Courier New', monospace;
-            padding: 20px;
+            padding: 0;
             margin: 0;
             overflow-x: hidden;
+        }
+
+        #recording-banner {
+            display: none;
+            background: #ff0000;
+            color: #fff;
+            font-weight: bold;
+            text-align: center;
+            padding: 15px;
+            font-size: 1.2em;
+            letter-spacing: 10px;
+            box-shadow: 0 0 30px #ff0000;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            width: 100%;
+            text-transform: uppercase;
         }
 
         .console {
@@ -19,7 +36,7 @@
             padding: 30px;
             background: #000;
             max-width: 1400px;
-            margin: auto;
+            margin: 20px auto;
             box-shadow: 0 0 40px rgba(0, 255, 65, 0.2);
         }
 
@@ -52,7 +69,6 @@
             padding: 20px;
             background: #050505;
             border-radius: 4px;
-            position: relative;
         }
 
         .label {
@@ -174,12 +190,6 @@
             }
         }
 
-        #clock {
-            color: #00ff4188;
-            font-size: 0.9em;
-            letter-spacing: 2px;
-        }
-
         #status-indicator {
             font-size: 0.7em;
             margin-top: 5px;
@@ -229,9 +239,11 @@
 
 <body>
 
+    <div id="recording-banner">RECORDING ACTIVE</div>
+
     <div class="console">
         <div class="header">
-            <h1>Audio Master Control V5.6</h1>
+            <h1>Audio Master Control V5.7</h1>
             <div id="clock">--:--:--</div>
         </div>
 
@@ -332,23 +344,21 @@
                 renderRecordedAudio: true
             }));
 
-            // Sync Loop & Hard Stop Monitor
             function mainLoop() {
                 if (wsMusic && wsVoice) {
                     const musicTime = wsMusic.getCurrentTime();
 
-                    // Playhead Sync
                     if (wsMusic.isPlaying()) {
                         if (Math.abs(wsVoice.getCurrentTime() - musicTime) > 0.01) {
                             wsVoice.setTime(musicTime);
                         }
                     }
 
-                    // --- HARD STOP MONITOR ---
+                    // --- HARD BYPASS MONITOR (V5.7: 3s Buffer) ---
                     if (isRecording && hardStopTime !== null) {
                         if (musicTime >= hardStopTime) {
                             stopAndDownload();
-                            hardStopTime = null; // Prevent multiple triggers
+                            hardStopTime = null;
                         }
                     }
                 }
@@ -358,6 +368,13 @@
 
             wsMusic.on('interaction', (newTime) => wsVoice.setTime(newTime));
             wsMusic.on('seeking', (time) => wsVoice.setTime(time));
+
+            // Explicitly decouple stop from 'finish' event
+            wsMusic.on('finish', () => {
+                if (isRecording) {
+                    document.getElementById('status-text').innerText = "MUSIC ENDED - MIC HOT FOR 3s...";
+                }
+            });
         }
 
         async function setupAudio() {
@@ -368,8 +385,10 @@
                 sampleRate: 44100
             });
 
+            // PERSISTENT MIXER: Created once, never disconnected
             mixer = audioCtx.createMediaStreamDestination();
             mixer.channelCount = 2;
+
             latencyDelay = audioCtx.createDelay(1.0);
             latencyDelay.delayTime.value = 0.050;
 
@@ -440,14 +459,14 @@
                 return;
             }
 
-            // --- START SESSION ---
+            // --- START ---
             isRecording = true;
             currentRecSide = side;
             micPanner.pan.value = (side === 'left' ? -1 : 1);
 
-            // Record Duration Calculation (Music + 2s Buffer)
+            // Hard Stop: Duration + 3s Tail
             const duration = wsMusic.getDuration();
-            hardStopTime = duration + 2.0;
+            hardStopTime = duration + 3.0;
 
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             if (!micSource) micSource = audioCtx.createMediaStreamSource(stream);
@@ -467,7 +486,8 @@
             vocalGain.gain.setValueAtTime(0, audioCtx.currentTime);
             vocalGain.gain.linearRampToValueAtTime(1, audioCtx.currentTime + 0.010);
 
-            // UI: REC LIGHT ON
+            // UI: ACTIVE INDICATORS
+            document.getElementById('recording-banner').style.display = 'block';
             document.getElementById('rec-light').classList.add('on');
             document.getElementById('recLeft').classList.toggle('active', side === 'left');
             document.getElementById('recRight').classList.toggle('active', side === 'right');
@@ -488,14 +508,15 @@
             if (recorder && recorder.state === "recording") recorder.stop();
             vocalGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.01);
 
-            // UI: REC LIGHT OFF
+            // UI: RESET
+            document.getElementById('recording-banner').style.display = 'none';
             document.getElementById('rec-light').classList.remove('on');
             document.getElementById('recLeft').classList.remove('active');
             document.getElementById('recRight').classList.remove('active');
 
             const downloadBtn = document.getElementById('downloadBtn');
             downloadBtn.style.display = "block";
-            document.getElementById('status-text').innerText = "SESSION COMPLETE";
+            document.getElementById('status-text').innerText = "D-01 & V-01 MASTERED";
 
             setTimeout(() => { downloadBtn.click(); }, 500);
         }
