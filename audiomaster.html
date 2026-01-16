@@ -3,10 +3,10 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Audio Master Control V5.0 - Professional Multitrack Console</title>
+    <title>Audio Master Control V5.1 - Professional Multitrack Console</title>
     <style>
         body {
-            background: #050505;
+            background: #000;
             color: #00ff41;
             font-family: 'Courier New', monospace;
             padding: 20px;
@@ -20,7 +20,7 @@
             background: #000;
             max-width: 1400px;
             margin: auto;
-            box-shadow: 0 0 40px rgba(0, 255, 65, 0.15);
+            box-shadow: 0 0 40px rgba(0, 255, 65, 0.2);
         }
 
         .header {
@@ -37,6 +37,7 @@
             letter-spacing: 5px;
             font-size: 1.6em;
             text-transform: uppercase;
+            text-shadow: 0 0 10px #00ff41;
         }
 
         .grid {
@@ -49,7 +50,7 @@
         .panel {
             border: 1px solid #00ff4144;
             padding: 20px;
-            background: #0a0a0a;
+            background: #050505;
             border-radius: 4px;
         }
 
@@ -60,12 +61,12 @@
             text-transform: uppercase;
             margin-bottom: 15px;
             display: block;
-            opacity: 0.8;
+            opacity: 0.9;
         }
 
         .track {
-            background: #080808;
-            border: 1px solid #222;
+            background: #000;
+            border: 1px solid #00ff4133;
             margin-top: 15px;
             position: relative;
             border-radius: 4px;
@@ -79,7 +80,7 @@
             color: #00ff41;
             font-size: 10px;
             z-index: 10;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.9);
             padding: 2px 8px;
             border: 1px solid #00ff4144;
         }
@@ -103,8 +104,10 @@
             box-shadow: 0 0 15px rgba(0, 255, 65, 0.5);
         }
 
-        button:active {
-            transform: translateY(2px);
+        button[disabled] {
+            opacity: 0.3;
+            cursor: not-allowed;
+            background: #004411 !important;
         }
 
         .rec-grid {
@@ -114,7 +117,7 @@
         }
 
         .rec-btn {
-            background: #222;
+            background: #111;
             color: #ff4141;
             border: 1px solid #ff4141;
             font-size: 0.9em;
@@ -130,6 +133,7 @@
             width: 100%;
             accent-color: #00ff41;
             margin: 12px 0;
+            background: transparent;
         }
 
         input[type="text"] {
@@ -169,9 +173,19 @@
         }
 
         #clock {
-            color: #666;
+            color: #00ff4188;
             font-size: 0.9em;
             letter-spacing: 2px;
+        }
+
+        #status-indicator {
+            font-size: 0.7em;
+            margin-top: 5px;
+            color: #666;
+        }
+
+        .ready {
+            color: #00ff41 !important;
         }
     </style>
 </head>
@@ -180,7 +194,7 @@
 
     <div class="console">
         <div class="header">
-            <h1>Audio Master Control V5.0</h1>
+            <h1>Audio Master Control V5.1</h1>
             <div id="clock">--:--:--</div>
         </div>
 
@@ -188,6 +202,7 @@
             <div class="panel">
                 <span class="label">1. SOURCE MATERIAL</span>
                 <button id="loadBtn">LOAD MASTER SOURCE</button>
+                <div id="status-indicator">SYSTEM IDLE</div>
                 <div style="margin-top: 15px;">
                     <span class="label">FILE IDENTIFIER</span>
                     <input type="text" id="fileName" placeholder="SESSION_ALPHA_01">
@@ -213,8 +228,8 @@
                     <button id="recLeft" class="rec-btn">REC LEFT</button>
                     <button id="recRight" class="rec-btn">REC RIGHT</button>
                 </div>
-                <button id="downloadBtn" style="background:#ffd700; display:none; margin-top: 10px;">SAVE SESSION
-                    MASTER</button>
+                <button id="downloadBtn" style="background:#ffd700; display:none; margin-top: 10px; color: #000;">SAVE
+                    SESSION MASTER</button>
             </div>
         </div>
 
@@ -237,130 +252,165 @@
         let recordedChunks = [];
         let musicSource, micSource, micPanner;
         let isRecording = false;
+        let wsMusic, wsVoice, recordPlugin;
 
-        const SYNC_PX_PER_SEC = 50; // Force exact same pixel scale for visual sync
+        const SYNC_PX_PER_SEC = 50;
 
-        const commonOptions = {
-            progressColor: '#00ff41',
-            cursorColor: '#fff',
-            height: 160,
-            barWidth: 3,
-            barGap: 2,
-            responsive: true,
-            minPxPerSec: SYNC_PX_PER_SEC,
-            hideScrollbar: false,
-        };
+        // Initialize WaveSurfer instances without AudioContext initially
+        function initWaveSurfers(ctx = null) {
+            const commonOptions = {
+                progressColor: '#00ff41',
+                cursorColor: '#fff',
+                height: 160,
+                barWidth: 3,
+                barGap: 2,
+                responsive: true,
+                minPxPerSec: SYNC_PX_PER_SEC,
+                hideScrollbar: false,
+                audioContext: ctx
+            };
 
-        const wsMusic = WaveSurfer.create({
-            ...commonOptions,
-            container: '#wave-music',
-            waveColor: '#004411',
-        });
+            if (wsMusic) wsMusic.destroy();
+            if (wsVoice) wsVoice.destroy();
 
-        const wsVoice = WaveSurfer.create({
-            ...commonOptions,
-            container: '#wave-voice',
-            waveColor: '#440000',
-        });
+            wsMusic = WaveSurfer.create({
+                ...commonOptions,
+                container: '#wave-music',
+                waveColor: '#004411',
+            });
 
-        const record = wsVoice.registerPlugin(RecordPlugin.create({
-            scrollingWaveform: true,
-            renderRecordedAudio: true
-        }));
+            wsVoice = WaveSurfer.create({
+                ...commonOptions,
+                container: '#wave-voice',
+                waveColor: '#330000',
+            });
 
-        async function setupAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)({
-                    latencyHint: 'interactive',
-                    sampleRate: 44100
-                });
+            recordPlugin = wsVoice.registerPlugin(RecordPlugin.create({
+                scrollingWaveform: true,
+                renderRecordedAudio: true
+            }));
 
-                mixer = audioCtx.createMediaStreamDestination();
-                mixer.channelCount = 2;
+            // --- MASTER SYNC LOGIC ---
+            wsMusic.on('timeupdate', (currentTime) => {
+                if (!isRecording && wsVoice.getDuration() > 0) {
+                    // Only sync if not recording and voice track has content
+                    // Actually, for master control, we want the cursors to move together always
+                    if (Math.abs(wsVoice.getCurrentTime() - currentTime) > 0.1) {
+                        wsVoice.setTime(currentTime);
+                    }
+                }
+            });
 
-                // --- BINAURAL SETUP ---
-                osc1 = audioCtx.createOscillator();
-                osc2 = audioCtx.createOscillator();
-                gainL = audioCtx.createGain();
-                gainR = audioCtx.createGain();
-                binauralMasterGain = audioCtx.createGain();
-                binauralMasterGain.gain.value = 0;
+            wsMusic.on('play', () => wsVoice.play());
+            wsMusic.on('pause', () => wsVoice.pause());
+            wsMusic.on('seeking', (time) => wsVoice.setTime(time));
 
-                const pL = audioCtx.createStereoPanner(); pL.pan.value = -1;
-                const pR = audioCtx.createStereoPanner(); pR.pan.value = 1;
-
-                osc1.connect(gainL).connect(pL).connect(binauralMasterGain);
-                osc2.connect(gainR).connect(pR).connect(binauralMasterGain);
-
-                binauralMasterGain.connect(audioCtx.destination);
-                binauralMasterGain.connect(mixer);
-
-                osc1.start(); osc2.start();
-
-                // --- MIC SETUP ---
-                micPanner = audioCtx.createStereoPanner();
-                micPanner.connect(mixer); // Only goes to mixer for the master file, monitor usually avoided to prevent loop
-            }
+            // Sync scrolling
+            wsMusic.on('scroll', (start, end) => {
+                const voiceWrapper = document.querySelector('#wave-voice shadow-root div');
+                if (voiceWrapper) voiceWrapper.scrollLeft = start * SYNC_PX_PER_SEC;
+                // WaveSurfer 7 handles scrolling differently, but for now we rely on the internal sync via setTime
+            });
         }
 
-        // --- MASTER SYNC LOGIC ---
-        // Every playhead movement in Music drives Voice
-        wsMusic.on('timeupdate', (currentTime) => {
-            if (!isRecording) {
-                wsVoice.setTime(currentTime);
-            }
-        });
+        // Heavy Lifting: Setup Audio Pipeline
+        async function setupAudio() {
+            if (audioCtx) return;
 
-        wsMusic.on('seeking', (time) => {
-            wsVoice.setTime(time);
-        });
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)({
+                latencyHint: 'interactive',
+                sampleRate: 44100
+            });
+
+            mixer = audioCtx.createMediaStreamDestination();
+            mixer.channelCount = 2;
+
+            // --- BINAURAL SETUP ---
+            osc1 = audioCtx.createOscillator();
+            osc2 = audioCtx.createOscillator();
+            gainL = audioCtx.createGain();
+            gainR = audioCtx.createGain();
+            binauralMasterGain = audioCtx.createGain();
+            binauralMasterGain.gain.value = 0;
+
+            const pL = audioCtx.createStereoPanner(); pL.pan.value = -1;
+            const pR = audioCtx.createStereoPanner(); pR.pan.value = 1;
+
+            osc1.connect(gainL).connect(pL).connect(binauralMasterGain);
+            osc2.connect(gainR).connect(pR).connect(binauralMasterGain);
+
+            binauralMasterGain.connect(audioCtx.destination);
+            binauralMasterGain.connect(mixer);
+
+            osc1.start(); osc2.start();
+
+            // --- MIC SETUP ---
+            micPanner = audioCtx.createStereoPanner();
+            micPanner.connect(mixer);
+
+            // Re-init WaveSurfers with the actual AudioContext
+            initWaveSurfers(audioCtx);
+
+            document.getElementById('status-indicator').innerText = "SYSTEM ARMED - CONTEXT ACTIVE";
+            document.getElementById('status-indicator').classList.add('ready');
+        }
+
+        // Initial setup (empty contexts)
+        initWaveSurfers();
 
         document.getElementById('loadBtn').onclick = async () => {
-            const [fileHandle] = await window.showOpenFilePicker();
-            const file = await fileHandle.getFile();
-            wsMusic.load(URL.createObjectURL(file));
+            try {
+                await setupAudio();
+                const [fileHandle] = await window.showOpenFilePicker();
+                const file = await fileHandle.getFile();
+                const url = URL.createObjectURL(file);
+
+                await wsMusic.load(url);
+
+                // Connect Music to Mixer
+                const mediaElement = wsMusic.getMediaElement();
+                mediaElement.crossOrigin = "anonymous";
+                if (!musicSource) {
+                    musicSource = audioCtx.createMediaElementSource(mediaElement);
+                }
+                musicSource.disconnect();
+                musicSource.connect(audioCtx.destination);
+                musicSource.connect(mixer);
+
+                document.getElementById('status-indicator').innerText = "SOURCE LOADED: " + file.name;
+            } catch (err) {
+                console.error("Load failed", err);
+                document.getElementById('status-indicator').innerText = "LOAD FAILED/CANCELLED";
+            }
         };
 
         document.getElementById('playBtn').onclick = async () => {
-            await setupAudio();
+            if (!audioCtx) {
+                alert("Please LOAD MASTER SOURCE first.");
+                return;
+            }
             if (audioCtx.state === 'suspended') await audioCtx.resume();
-
-            const mediaElement = wsMusic.getMediaElement();
-            mediaElement.crossOrigin = "anonymous";
-
-            if (!musicSource) {
-                musicSource = audioCtx.createMediaElementSource(mediaElement);
-            }
-
-            // Re-connect to ensure stereo mix isn't lost
-            musicSource.disconnect();
-            musicSource.connect(audioCtx.destination); // Play in both ears (Stereo)
-            musicSource.connect(mixer); // Include in master file
-
             wsMusic.playPause();
-            // Sync play state
-            if (wsMusic.isPlaying()) {
-                wsVoice.play();
-            } else {
-                wsVoice.pause();
-            }
         };
 
         async function triggerRecording(panValue, btnId) {
-            await setupAudio();
+            if (!audioCtx) {
+                alert("Please LOAD MASTER SOURCE first.");
+                return;
+            }
+
             const btn = document.getElementById(btnId);
 
             if (isRecording) {
-                record.stopRecording();
-                if (recorder && recorder.state === "recording") recorder.stop();
                 isRecording = false;
-
-                document.querySelectorAll('.rec-btn').forEach(b => {
-                    b.classList.remove('active');
-                    b.disabled = false;
-                });
-                document.getElementById('downloadBtn').style.display = "block";
+                recordPlugin.stopRecording();
+                if (recorder && recorder.state === "recording") recorder.stop();
                 wsMusic.pause();
+
+                btn.classList.remove('active');
+                document.querySelectorAll('.rec-btn').forEach(b => b.disabled = false);
+                document.getElementById('downloadBtn').style.display = "block";
+                document.getElementById('status-indicator').innerText = "RECORDING FINISHED";
             } else {
                 isRecording = true;
                 micPanner.pan.value = panValue;
@@ -370,26 +420,29 @@
                 micSource.disconnect();
                 micSource.connect(micPanner);
 
+                // Initialize Recorder from the Mixer Stream (Music + Mic + Tones)
                 recorder = new MediaRecorder(mixer.stream, {
-                    mimeType: 'audio/webm;codecs=opus',
-                    audioBitsPerSecond: 128000
+                    mimeType: 'audio/webm;codecs=opus'
                 });
 
                 recordedChunks = [];
-                recorder.ondataavailable = e => recordedChunks.push(e.data);
+                recorder.ondataavailable = e => {
+                    if (e.data.size > 0) recordedChunks.push(e.data);
+                };
 
-                // Universal Play Sync
+                // Sync start
                 wsMusic.setTime(0);
                 wsVoice.setTime(0);
-                wsMusic.play();
 
                 recorder.start();
-                record.startRecording();
+                recordPlugin.startRecording();
+                wsMusic.play();
 
                 btn.classList.add('active');
                 document.querySelectorAll('.rec-btn').forEach(b => {
                     if (b.id !== btnId) b.disabled = true;
                 });
+                document.getElementById('status-indicator').innerText = "RECORDING ACTIVE...";
             }
         }
 
@@ -397,6 +450,10 @@
         document.getElementById('recRight').onclick = () => triggerRecording(1, 'recRight');
 
         document.getElementById('downloadBtn').onclick = () => {
+            if (recordedChunks.length === 0) {
+                alert("No recording data found.");
+                return;
+            }
             const blob = new Blob(recordedChunks, { type: 'audio/wav' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
