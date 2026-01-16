@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Audio Master Control V5.1 - Professional Multitrack Console</title>
+    <title>Audio Master Control V5.2 - Professional Multitrack Console</title>
     <style>
         body {
             background: #000;
@@ -71,6 +71,8 @@
             position: relative;
             border-radius: 4px;
             overflow: hidden;
+            height: 160px;
+            /* Force symmetry */
         }
 
         .track-id {
@@ -105,7 +107,7 @@
         }
 
         button[disabled] {
-            opacity: 0.3;
+            opacity: 0.3 !important;
             cursor: not-allowed;
             background: #004411 !important;
         }
@@ -156,6 +158,9 @@
         #wave-voice {
             height: 160px;
             width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
 
         @keyframes pulse {
@@ -194,7 +199,7 @@
 
     <div class="console">
         <div class="header">
-            <h1>Audio Master Control V5.1</h1>
+            <h1>Audio Master Control V5.2</h1>
             <div id="clock">--:--:--</div>
         </div>
 
@@ -239,7 +244,7 @@
         </div>
 
         <div class="track">
-            <div class="track-id">V-01: VOCAL CHANNEL (PANNED)</div>
+            <div class="track-id" style="color: #ff4141; border-color: #ff414144;">V-01: VOCAL CHANNEL (PANNED)</div>
             <div id="wave-voice"></div>
         </div>
     </div>
@@ -252,11 +257,12 @@
         let recordedChunks = [];
         let musicSource, micSource, micPanner;
         let isRecording = false;
+        let currentRecSide = null; // 'left' or 'right'
         let wsMusic, wsVoice, recordPlugin;
 
         const SYNC_PX_PER_SEC = 50;
 
-        // Initialize WaveSurfer instances without AudioContext initially
+        // Initialize WaveSurfer instances
         function initWaveSurfers(ctx = null) {
             const commonOptions = {
                 progressColor: '#00ff41',
@@ -282,7 +288,8 @@
             wsVoice = WaveSurfer.create({
                 ...commonOptions,
                 container: '#wave-voice',
-                waveColor: '#330000',
+                waveColor: '#330000', // Deep red for vocal track
+                progressColor: '#ff4141',
             });
 
             recordPlugin = wsVoice.registerPlugin(RecordPlugin.create({
@@ -290,30 +297,25 @@
                 renderRecordedAudio: true
             }));
 
-            // --- MASTER SYNC LOGIC ---
-            wsMusic.on('timeupdate', (currentTime) => {
-                if (!isRecording && wsVoice.getDuration() > 0) {
-                    // Only sync if not recording and voice track has content
-                    // Actually, for master control, we want the cursors to move together always
-                    if (Math.abs(wsVoice.getCurrentTime() - currentTime) > 0.1) {
-                        wsVoice.setTime(currentTime);
+            // High Precision Sync Loop
+            function syncLoop() {
+                if (wsMusic && wsVoice && wsMusic.isPlaying()) {
+                    const musicTime = wsMusic.getCurrentTime();
+                    // Forced alignment every frame
+                    if (Math.abs(wsVoice.getCurrentTime() - musicTime) > 0.01) {
+                        wsVoice.setTime(musicTime);
                     }
                 }
-            });
+                requestAnimationFrame(syncLoop);
+            }
+            requestAnimationFrame(syncLoop);
 
-            wsMusic.on('play', () => wsVoice.play());
-            wsMusic.on('pause', () => wsVoice.pause());
-            wsMusic.on('seeking', (time) => wsVoice.setTime(time));
-
-            // Sync scrolling
-            wsMusic.on('scroll', (start, end) => {
-                const voiceWrapper = document.querySelector('#wave-voice shadow-root div');
-                if (voiceWrapper) voiceWrapper.scrollLeft = start * SYNC_PX_PER_SEC;
-                // WaveSurfer 7 handles scrolling differently, but for now we rely on the internal sync via setTime
+            // Manual Seek Sync
+            wsMusic.on('seeking', (time) => {
+                wsVoice.setTime(time);
             });
         }
 
-        // Heavy Lifting: Setup Audio Pipeline
         async function setupAudio() {
             if (audioCtx) return;
 
@@ -325,13 +327,13 @@
             mixer = audioCtx.createMediaStreamDestination();
             mixer.channelCount = 2;
 
-            // --- BINAURAL SETUP ---
+            // --- BINAURAL ENGINE ---
             osc1 = audioCtx.createOscillator();
             osc2 = audioCtx.createOscillator();
             gainL = audioCtx.createGain();
             gainR = audioCtx.createGain();
             binauralMasterGain = audioCtx.createGain();
-            binauralMasterGain.gain.value = 0;
+            binauralMasterGain.gain.value = 0; // Default off
 
             const pL = audioCtx.createStereoPanner(); pL.pan.value = -1;
             const pR = audioCtx.createStereoPanner(); pR.pan.value = 1;
@@ -348,15 +350,13 @@
             micPanner = audioCtx.createStereoPanner();
             micPanner.connect(mixer);
 
-            // Re-init WaveSurfers with the actual AudioContext
             initWaveSurfers(audioCtx);
 
-            document.getElementById('status-indicator').innerText = "SYSTEM ARMED - CONTEXT ACTIVE";
+            document.getElementById('status-indicator').innerText = "SYSTEM ARMED";
             document.getElementById('status-indicator').classList.add('ready');
         }
 
-        // Initial setup (empty contexts)
-        initWaveSurfers();
+        initWaveSurfers(); // Start with empty state
 
         document.getElementById('loadBtn').onclick = async () => {
             try {
@@ -367,7 +367,6 @@
 
                 await wsMusic.load(url);
 
-                // Connect Music to Mixer
                 const mediaElement = wsMusic.getMediaElement();
                 mediaElement.crossOrigin = "anonymous";
                 if (!musicSource) {
@@ -377,83 +376,97 @@
                 musicSource.connect(audioCtx.destination);
                 musicSource.connect(mixer);
 
-                document.getElementById('status-indicator').innerText = "SOURCE LOADED: " + file.name;
+                document.getElementById('status-indicator').innerText = "SOURCE: " + file.name;
             } catch (err) {
                 console.error("Load failed", err);
-                document.getElementById('status-indicator').innerText = "LOAD FAILED/CANCELLED";
             }
         };
 
         document.getElementById('playBtn').onclick = async () => {
-            if (!audioCtx) {
-                alert("Please LOAD MASTER SOURCE first.");
-                return;
-            }
+            if (!audioCtx) { alert("Load source first."); return; }
             if (audioCtx.state === 'suspended') await audioCtx.resume();
-            wsMusic.playPause();
+
+            if (wsMusic.isPlaying()) {
+                wsMusic.pause();
+                wsVoice.pause();
+            } else {
+                wsMusic.play();
+                wsVoice.play();
+            }
         };
 
-        async function triggerRecording(panValue, btnId) {
-            if (!audioCtx) {
-                alert("Please LOAD MASTER SOURCE first.");
-                return;
-            }
+        async function toggleRecording(side) {
+            if (!audioCtx) { alert("Load source first."); return; }
+            if (audioCtx.state === 'suspended') await audioCtx.resume();
 
-            const btn = document.getElementById(btnId);
+            const leftBtn = document.getElementById('recLeft');
+            const rightBtn = document.getElementById('recRight');
 
-            if (isRecording) {
+            // If clicking the SAME button that is already active -> STOP
+            if (isRecording && currentRecSide === side) {
                 isRecording = false;
+                currentRecSide = null;
                 recordPlugin.stopRecording();
                 if (recorder && recorder.state === "recording") recorder.stop();
-                wsMusic.pause();
 
-                btn.classList.remove('active');
-                document.querySelectorAll('.rec-btn').forEach(b => b.disabled = false);
+                leftBtn.classList.remove('active');
+                rightBtn.classList.remove('active');
+                leftBtn.disabled = false;
+                rightBtn.disabled = false;
+
                 document.getElementById('downloadBtn').style.display = "block";
-                document.getElementById('status-indicator').innerText = "RECORDING FINISHED";
-            } else {
-                isRecording = true;
-                micPanner.pan.value = panValue;
-
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                if (!micSource) micSource = audioCtx.createMediaStreamSource(stream);
-                micSource.disconnect();
-                micSource.connect(micPanner);
-
-                // Initialize Recorder from the Mixer Stream (Music + Mic + Tones)
-                recorder = new MediaRecorder(mixer.stream, {
-                    mimeType: 'audio/webm;codecs=opus'
-                });
-
-                recordedChunks = [];
-                recorder.ondataavailable = e => {
-                    if (e.data.size > 0) recordedChunks.push(e.data);
-                };
-
-                // Sync start
-                wsMusic.setTime(0);
-                wsVoice.setTime(0);
-
-                recorder.start();
-                recordPlugin.startRecording();
-                wsMusic.play();
-
-                btn.classList.add('active');
-                document.querySelectorAll('.rec-btn').forEach(b => {
-                    if (b.id !== btnId) b.disabled = true;
-                });
-                document.getElementById('status-indicator').innerText = "RECORDING ACTIVE...";
-            }
-        }
-
-        document.getElementById('recLeft').onclick = () => triggerRecording(-1, 'recLeft');
-        document.getElementById('recRight').onclick = () => triggerRecording(1, 'recRight');
-
-        document.getElementById('downloadBtn').onclick = () => {
-            if (recordedChunks.length === 0) {
-                alert("No recording data found.");
+                document.getElementById('status-indicator').innerText = "REC STOPPED";
                 return;
             }
+
+            // If record is NOT active, or we are switching sides
+            if (isRecording && currentRecSide !== side) {
+                // Stop current before switching? Or just switch panner?
+                // For safety in MediaRecorder, let's stop and start a new chunk or just switch panner.
+                // Request says: "if one is active, the other is inactive".
+                micPanner.pan.value = (side === 'left' ? -1 : 1);
+                currentRecSide = side;
+                leftBtn.classList.toggle('active', side === 'left');
+                rightBtn.classList.toggle('active', side === 'right');
+                return;
+            }
+
+            // Start New Recording
+            isRecording = true;
+            currentRecSide = side;
+            micPanner.pan.value = (side === 'left' ? -1 : 1);
+
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            if (!micSource) micSource = audioCtx.createMediaStreamSource(stream);
+            micSource.disconnect();
+            micSource.connect(micPanner);
+
+            recorder = new MediaRecorder(mixer.stream, { mimeType: 'audio/webm;codecs=opus' });
+            recordedChunks = [];
+            recorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
+
+            // NO RESET: Start from current position
+            const startTime = wsMusic.getCurrentTime();
+            wsVoice.setTime(startTime);
+
+            recorder.start();
+            recordPlugin.startRecording();
+
+            // If music wasn't playing, start it now
+            if (!wsMusic.isPlaying()) {
+                wsMusic.play();
+                wsVoice.play();
+            }
+
+            leftBtn.classList.toggle('active', side === 'left');
+            rightBtn.classList.toggle('active', side === 'right');
+            document.getElementById('status-indicator').innerText = `REC ACTIVE [${side.toUpperCase()}]`;
+        }
+
+        document.getElementById('recLeft').onclick = () => toggleRecording('left');
+        document.getElementById('recRight').onclick = () => toggleRecording('right');
+
+        document.getElementById('downloadBtn').onclick = () => {
             const blob = new Blob(recordedChunks, { type: 'audio/wav' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -462,22 +475,23 @@
             a.click();
         };
 
-        document.getElementById('freqSlider').oninput = (e) => {
+        // --- BINAURAL AUTONOMY ---
+        document.getElementById('freqSlider').oninput = async (e) => {
+            if (!audioCtx) await setupAudio();
+            if (audioCtx.state === 'suspended') await audioCtx.resume();
+
             const val = parseInt(e.target.value);
-            if (osc1) {
-                osc1.frequency.setTargetAtTime(val, audioCtx.currentTime, 0.05);
-                osc2.frequency.setTargetAtTime(val + 6, audioCtx.currentTime, 0.05);
-            }
+            osc1.frequency.setTargetAtTime(val, audioCtx.currentTime, 0.05);
+            osc2.frequency.setTargetAtTime(val + 6, audioCtx.currentTime, 0.05);
             document.getElementById('hzNote').innerText = `${val}Hz | 6Hz FLOW`;
         };
 
-        document.getElementById('volSlider').oninput = (e) => {
-            if (binauralMasterGain) {
-                binauralMasterGain.gain.setTargetAtTime(e.target.value, audioCtx.currentTime, 0.05);
-            }
+        document.getElementById('volSlider').oninput = async (e) => {
+            if (!audioCtx) await setupAudio();
+            if (audioCtx.state === 'suspended') await audioCtx.resume();
+            binauralMasterGain.gain.setTargetAtTime(e.target.value, audioCtx.currentTime, 0.05);
         };
 
-        // System Clock
         setInterval(() => {
             document.getElementById('clock').innerText = new Date().toLocaleTimeString();
         }, 1000);
