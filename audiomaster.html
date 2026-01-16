@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Audio Master Control V5.8 - Solder Edition</title>
+    <title>Audio Master Control V5.9 - Stability Edition</title>
     <style>
         body {
             background: #000;
@@ -14,11 +14,11 @@
             overflow-x: hidden;
         }
 
+        /* STATIC UI: No animations during recording to prevent jitters */
         #recording-banner {
             display: none;
             background: #ff0000;
-            color: #ffff00;
-            /* BRIGHT YELLOW TEXT */
+            color: #fff;
             font-weight: bold;
             text-align: center;
             padding: 15px;
@@ -30,24 +30,6 @@
             z-index: 1000;
             width: 100%;
             text-transform: uppercase;
-            animation: yellow-pulse 1.5s infinite;
-        }
-
-        @keyframes yellow-pulse {
-            0% {
-                color: #ffff00;
-                text-shadow: 0 0 5px #ffff00;
-            }
-
-            50% {
-                color: #ffffff;
-                text-shadow: 0 0 20px #ffff00;
-            }
-
-            100% {
-                color: #ffff00;
-                text-shadow: 0 0 5px #ffff00;
-            }
         }
 
         .console {
@@ -165,7 +147,6 @@
             color: #fff !important;
             border-color: #fff;
             box-shadow: 0 0 20px #ff0000;
-            animation: pulse 1.0s infinite;
         }
 
         input[type="range"] {
@@ -195,20 +176,6 @@
             left: 0;
         }
 
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7);
-            }
-
-            70% {
-                box-shadow: 0 0 0 15px rgba(255, 0, 0, 0);
-            }
-
-            100% {
-                box-shadow: 0 0 0 0 rgba(255, 0, 0, 0);
-            }
-        }
-
         #status-indicator {
             font-size: 0.7em;
             margin-top: 5px;
@@ -234,35 +201,17 @@
         #rec-light.on {
             background: #ff0000;
             box-shadow: 0 0 10px #ff0000;
-            animation: pulse-mini 1s infinite;
-        }
-
-        @keyframes pulse-mini {
-            0% {
-                transform: scale(1);
-                opacity: 1;
-            }
-
-            50% {
-                transform: scale(1.2);
-                opacity: 0.7;
-            }
-
-            100% {
-                transform: scale(1);
-                opacity: 1;
-            }
         }
     </style>
 </head>
 
 <body>
 
-    <div id="recording-banner">RECORDING ACTIVE - STAY ALIVE</div>
+    <div id="recording-banner">RECORDING ACTIVE - STABILITY PRIORITY</div>
 
     <div class="console">
         <div class="header">
-            <h1>Audio Master Control V5.8</h1>
+            <h1>Audio Master Control V5.9</h1>
             <div id="clock">--:--:--</div>
         </div>
 
@@ -373,14 +322,6 @@
                             wsVoice.setTime(musicTime);
                         }
                     }
-
-                    // Secondary Safety for hard stop
-                    if (isRecording && hardStopTime !== null) {
-                        if (musicTime >= hardStopTime) {
-                            console.log("Hard Stop Reached via Loop");
-                            // We prefer the setTimeout tail force, but this is a backup
-                        }
-                    }
                 }
                 requestAnimationFrame(mainLoop);
             }
@@ -391,14 +332,11 @@
 
             wsMusic.on('finish', () => {
                 if (isRecording) {
-                    document.getElementById('status-text').innerText = "MUSIC FINISHED -> TAIL FORCE ACTIVATED (3s)";
-                    console.log("Music Finished. Starting 3s Tail Timeout.");
-
+                    document.getElementById('status-text').innerText = "TAIL FORCE (3s)";
                     if (tailTimeout) clearTimeout(tailTimeout);
                     tailTimeout = setTimeout(() => {
-                        console.log("Tail Timeout Triggered.");
                         stopAndDownload();
-                    }, 3000); // HARD TAIL FORCE
+                    }, 3000);
                 }
             });
         }
@@ -406,12 +344,12 @@
         async function setupAudio() {
             if (audioCtx) return;
 
+            // V5.9 STABILITY: latencyHint 'playback' increases internal buffer size
             audioCtx = new (window.AudioContext || window.webkitAudioContext)({
-                latencyHint: 'interactive',
+                latencyHint: 'playback',
                 sampleRate: 44100
             });
 
-            // PERSISTENT MIXER: Never disconnected
             mixer = audioCtx.createMediaStreamDestination();
             mixer.channelCount = 2;
 
@@ -431,16 +369,22 @@
             binauralMasterGain.connect(mixer);
             osc1.start(); osc2.start();
 
-            // --- MIC ---
+            // --- MIC (ONE-TIME IDEMPOTENT ROUTING) ---
             micPanner = audioCtx.createStereoPanner();
             vocalGain = audioCtx.createGain();
             vocalGain.gain.value = 0;
-
-            // STAY-ALIVE MASTER GAIN
             masterVoiceGain = audioCtx.createGain();
             masterVoiceGain.gain.value = 1.0;
 
             micPanner.connect(vocalGain).connect(masterVoiceGain).connect(mixer);
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                micSource = audioCtx.createMediaStreamSource(stream);
+                micSource.connect(micPanner); // SOLDERED
+            } catch (err) {
+                console.error("Mic permissions denied", err);
+            }
 
             initWaveSurfers(audioCtx);
             document.getElementById('status-text').innerText = "SYSTEM ARMED";
@@ -461,7 +405,6 @@
                 mediaElement.crossOrigin = "anonymous";
                 if (!musicSource) { musicSource = audioCtx.createMediaElementSource(mediaElement); }
 
-                // NO DISCONNECTS - RE-ROUTING ONLY IF NEEDED
                 musicSource.connect(audioCtx.destination);
                 musicSource.connect(latencyDelay).connect(mixer);
 
@@ -485,7 +428,6 @@
             }
 
             if (isRecording && currentRecSide !== side) {
-                // LOCKDOWN PANNING
                 micPanner.pan.setValueAtTime(side === 'left' ? -1.0 : 1.0, audioCtx.currentTime);
                 currentRecSide = side;
                 document.getElementById('recLeft').classList.toggle('active', side === 'left');
@@ -497,13 +439,6 @@
             isRecording = true;
             currentRecSide = side;
             micPanner.pan.setValueAtTime(side === 'left' ? -1.0 : 1.0, audioCtx.currentTime);
-
-            const duration = wsMusic.getDuration();
-            hardStopTime = duration + 3.0;
-
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            if (!micSource) micSource = audioCtx.createMediaStreamSource(stream);
-            micSource.connect(micPanner); // NO DISCONNECT
 
             recorder = new MediaRecorder(mixer.stream, { mimeType: 'audio/webm;codecs=opus' });
             recordedChunks = [];
@@ -518,7 +453,7 @@
             vocalGain.gain.setValueAtTime(0, audioCtx.currentTime);
             vocalGain.gain.linearRampToValueAtTime(1, audioCtx.currentTime + 0.010);
 
-            // UI: ACTIVE INDICATORS
+            // UI: STATIC STATE (No animation during recording)
             document.getElementById('recording-banner').style.display = 'block';
             document.getElementById('rec-light').classList.add('on');
             document.getElementById('recLeft').classList.toggle('active', side === 'left');
@@ -534,13 +469,11 @@
             if (!isRecording) return;
             isRecording = false;
             currentRecSide = null;
-            hardStopTime = null;
             if (tailTimeout) { clearTimeout(tailTimeout); tailTimeout = null; }
 
             recordPlugin.stopRecording();
             if (recorder && recorder.state === "recording") recorder.stop();
 
-            // RAMP DOWN VOCAL GAIN BUT LEAVE MASTER VOICE GAIN AT 1.0
             vocalGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05);
 
             // UI: RESET
@@ -551,7 +484,7 @@
 
             const downloadBtn = document.getElementById('downloadBtn');
             downloadBtn.style.display = "block";
-            document.getElementById('status-text').innerText = "SESSION COMPLETE - MASTER READY";
+            document.getElementById('status-text').innerText = "MASTER READY";
 
             setTimeout(() => { downloadBtn.click(); }, 500);
         }
@@ -565,7 +498,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `${document.getElementById('fileName').value || 'Audio_Master_V5.8'}.wav`;
+            a.download = `${document.getElementById('fileName').value || 'Audio_Master_V5.9'}.wav`;
             a.click();
         };
 
