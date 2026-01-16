@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Audio Master Control V5.7 - Professional Multitrack Console</title>
+    <title>Audio Master Control V5.8 - Solder Edition</title>
     <style>
         body {
             background: #000;
@@ -17,18 +17,37 @@
         #recording-banner {
             display: none;
             background: #ff0000;
-            color: #fff;
+            color: #ffff00;
+            /* BRIGHT YELLOW TEXT */
             font-weight: bold;
             text-align: center;
             padding: 15px;
-            font-size: 1.2em;
-            letter-spacing: 10px;
+            font-size: 1.4em;
+            letter-spacing: 5px;
             box-shadow: 0 0 30px #ff0000;
             position: sticky;
             top: 0;
             z-index: 1000;
             width: 100%;
             text-transform: uppercase;
+            animation: yellow-pulse 1.5s infinite;
+        }
+
+        @keyframes yellow-pulse {
+            0% {
+                color: #ffff00;
+                text-shadow: 0 0 5px #ffff00;
+            }
+
+            50% {
+                color: #ffffff;
+                text-shadow: 0 0 20px #ffff00;
+            }
+
+            100% {
+                color: #ffff00;
+                text-shadow: 0 0 5px #ffff00;
+            }
         }
 
         .console {
@@ -239,11 +258,11 @@
 
 <body>
 
-    <div id="recording-banner">RECORDING ACTIVE</div>
+    <div id="recording-banner">RECORDING ACTIVE - STAY ALIVE</div>
 
     <div class="console">
         <div class="header">
-            <h1>Audio Master Control V5.7</h1>
+            <h1>Audio Master Control V5.8</h1>
             <div id="clock">--:--:--</div>
         </div>
 
@@ -302,11 +321,12 @@
 
         let audioCtx, osc1, osc2, gainL, gainR, binauralMasterGain, mixer, recorder;
         let recordedChunks = [];
-        let musicSource, micSource, micPanner, vocalGain, latencyDelay;
+        let musicSource, micSource, micPanner, vocalGain, masterVoiceGain, latencyDelay;
         let isRecording = false;
         let currentRecSide = null;
         let wsMusic, wsVoice, recordPlugin;
         let hardStopTime = null;
+        let tailTimeout = null;
 
         const SYNC_PX_PER_SEC = 50;
 
@@ -354,11 +374,11 @@
                         }
                     }
 
-                    // --- HARD BYPASS MONITOR (V5.7: 3s Buffer) ---
+                    // Secondary Safety for hard stop
                     if (isRecording && hardStopTime !== null) {
                         if (musicTime >= hardStopTime) {
-                            stopAndDownload();
-                            hardStopTime = null;
+                            console.log("Hard Stop Reached via Loop");
+                            // We prefer the setTimeout tail force, but this is a backup
                         }
                     }
                 }
@@ -369,10 +389,16 @@
             wsMusic.on('interaction', (newTime) => wsVoice.setTime(newTime));
             wsMusic.on('seeking', (time) => wsVoice.setTime(time));
 
-            // Explicitly decouple stop from 'finish' event
             wsMusic.on('finish', () => {
                 if (isRecording) {
-                    document.getElementById('status-text').innerText = "MUSIC ENDED - MIC HOT FOR 3s...";
+                    document.getElementById('status-text').innerText = "MUSIC FINISHED -> TAIL FORCE ACTIVATED (3s)";
+                    console.log("Music Finished. Starting 3s Tail Timeout.");
+
+                    if (tailTimeout) clearTimeout(tailTimeout);
+                    tailTimeout = setTimeout(() => {
+                        console.log("Tail Timeout Triggered.");
+                        stopAndDownload();
+                    }, 3000); // HARD TAIL FORCE
                 }
             });
         }
@@ -385,7 +411,7 @@
                 sampleRate: 44100
             });
 
-            // PERSISTENT MIXER: Created once, never disconnected
+            // PERSISTENT MIXER: Never disconnected
             mixer = audioCtx.createMediaStreamDestination();
             mixer.channelCount = 2;
 
@@ -398,6 +424,7 @@
             binauralMasterGain = audioCtx.createGain(); binauralMasterGain.gain.value = 0;
             const pL = audioCtx.createStereoPanner(); pL.pan.value = -1;
             const pR = audioCtx.createStereoPanner(); pR.pan.value = 1;
+
             osc1.connect(gainL).connect(pL).connect(binauralMasterGain);
             osc2.connect(gainR).connect(pR).connect(binauralMasterGain);
             binauralMasterGain.connect(audioCtx.destination);
@@ -408,7 +435,12 @@
             micPanner = audioCtx.createStereoPanner();
             vocalGain = audioCtx.createGain();
             vocalGain.gain.value = 0;
-            micPanner.connect(vocalGain).connect(mixer);
+
+            // STAY-ALIVE MASTER GAIN
+            masterVoiceGain = audioCtx.createGain();
+            masterVoiceGain.gain.value = 1.0;
+
+            micPanner.connect(vocalGain).connect(masterVoiceGain).connect(mixer);
 
             initWaveSurfers(audioCtx);
             document.getElementById('status-text').innerText = "SYSTEM ARMED";
@@ -428,7 +460,8 @@
                 const mediaElement = wsMusic.getMediaElement();
                 mediaElement.crossOrigin = "anonymous";
                 if (!musicSource) { musicSource = audioCtx.createMediaElementSource(mediaElement); }
-                musicSource.disconnect();
+
+                // NO DISCONNECTS - RE-ROUTING ONLY IF NEEDED
                 musicSource.connect(audioCtx.destination);
                 musicSource.connect(latencyDelay).connect(mixer);
 
@@ -452,7 +485,8 @@
             }
 
             if (isRecording && currentRecSide !== side) {
-                micPanner.pan.value = (side === 'left' ? -1 : 1);
+                // LOCKDOWN PANNING
+                micPanner.pan.setValueAtTime(side === 'left' ? -1.0 : 1.0, audioCtx.currentTime);
                 currentRecSide = side;
                 document.getElementById('recLeft').classList.toggle('active', side === 'left');
                 document.getElementById('recRight').classList.toggle('active', side === 'right');
@@ -462,16 +496,14 @@
             // --- START ---
             isRecording = true;
             currentRecSide = side;
-            micPanner.pan.value = (side === 'left' ? -1 : 1);
+            micPanner.pan.setValueAtTime(side === 'left' ? -1.0 : 1.0, audioCtx.currentTime);
 
-            // Hard Stop: Duration + 3s Tail
             const duration = wsMusic.getDuration();
             hardStopTime = duration + 3.0;
 
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             if (!micSource) micSource = audioCtx.createMediaStreamSource(stream);
-            micSource.disconnect();
-            micSource.connect(micPanner);
+            micSource.connect(micPanner); // NO DISCONNECT
 
             recorder = new MediaRecorder(mixer.stream, { mimeType: 'audio/webm;codecs=opus' });
             recordedChunks = [];
@@ -503,10 +535,13 @@
             isRecording = false;
             currentRecSide = null;
             hardStopTime = null;
+            if (tailTimeout) { clearTimeout(tailTimeout); tailTimeout = null; }
 
             recordPlugin.stopRecording();
             if (recorder && recorder.state === "recording") recorder.stop();
-            vocalGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.01);
+
+            // RAMP DOWN VOCAL GAIN BUT LEAVE MASTER VOICE GAIN AT 1.0
+            vocalGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05);
 
             // UI: RESET
             document.getElementById('recording-banner').style.display = 'none';
@@ -516,7 +551,7 @@
 
             const downloadBtn = document.getElementById('downloadBtn');
             downloadBtn.style.display = "block";
-            document.getElementById('status-text').innerText = "D-01 & V-01 MASTERED";
+            document.getElementById('status-text').innerText = "SESSION COMPLETE - MASTER READY";
 
             setTimeout(() => { downloadBtn.click(); }, 500);
         }
@@ -530,7 +565,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `${document.getElementById('fileName').value || 'Audio_Master_Session'}.wav`;
+            a.download = `${document.getElementById('fileName').value || 'Audio_Master_V5.8'}.wav`;
             a.click();
         };
 
