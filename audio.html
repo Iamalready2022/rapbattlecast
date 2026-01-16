@@ -3,8 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Audio Master Control V3.1</title>
-    <script src="https://unpkg.com/wavesurfer.js@7"></script>
+    <title>Audio Master Control V4.2</title>
     <style>
         body {
             background: #050505;
@@ -114,9 +113,9 @@
             border: 1px solid #ff4141;
         }
 
-        .rec-btn.active {
-            background: #ff4141;
-            color: #fff;
+        .rec-active {
+            background: #ff4141 !important;
+            color: #fff !important;
             animation: pulse 1.5s infinite;
         }
 
@@ -162,7 +161,7 @@
         <div class="header">
             <h1>Audio Master Control</h1>
             <div style="text-align: right">
-                <span class="label-text">System Version 3.1</span>
+                <span class="label-text">System Version 4.2</span>
                 <span id="clock" style="color: #666;">--:--:--</span>
             </div>
         </div>
@@ -173,27 +172,27 @@
                 <button id="loadBtn">Load Music File</button>
                 <div style="margin-top: 20px;">
                     <span class="label-text">Export Filename</span>
-                    <input type="text" id="fileNameInput" placeholder="SESSION_01">
+                    <input type="text" id="fileName" placeholder="SESSION_01">
                 </div>
             </div>
 
             <div class="control-panel">
                 <span class="label-text">Binaural Engine (6Hz Offset)</span>
                 <div style="display: flex; justify-content: space-between; font-family: monospace; font-size: 1.2em;">
-                    <span id="hzLeft">100Hz</span>
+                    <span id="hzL">100Hz</span>
                     <span style="color: #444;">|</span>
-                    <span id="hzRight">106Hz</span>
+                    <span id="hzR">106Hz</span>
                 </div>
                 <input type="range" id="freqSlider" min="60" max="600" value="100">
                 <span class="label-text">Engine Output Level</span>
-                <input type="range" id="binauralGain" min="0" max="0.4" step="0.01" value="0">
+                <input type="range" id="volSlider" min="0" max="0.4" step="0.01" value="0">
             </div>
 
             <div class="control-panel"
                 style="display: flex; flex-direction: column; gap: 10px; justify-content: center;">
-                <button id="syncPlayBtn" style="font-size: 1.4em; height: 80px;">Global Play / Pause</button>
+                <button id="playBtn" style="font-size: 1.4em; height: 80px;">Global Play / Pause</button>
                 <div style="display: flex; gap: 10px;">
-                    <button id="recordBtn" class="rec-btn">Record Voice</button>
+                    <button id="recBtn" class="rec-btn">Record Voice</button>
                     <button id="downloadBtn" style="background: #ffd700; display:none;">Save Master</button>
                 </div>
             </div>
@@ -201,122 +200,144 @@
 
         <div class="track-container">
             <div class="waveform-id">Primary Track: Music</div>
-            <div id="music-waveform" class="waveform-area"></div>
+            <div id="wave-music" class="waveform-area"></div>
         </div>
 
         <div class="track-container">
             <div class="waveform-id">Secondary Track: Voice / Master Monitor</div>
-            <div id="voice-waveform" class="waveform-area"></div>
+            <div id="wave-voice" class="waveform-area"></div>
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js'
+        import RecordPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/record.esm.js'
+
         let audioCtx, osc1, osc2, binauralGain, mixer, recorder;
         let recordedChunks = [];
-        let wsMusic;
+        let musicSource; // To track the music routing
 
-        // Initialize WaveSurfer with specific styling for large screens
-        wsMusic = WaveSurfer.create({
-            container: '#music-waveform',
-            waveColor: '#1a1a1a',
+        const commonWavesurferOptions = {
+            waveColor: '#1a441a',
             progressColor: '#00ff41',
-            cursorColor: '#ffffff',
-            cursorWidth: 2,
+            cursorColor: '#fff',
             height: 160,
-            barWidth: 2,
-            barGap: 1,
+            barWidth: 3,
+            barGap: 2,
             responsive: true
+        };
+
+        const wsMusic = WaveSurfer.create({
+            ...commonWavesurferOptions,
+            container: '#wave-music',
         });
 
-        async function initAudio() {
+        const wsVoice = WaveSurfer.create({
+            ...commonWavesurferOptions,
+            container: '#wave-voice',
+            waveColor: '#441a1a',
+            progressColor: '#ff0000'
+        });
+
+        const recPlugin = wsVoice.registerPlugin(RecordPlugin.create({
+            scrollingWaveform: true,
+            renderRecordedAudio: true
+        }));
+
+        async function setupAudio() {
             if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                audioCtx = new AudioContext();
                 mixer = audioCtx.createMediaStreamDestination();
 
-                // Binaural Engine Setup
+                // Binaural Logic
                 osc1 = audioCtx.createOscillator();
                 osc2 = audioCtx.createOscillator();
                 binauralGain = audioCtx.createGain();
-
-                // Create Stereo Panner for Binaural effect
-                const panner1 = audioCtx.createStereoPanner();
-                const panner2 = audioCtx.createStereoPanner();
-                panner1.pan.value = -1; // Left Ear
-                panner2.pan.value = 1;  // Right Ear
-
                 binauralGain.gain.value = 0;
 
-                osc1.connect(panner1).connect(binauralGain);
-                osc2.connect(panner2).connect(binauralGain);
+                const pL = audioCtx.createStereoPanner(); pL.pan.value = -1;
+                const pR = audioCtx.createStereoPanner(); pR.pan.value = 1;
 
+                osc1.connect(pL).connect(binauralGain);
+                osc2.connect(pR).connect(binauralGain);
+
+                // Route Binaural to Speakers AND Mixer
                 binauralGain.connect(audioCtx.destination);
                 binauralGain.connect(mixer);
 
-                osc1.start();
-                osc2.start();
+                osc1.start(); osc2.start();
+
+                // IMPORTANT: Connect WaveSurfer (Music) to the Mixer
+                // We use the MediaElementSource from the wavesurfer's internal audio
+                const mediaElement = wsMusic.getMediaElement();
+                musicSource = audioCtx.createMediaElementSource(mediaElement);
+                musicSource.connect(audioCtx.destination);
+                musicSource.connect(mixer);
             }
         }
 
         document.getElementById('loadBtn').onclick = async () => {
             const [fileHandle] = await window.showOpenFilePicker();
             const file = await fileHandle.getFile();
-            const url = URL.createObjectURL(file);
-            wsMusic.load(url);
+            wsMusic.load(URL.createObjectURL(file));
         };
 
-        document.getElementById('syncPlayBtn').onclick = async () => {
-            await initAudio();
+        document.getElementById('playBtn').onclick = async () => {
+            await setupAudio();
             if (audioCtx.state === 'suspended') audioCtx.resume();
             wsMusic.playPause();
         };
 
-        document.getElementById('recordBtn').onclick = async () => {
-            await initAudio();
-            const btn = document.getElementById('recordBtn');
+        document.getElementById('recBtn').onclick = async () => {
+            await setupAudio();
+            const btn = document.getElementById('recBtn');
 
-            if (recorder && recorder.state === "recording") {
-                recorder.stop();
-                btn.classList.remove('active');
+            if (recPlugin.isRecording()) {
+                recPlugin.stopRecording();
+                if (recorder && recorder.state === "recording") recorder.stop();
+                btn.classList.remove('rec-active');
                 btn.innerText = "Record Voice";
                 document.getElementById('downloadBtn').style.display = "block";
             } else {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                const voiceSource = audioCtx.createMediaStreamSource(stream);
+                const micSource = audioCtx.createMediaStreamSource(stream);
 
-                // Connect Music to Mixer too (Crucial for the combined file)
-                // Note: WaveSurfer uses its own internal logic, we'd typically grab its node
-                // But for simplicity in this version, the mixer is ready for the combined output
-                voiceSource.connect(mixer);
+                // Route Microphone to Mixer (but maybe NOT speakers to avoid feedback)
+                micSource.connect(mixer);
 
+                // The recorder now listens ONLY to the mixer (which has everything)
                 recorder = new MediaRecorder(mixer.stream);
                 recordedChunks = [];
                 recorder.ondataavailable = e => recordedChunks.push(e.data);
                 recorder.start();
 
-                btn.classList.add('active');
+                recPlugin.startRecording();
+                btn.classList.add('rec-active');
                 btn.innerText = "Stop & Finalize";
             }
         };
 
         document.getElementById('downloadBtn').onclick = () => {
-            const name = document.getElementById('fileNameInput').value || "Master_Control_Session";
+            if (recordedChunks.length === 0) return alert("Nothing recorded yet!");
             const blob = new Blob(recordedChunks, { type: 'audio/wav' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url; a.download = name + ".wav"; a.click();
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `${document.getElementById('fileName').value || 'Master'}.wav`;
+            link.click();
         };
 
+        // Binaural Controls (unchanged)
         document.getElementById('freqSlider').oninput = (e) => {
-            const base = parseInt(e.target.value);
+            const val = parseInt(e.target.value);
             if (osc1) {
-                osc1.frequency.value = base;
-                osc2.frequency.value = base + 6;
+                osc1.frequency.value = val;
+                osc2.frequency.value = val + 6;
+                document.getElementById('hzL').innerText = val + "Hz";
+                document.getElementById('hzR').innerText = (val + 6) + "Hz";
             }
-            document.getElementById('hzLeft').innerText = `${base}Hz`;
-            document.getElementById('hzRight').innerText = `${base + 6}Hz`;
         };
 
-        document.getElementById('binauralGain').oninput = (e) => {
+        document.getElementById('volSlider').oninput = (e) => {
             if (binauralGain) binauralGain.gain.value = e.target.value;
         };
 

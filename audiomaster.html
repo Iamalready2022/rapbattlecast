@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Audio Master Control V3.2</title>
+    <script src="https://unpkg.com/wavesurfer.js@7"></script>
+    <script src="https://unpkg.com/wavesurfer.js@7/dist/plugins/record.esm.js" type="module"></script>
+    <style>
+        body { background: #050505; color: #00ff41; font-family: monospace; padding: 20px; }
+        .console { border: 2px solid #00ff41; padding: 20px; background: #000; max-width: 1400px; margin: auto; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .panel { border: 1px solid #333; padding: 15px; background: #0a0a0a; }
+        .track { background: #080808; border: 1px solid #222; margin-top: 10px; position: relative; }
+        .label { position: absolute; top: 5px; left: 10px; color: #00ff41; font-size: 10px; z-index: 10; }
+        
+        button { background: #00ff41; color: #000; border: none; padding: 15px; width: 100%; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
+        button:hover { background: #fff; }
+        .rec-active { background: #ff0000; color: #fff; }
+        
+        input[type="range"] { width: 100%; accent-color: #00ff41; }
+        #wave-music, #wave-voice { height: 150px; }
+    </style>
+</head>
+<body>
+
+<div class="console">
+    <h1>AUDIO MASTER CONTROL</h1>
+    
+    <div class="grid">
+        <div class="panel">
+            <span class="label">1. INPUTS</span>
+            <button id="loadBtn">LOAD MUSIC</button>
+            <input type="text" id="fileName" placeholder="Session_Name" style="width:90%; background:#000; color:#00ff41; border:1px solid #00ff41; padding:5px;">
+        </div>
+        
+        <div class="panel">
+            <span class="label">2. BINAURAL (6Hz OFFSET)</span>
+            <div id="hzNote" style="text-align:center; margin-bottom:10px;">100Hz / 106Hz</div>
+            <input type="range" id="freqSlider" min="60" max="400" value="100">
+            <input type="range" id="volSlider" min="0" max="0.5" step="0.01" value="0">
+        </div>
+
+        <div class="panel">
+            <span class="label">3. TRANSPORT</span>
+            <button id="playBtn">PLAY / PAUSE</button>
+            <button id="recBtn">RECORD VOICE</button>
+            <button id="downloadBtn" style="background:#ffd700; display:none;">DOWNLOAD MASTER</button>
+        </div>
+    </div>
+
+    <div class="track">
+        <div class="label">MUSIC TRACK</div>
+        <div id="wave-music"></div>
+    </div>
+    
+    <div class="track">
+        <div class="label">VOICE TRACK (LIVE)</div>
+        <div id="wave-voice"></div>
+    </div>
+</div>
+
+<script type="module">
+    import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js'
+    import RecordPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/record.esm.js'
+
+    let audioCtx, osc1, osc2, binauralGain, mixer, recorder;
+    let recordedChunks = [];
+
+    // Initialize WaveSurfer for Music
+    const wsMusic = WaveSurfer.create({
+        container: '#wave-music',
+        waveColor: '#004411',
+        progressColor: '#00ff41',
+        height: 150,
+    });
+
+    // Initialize WaveSurfer for Voice (Recording Visualizer)
+    const wsVoice = WaveSurfer.create({
+        container: '#wave-voice',
+        waveColor: '#ff0000',
+        height: 150,
+    });
+
+    const record = wsVoice.registerPlugin(RecordPlugin.create());
+
+    async function setupAudio() {
+        if (!audioCtx) {
+            audioCtx = new AudioContext();
+            mixer = audioCtx.createMediaStreamDestination();
+            
+            // Binaural Logic
+            osc1 = audioCtx.createOscillator();
+            osc2 = audioCtx.createOscillator();
+            binauralGain = audioCtx.createGain();
+            binauralGain.gain.value = 0;
+
+            const p1 = audioCtx.createStereoPanner(); p1.pan.value = -1;
+            const p2 = audioCtx.createStereoPanner(); p2.pan.value = 1;
+
+            osc1.connect(p1).connect(binauralGain);
+            osc2.connect(p2).connect(binauralGain);
+            binauralGain.connect(audioCtx.destination);
+            binauralGain.connect(mixer);
+            
+            osc1.start(); osc2.start();
+        }
+    }
+
+    document.getElementById('loadBtn').onclick = async () => {
+        const [file] = await window.showOpenFilePicker();
+        const url = URL.createObjectURL(await file.getFile());
+        wsMusic.load(url);
+    };
+
+    document.getElementById('playBtn').onclick = () => {
+        setupAudio();
+        wsMusic.playPause();
+    };
+
+    document.getElementById('recBtn').onclick = async () => {
+        await setupAudio();
+        const btn = document.getElementById('recBtn');
+
+        if (record.isRecording()) {
+            record.stopRecording();
+            recorder.stop();
+            btn.classList.remove('rec-active');
+            btn.innerText = "RECORD VOICE";
+            document.getElementById('downloadBtn').style.display = "block";
+        } else {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const source = audioCtx.createMediaStreamSource(stream);
+            source.connect(mixer);
+            
+            recorder = new MediaRecorder(mixer.stream);
+            recordedChunks = [];
+            recorder.ondataavailable = e => recordedChunks.push(e.data);
+            recorder.start();
+
+            record.startRecording();
+            btn.classList.add('rec-active');
+            btn.innerText = "STOP RECORDING";
+        }
+    };
+
+    document.getElementById('downloadBtn').onclick = () => {
+        const blob = new Blob(recordedChunks, { type: 'audio/wav' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `${document.getElementById('fileName').value || 'Master'}.wav`;
+        a.click();
+    };
+
+    document.getElementById('freqSlider').oninput = (e) => {
+        const val = parseInt(e.target.value);
+        if(osc1) {
+            osc1.frequency.value = val;
+            osc2.frequency.value = val + 6;
+            document.getElementById('hzNote').innerText = `${val}Hz / ${val+6}Hz`;
+        }
+    };
+
+    document.getElementById('volSlider').oninput = (e) => {
+        if(binauralGain) binauralGain.gain.value = e.target.value;
+    };
+</script>
+</body>
+</html>
