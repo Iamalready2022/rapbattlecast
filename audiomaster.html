@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Audio Master Control V4.5</title>
+    <title>Audio Master Control V4.6 - Stereo Enforcement</title>
     <style>
         body {
             background: #050505;
@@ -165,7 +165,7 @@
 
     <div class="console">
         <div class="header">
-            <h1>AIKEN MASTER CONTROL V4.5</h1>
+            <h1>AIKEN MASTER CONTROL V4.6</h1>
             <div id="clock" style="color: #666; font-size: 0.9em;">--:--:--</div>
         </div>
 
@@ -177,7 +177,7 @@
             </div>
 
             <div class="panel">
-                <span class="label">2. BINAURAL ENGINE</span>
+                <span class="label">2. BINAURAL ENGINE (STEREO)</span>
                 <div id="hzNote" style="text-align:center; margin-bottom:10px; font-size: 1.2em;">100Hz | 106Hz</div>
                 <input type="range" id="freqSlider" min="60" max="400" value="100">
                 <input type="range" id="volSlider" min="0" max="0.5" step="0.01" value="0">
@@ -193,7 +193,7 @@
                 <div style="display: flex; gap: 10px;">
                     <button id="recBtn" class="rec-btn"
                         style="background: #222; color: #ff0000; border: 1px solid #ff0000;">RECORD</button>
-                    <button id="downloadBtn" style="background:#ffd700; display:none;">SAVE</button>
+                    <button id="downloadBtn" style="background:#ffd700; display:none;">SAVE MASTER</button>
                 </div>
             </div>
         </div>
@@ -213,7 +213,7 @@
         import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js'
         import RecordPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/record.esm.js'
 
-        let audioCtx, osc1, osc2, binauralGain, mixer, recorder;
+        let audioCtx, osc1, osc2, gainL, gainR, binauralMasterGain, mixer, recorder;
         let recordedChunks = [];
         let musicSource; // Persistent music source node
         let soloL = false, soloR = false;
@@ -247,23 +247,33 @@
 
         async function setupAudio() {
             if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                mixer = audioCtx.createMediaStreamDestination();
+                // Force Stereo Context
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)({
+                    latencyHint: 'interactive',
+                    sampleRate: 44100
+                });
 
-                // Binaural Processor Chain
+                // Force Stereo Mixer
+                mixer = audioCtx.createMediaStreamDestination();
+                mixer.channelCount = 2;
+
+                // Binaural Processor Chain - Precise Stereo
                 osc1 = audioCtx.createOscillator();
                 osc2 = audioCtx.createOscillator();
-                binauralGain = audioCtx.createGain();
-                binauralGain.gain.value = 0;
 
-                const pL = audioCtx.createStereoPanner(); pL.pan.value = -1;
-                const pR = audioCtx.createStereoPanner(); pR.pan.value = 1;
+                gainL = audioCtx.createGain();
+                gainR = audioCtx.createGain();
+                binauralMasterGain = audioCtx.createGain();
+                binauralMasterGain.gain.value = 0;
 
-                osc1.connect(pL).connect(binauralGain);
-                osc2.connect(pR).connect(binauralGain);
+                const pL = audioCtx.createStereoPanner(); pL.pan.value = -1; // 100% Left
+                const pR = audioCtx.createStereoPanner(); pR.pan.value = 1;  // 100% Right
 
-                binauralGain.connect(audioCtx.destination);
-                binauralGain.connect(mixer);
+                osc1.connect(gainL).connect(pL).connect(binauralMasterGain);
+                osc2.connect(gainR).connect(pR).connect(binauralMasterGain);
+
+                binauralMasterGain.connect(audioCtx.destination);
+                binauralMasterGain.connect(mixer);
 
                 osc1.start(); osc2.start();
             }
@@ -310,8 +320,12 @@
                 const micSource = audioCtx.createMediaStreamSource(stream);
                 micSource.connect(mixer);
 
-                // Initialize recorder strictly using mixer.stream
-                recorder = new MediaRecorder(mixer.stream);
+                // Force 2 Channels in MediaRecorder
+                recorder = new MediaRecorder(mixer.stream, {
+                    mimeType: 'audio/webm;codecs=opus',
+                    audioBitsPerSecond: 128000
+                });
+
                 recordedChunks = [];
                 recorder.ondataavailable = e => recordedChunks.push(e.data);
                 recorder.start();
@@ -331,7 +345,7 @@
             a.click();
         };
 
-        // Solo Test Logic
+        // Solo Test Logic - Strict Channel Killing
         document.getElementById('testLeft').onclick = async () => {
             await setupAudio();
             soloL = !soloL;
@@ -354,26 +368,26 @@
             btnR.classList.toggle('active', soloR);
 
             if (!soloL && !soloR) {
-                // Restore combined binaural balance if nothing is soloed
-                osc1.frequency.value = parseInt(document.getElementById('freqSlider').value);
-                osc2.frequency.value = osc1.frequency.value + 6;
-                binauralGain.gain.setTargetAtTime(document.getElementById('volSlider').value, audioCtx.currentTime, 0.1);
+                // Normal Binaural Operation
+                gainL.gain.setTargetAtTime(1, audioCtx.currentTime, 0.05);
+                gainR.gain.setTargetAtTime(1, audioCtx.currentTime, 0.05);
+                binauralMasterGain.gain.setTargetAtTime(document.getElementById('volSlider').value, audioCtx.currentTime, 0.1);
             } else if (soloL) {
-                // Solo BASE frequency to LEFT
-                osc2.frequency.setTargetAtTime(0, audioCtx.currentTime, 0.1); // Effective mute
-                osc1.frequency.value = parseInt(document.getElementById('freqSlider').value);
-                binauralGain.gain.setTargetAtTime(0.3, audioCtx.currentTime, 0.1);
+                // KILL RIGHT CHANNEL for Binaural
+                gainL.gain.setTargetAtTime(1, audioCtx.currentTime, 0.05);
+                gainR.gain.setTargetAtTime(0, audioCtx.currentTime, 0.01); // Instant kill
+                binauralMasterGain.gain.setTargetAtTime(0.4, audioCtx.currentTime, 0.1);
             } else if (soloR) {
-                // Solo +6Hz frequency to RIGHT
-                osc1.frequency.setTargetAtTime(0, audioCtx.currentTime, 0.1); // Effective mute
-                osc2.frequency.value = parseInt(document.getElementById('freqSlider').value) + 6;
-                binauralGain.gain.setTargetAtTime(0.3, audioCtx.currentTime, 0.1);
+                // KILL LEFT CHANNEL for Binaural
+                gainL.gain.setTargetAtTime(0, audioCtx.currentTime, 0.01); // Instant kill
+                gainR.gain.setTargetAtTime(1, audioCtx.currentTime, 0.05);
+                binauralMasterGain.gain.setTargetAtTime(0.4, audioCtx.currentTime, 0.1);
             }
         }
 
         document.getElementById('freqSlider').oninput = (e) => {
             const val = parseInt(e.target.value);
-            if (osc1 && !soloL && !soloR) {
+            if (osc1) {
                 osc1.frequency.setTargetAtTime(val, audioCtx.currentTime, 0.05);
                 osc2.frequency.setTargetAtTime(val + 6, audioCtx.currentTime, 0.05);
             }
@@ -381,8 +395,8 @@
         };
 
         document.getElementById('volSlider').oninput = (e) => {
-            if (binauralGain && !soloL && !soloR) {
-                binauralGain.gain.setTargetAtTime(e.target.value, audioCtx.currentTime, 0.05);
+            if (binauralMasterGain && !soloL && !soloR) {
+                binauralMasterGain.gain.setTargetAtTime(e.target.value, audioCtx.currentTime, 0.05);
             }
         };
 
