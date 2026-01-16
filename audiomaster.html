@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Audio Master Control V5.2 - Professional Multitrack Console</title>
+    <title>Audio Master Control V5.3 - Professional Multitrack Console</title>
     <style>
         body {
             background: #000;
@@ -72,7 +72,6 @@
             border-radius: 4px;
             overflow: hidden;
             height: 160px;
-            /* Force symmetry */
         }
 
         .track-id {
@@ -126,9 +125,11 @@
         }
 
         .rec-btn.active {
-            background: #ff4141 !important;
+            background: #ff0000 !important;
             color: #fff !important;
-            animation: pulse 1.5s infinite;
+            border-color: #fff;
+            box-shadow: 0 0 20px #ff0000;
+            animation: pulse 1.0s infinite;
         }
 
         input[type="range"] {
@@ -165,15 +166,15 @@
 
         @keyframes pulse {
             0% {
-                box-shadow: 0 0 0 0 rgba(255, 65, 65, 0.7);
+                box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7);
             }
 
             70% {
-                box-shadow: 0 0 0 15px rgba(255, 65, 65, 0);
+                box-shadow: 0 0 0 15px rgba(255, 0, 0, 0);
             }
 
             100% {
-                box-shadow: 0 0 0 0 rgba(255, 65, 65, 0);
+                box-shadow: 0 0 0 0 rgba(255, 0, 0, 0);
             }
         }
 
@@ -199,7 +200,7 @@
 
     <div class="console">
         <div class="header">
-            <h1>Audio Master Control V5.2</h1>
+            <h1>Audio Master Control V5.3</h1>
             <div id="clock">--:--:--</div>
         </div>
 
@@ -255,14 +256,13 @@
 
         let audioCtx, osc1, osc2, gainL, gainR, binauralMasterGain, mixer, recorder;
         let recordedChunks = [];
-        let musicSource, micSource, micPanner;
+        let musicSource, micSource, micPanner, latencyDelay;
         let isRecording = false;
-        let currentRecSide = null; // 'left' or 'right'
+        let currentRecSide = null;
         let wsMusic, wsVoice, recordPlugin;
 
         const SYNC_PX_PER_SEC = 50;
 
-        // Initialize WaveSurfer instances
         function initWaveSurfers(ctx = null) {
             const commonOptions = {
                 progressColor: '#00ff41',
@@ -288,7 +288,7 @@
             wsVoice = WaveSurfer.create({
                 ...commonOptions,
                 container: '#wave-voice',
-                waveColor: '#330000', // Deep red for vocal track
+                waveColor: '#330000',
                 progressColor: '#ff4141',
             });
 
@@ -297,11 +297,10 @@
                 renderRecordedAudio: true
             }));
 
-            // High Precision Sync Loop
+            // Auto-Seek & High Precision Sync
             function syncLoop() {
                 if (wsMusic && wsVoice && wsMusic.isPlaying()) {
                     const musicTime = wsMusic.getCurrentTime();
-                    // Forced alignment every frame
                     if (Math.abs(wsVoice.getCurrentTime() - musicTime) > 0.01) {
                         wsVoice.setTime(musicTime);
                     }
@@ -310,7 +309,11 @@
             }
             requestAnimationFrame(syncLoop);
 
-            // Manual Seek Sync
+            // Interaction Sync (Auto-Seek)
+            wsMusic.on('interaction', (newTime) => {
+                wsVoice.setTime(newTime);
+            });
+
             wsMusic.on('seeking', (time) => {
                 wsVoice.setTime(time);
             });
@@ -327,13 +330,17 @@
             mixer = audioCtx.createMediaStreamDestination();
             mixer.channelCount = 2;
 
+            // --- LATENCY CORRECTION ---
+            latencyDelay = audioCtx.createDelay(1.0);
+            latencyDelay.delayTime.value = 0.050; // 50ms compensation
+
             // --- BINAURAL ENGINE ---
             osc1 = audioCtx.createOscillator();
             osc2 = audioCtx.createOscillator();
             gainL = audioCtx.createGain();
             gainR = audioCtx.createGain();
             binauralMasterGain = audioCtx.createGain();
-            binauralMasterGain.gain.value = 0; // Default off
+            binauralMasterGain.gain.value = 0;
 
             const pL = audioCtx.createStereoPanner(); pL.pan.value = -1;
             const pR = audioCtx.createStereoPanner(); pR.pan.value = 1;
@@ -348,7 +355,7 @@
 
             // --- MIC SETUP ---
             micPanner = audioCtx.createStereoPanner();
-            micPanner.connect(mixer);
+            micPanner.connect(mixer); // MIC ISOLATION: No connection to audioCtx.destination
 
             initWaveSurfers(audioCtx);
 
@@ -356,7 +363,7 @@
             document.getElementById('status-indicator').classList.add('ready');
         }
 
-        initWaveSurfers(); // Start with empty state
+        initWaveSurfers();
 
         document.getElementById('loadBtn').onclick = async () => {
             try {
@@ -373,8 +380,8 @@
                     musicSource = audioCtx.createMediaElementSource(mediaElement);
                 }
                 musicSource.disconnect();
-                musicSource.connect(audioCtx.destination);
-                musicSource.connect(mixer);
+                musicSource.connect(audioCtx.destination); // Direct to ear (Zero Latency)
+                musicSource.connect(latencyDelay).connect(mixer); // Delayed to mixer (Corrected Alignment)
 
                 document.getElementById('status-indicator').innerText = "SOURCE: " + file.name;
             } catch (err) {
@@ -402,7 +409,6 @@
             const leftBtn = document.getElementById('recLeft');
             const rightBtn = document.getElementById('recRight');
 
-            // If clicking the SAME button that is already active -> STOP
             if (isRecording && currentRecSide === side) {
                 isRecording = false;
                 currentRecSide = null;
@@ -411,19 +417,13 @@
 
                 leftBtn.classList.remove('active');
                 rightBtn.classList.remove('active');
-                leftBtn.disabled = false;
-                rightBtn.disabled = false;
 
                 document.getElementById('downloadBtn').style.display = "block";
                 document.getElementById('status-indicator').innerText = "REC STOPPED";
                 return;
             }
 
-            // If record is NOT active, or we are switching sides
             if (isRecording && currentRecSide !== side) {
-                // Stop current before switching? Or just switch panner?
-                // For safety in MediaRecorder, let's stop and start a new chunk or just switch panner.
-                // Request says: "if one is active, the other is inactive".
                 micPanner.pan.value = (side === 'left' ? -1 : 1);
                 currentRecSide = side;
                 leftBtn.classList.toggle('active', side === 'left');
@@ -431,7 +431,6 @@
                 return;
             }
 
-            // Start New Recording
             isRecording = true;
             currentRecSide = side;
             micPanner.pan.value = (side === 'left' ? -1 : 1);
@@ -445,14 +444,12 @@
             recordedChunks = [];
             recorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
 
-            // NO RESET: Start from current position
             const startTime = wsMusic.getCurrentTime();
             wsVoice.setTime(startTime);
 
             recorder.start();
             recordPlugin.startRecording();
 
-            // If music wasn't playing, start it now
             if (!wsMusic.isPlaying()) {
                 wsMusic.play();
                 wsVoice.play();
@@ -475,7 +472,6 @@
             a.click();
         };
 
-        // --- BINAURAL AUTONOMY ---
         document.getElementById('freqSlider').oninput = async (e) => {
             if (!audioCtx) await setupAudio();
             if (audioCtx.state === 'suspended') await audioCtx.resume();
