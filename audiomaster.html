@@ -3,125 +3,155 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Audio Master Control V6.0</title>
+    <title>Audio Master Control V5.9</title>
     <style>
         body {
-            background: #121212;
-            color: white;
-            font-family: sans-serif;
-            text-align: center;
+            background: #1a1a1a;
+            color: #39ff14;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
         }
 
-        #recIndicator {
-            width: 60px;
-            height: 60px;
-            background: #333;
-            margin: 20px auto;
-            border-radius: 10px;
-            transition: 0.3s;
-        }
-
-        .active {
-            background: #ff0000 !important;
-            box-shadow: 0 0 20px #ff0000;
+        .panel {
+            border: 2px solid #39ff14;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
         }
 
         button {
-            padding: 15px 30px;
-            font-size: 18px;
+            background: #333;
+            color: #39ff14;
+            border: 1px solid #39ff14;
+            padding: 10px;
             cursor: pointer;
-            margin: 10px;
-            border-radius: 5px;
-            border: none;
+            margin: 5px;
         }
 
-        #startBtn {
-            background: #2ecc71;
-            color: white;
+        button.active {
+            background: #ff0000;
+            color: #fff;
         }
 
-        #stopBtn {
-            background: #e74c3c;
+        #recStatus {
+            display: none;
+            background: #ff0000;
             color: white;
+            padding: 10px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .waveform {
+            width: 100%;
+            height: 100px;
+            background: #000;
+            margin: 10px 0;
+            border: 1px solid #444;
         }
     </style>
 </head>
 
 <body>
 
-    <h1>Audio Master Control V6.0</h1>
-    <div id="recIndicator"></div>
+    <h1>AUDIO MASTER CONTROL V5.9</h1>
 
-    <button id="startBtn">START RECORDING</button>
-    <button id="stopBtn">STOP & SAVE</button>
+    <div id="recStatus">● RECORDING ACTIVE</div>
 
+    <div class="panel">
+        <h3>1. BINAURAL ENGINE (6Hz)</h3>
+        <button onclick="toggleTone()">TONE ON/OFF</button>
+    </div>
+
+    <div class="panel">
+        <h3>2. MASTER CONSOLE</h3>
+        <input type="file" id="musicUpload" accept="audio/*">
+        <button onclick="playAll()">PLAY / START SESSION</button>
+        <button onclick="stopAll()">STOP</button>
+    </div>
+
+    <div class="panel">
+        <h3>3. TRACK RECORDING</h3>
+        <button id="btnLeft" onclick="toggleRec('left')">REC LEFT</button>
+        <button id="btnRight" onclick="toggleRec('right')">REC RIGHT</button>
+    </div>
+
+    <div id="waveMusic" class="waveform"></div>
+    <div id="waveVoice" class="waveform"></div>
+
+    <script src="https://unpkg.com/wavesurfer.js"></script>
     <script>
-        let mediaRecorder;
-        let audioChunks = [];
+        // V5.9 Stability Logic: 4096 Buffer & Independent Timer
+        let audioCtx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'interactive' });
+        let mixer = audioCtx.createMediaStreamDestination();
+        let micStream, recorder;
+        let chunks = [];
 
-        // High Priority Audio Context
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)({
-            latencyHint: 'interactive', // Tells Chrome to prioritize speed
-            sampleRate: 44100
-        });
+        // Setup Wavesurfer
+        const wsMusic = WaveSurfer.create({ container: '#waveMusic', waveColor: '#39ff14', progressColor: '#1d8e0d' });
+        const wsVoice = WaveSurfer.create({ container: '#waveVoice', waveColor: '#ff0000', progressColor: '#8b0000' });
 
-        const recIndicator = document.getElementById('recIndicator');
+        document.getElementById('musicUpload').onchange = function (e) {
+            const url = URL.createObjectURL(e.target.files[0]);
+            wsMusic.load(url);
+        };
 
-        async function startRecording() {
-            audioChunks = [];
-            const stream = await navigator.mediaDevices.getUserMedia({
-                audio: {
-                    echoCancellation: false,
-                    noiseSuppression: false,
-                    autoGainControl: false // Prevents Windows/Chrome from "fighting" your volume
-                }
+        async function initMic() {
+            micStream = await navigator.mediaDevices.getUserMedia({
+                audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
             });
-
-            // V5.9 Stability: 4096 Buffer
-            const source = audioCtx.createMediaStreamSource(stream);
-            const processor = audioCtx.createScriptProcessor(4096, 2, 2);
-
-            mediaRecorder = new MediaRecorder(stream);
-
-            mediaRecorder.ondataavailable = (event) => {
-                audioChunks.push(event.data);
-            };
-
-            mediaRecorder.onstop = () => {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                const url = URL.createObjectURL(audioBlob);
-
-                // V6.0 "Safety Net" Naming Logic
-                let fileName = prompt("Enter file name:", "");
-
-                if (fileName === null || fileName.trim() === "") {
-                    // Default if you are in a hurry
-                    const date = new Date().toLocaleDateString().replace(/\//g, '-');
-                    fileName = `AudioMaster_V6_${date}`;
-                }
-
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
-                a.download = `${fileName}.wav`;
-                document.body.appendChild(a);
-                a.click(); // Automatically triggers the save
-
-                recIndicator.classList.remove('active');
-            };
-
-            mediaRecorder.start();
-            recIndicator.classList.add('active');
+            const source = audioCtx.createMediaStreamSource(micStream);
+            // Solder connection: Mic -> Mixer (Persistent)
+            source.connect(mixer);
         }
 
-        document.getElementById('startBtn').onclick = () => {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            startRecording();
-        };
+        function toggleRec(side) {
+            const btn = side === 'left' ? document.getElementById('btnLeft') : document.getElementById('btnRight');
+            btn.classList.toggle('active');
+            // Panning logic for V5.9 would go here
+        }
 
-        document.getElementById('stopBtn').onclick = () => {
-            mediaRecorder.stop();
-        };
+        function playAll() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            wsMusic.play();
+            startRecording();
+        }
+
+        function startRecording() {
+            chunks = [];
+            recorder = new MediaRecorder(mixer.stream, { mimeType: 'audio/webm' });
+            recorder.ondataavailable = e => chunks.push(e.data);
+            recorder.onstop = exportAudio;
+
+            document.getElementById('recStatus').style.display = 'block';
+            recorder.start();
+
+            // V5.9 Independent Timer (Music Duration + 2 Seconds)
+            const duration = wsMusic.getDuration() * 1000;
+            setTimeout(() => {
+                stopAll();
+            }, duration + 2000);
+        }
+
+        function stopAll() {
+            wsMusic.stop();
+            if (recorder && recorder.state === "recording") {
+                recorder.stop();
+            }
+            document.getElementById('recStatus').style.display = 'none';
+        }
+
+        function exportAudio() {
+            const blob = new Blob(chunks, { type: 'audio/wav' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Audio_Master_V5.9.wav';
+            a.click();
+        }
+
+        initMic();
     </script>
 </body>
 
