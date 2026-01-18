@@ -393,22 +393,41 @@
 
         initWaveSurfers();
 
+        async function handleFile(file) {
+            const url = URL.createObjectURL(file);
+            await wsMusic.load(url);
+
+            const mediaElement = wsMusic.getMediaElement();
+            mediaElement.crossOrigin = "anonymous";
+            if (!musicSource) { musicSource = audioCtx.createMediaElementSource(mediaElement); }
+
+            musicSource.connect(audioCtx.destination);
+            musicSource.connect(latencyDelay).connect(mixer);
+
+            document.getElementById('status-text').innerText = "SOURCE: " + file.name;
+        }
+
+        const fileFallback = document.createElement('input');
+        fileFallback.type = 'file';
+        fileFallback.style.display = 'none';
+        fileFallback.accept = 'audio/*';
+        document.body.appendChild(fileFallback);
+
+        fileFallback.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (file) await handleFile(file);
+        };
+
         document.getElementById('loadBtn').onclick = async () => {
             try {
                 await setupAudio();
-                const [fileHandle] = await window.showOpenFilePicker();
-                const file = await fileHandle.getFile();
-                const url = URL.createObjectURL(file);
-                await wsMusic.load(url);
-
-                const mediaElement = wsMusic.getMediaElement();
-                mediaElement.crossOrigin = "anonymous";
-                if (!musicSource) { musicSource = audioCtx.createMediaElementSource(mediaElement); }
-
-                musicSource.connect(audioCtx.destination);
-                musicSource.connect(latencyDelay).connect(mixer);
-
-                document.getElementById('status-text').innerText = "SOURCE: " + file.name;
+                if (window.showOpenFilePicker) {
+                    const [fileHandle] = await window.showOpenFilePicker();
+                    const file = await fileHandle.getFile();
+                    await handleFile(file);
+                } else {
+                    fileFallback.click();
+                }
             } catch (err) { console.error("Load failed", err); }
         };
 
