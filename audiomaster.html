@@ -203,6 +203,7 @@
             box-shadow: 0 0 10px #ff0000;
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.all.min.js"></script>
 </head>
 
 <body>
@@ -223,9 +224,19 @@
                     <span id="rec-light"></span>
                     <span id="status-text">SYSTEM IDLE</span>
                 </div>
-                <div style="margin-top: 15px;">
-                    <span class="label">FILE IDENTIFIER</span>
-                    <input type="text" id="fileName" placeholder="SESSION_ALPHA_01">
+                <div style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div>
+                        <span class="label">FILE IDENTIFIER</span>
+                        <input type="text" id="fileName" placeholder="SESSION_ALPHA_01">
+                    </div>
+                    <div>
+                        <span class="label">FORMAT</span>
+                        <select id="formatSelector"
+                            style="width: 100%; background: #000; color: #00ff41; border: 1px solid #00ff4144; padding: 12px; font-family: inherit; margin-top: 5px;">
+                            <option value="wav">WAV (High Quality)</option>
+                            <option value="mp3">MP3 (Compressed)</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -511,35 +522,174 @@
         document.getElementById('recLeft').onclick = () => toggleRecording('left');
         document.getElementById('recRight').onclick = () => toggleRecording('right');
 
-        document.getElementById('downloadBtn').onclick = () => {
+        document.getElementById('downloadBtn').onclick = async () => {
             if (recordedChunks.length === 0) return;
-            const blob = new Blob(recordedChunks, { type: 'audio/wav' });
-            const url = URL.createObjectURL(blob);
 
-            // Get filename from input or use default
-            let fileName = document.getElementById('fileName').value.trim();
-            if (!fileName) {
-                fileName = 'audio_v5.9';
+            const statusText = document.getElementById('status-text');
+            const format = document.getElementById('formatSelector').value;
+            const originalStatus = statusText.innerText;
+
+            try {
+                statusText.innerText = format === 'mp3' ? "CONVERTING TO MP3..." : "PROCESSING WAV...";
+                statusText.classList.remove('ready');
+
+                // 1. Create a blob from chunks and decode it to AudioBuffer
+                const webmBlob = new Blob(recordedChunks, { type: 'audio/webm;codecs=opus' });
+                const arrayBuffer = await webmBlob.arrayBuffer();
+                const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+
+                let finalBlob;
+                let extension;
+
+                if (format === 'mp3') {
+                    finalBlob = await encodeMP3(audioBuffer);
+                    extension = '.mp3';
+                } else {
+                    finalBlob = await encodeWAV(audioBuffer);
+                    extension = '.wav';
+                }
+
+                // 2. Handle Filename
+                let fileName = document.getElementById('fileName').value.trim();
+                if (!fileName) fileName = 'audio_session';
+
+                // Strip existing extension if user typed one, then add the correct one
+                fileName = fileName.replace(/\.(wav|mp3)$/i, '') + extension;
+
+                // 3. Trigger Download
+                const url = URL.createObjectURL(finalBlob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                }, 100);
+
+                statusText.innerText = "DOWNLOAD COMPLETE";
+                statusText.classList.add('ready');
+
+            } catch (err) {
+                console.error("Export failed", err);
+                statusText.innerText = "EXPORT ERROR";
             }
-
-            // Ensure .wav extension
-            if (!fileName.toLowerCase().endsWith('.wav') && !fileName.toLowerCase().endsWith('.mp3')) {
-                fileName += '.wav';
-            }
-
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            a.download = fileName;
-            document.body.appendChild(a);
-            a.click();
-
-            // Clean up
-            setTimeout(() => {
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-            }, 100);
         };
+
+        // --- ENCODERS ---
+
+        async function encodeWAV(audioBuffer) {
+            const numChannels = audioBuffer.numberOfChannels;
+            const sampleRate = audioBuffer.sampleRate;
+            const format = 1; // PCM
+            const bitDepth = 16;
+
+            const result = flattenChannels(audioBuffer);
+            const buffer = new ArrayBuffer(44 + result.length * 2);
+            const view = new DataView(buffer);
+
+            /* RIFF identifier */
+            writeString(view, 0, 'RIFF');
+            /* file length */
+            view.setUint32(4, 36 + result.length * 2, true);
+            /* RIFF type */
+            writeString(view, 8, 'WAVE');
+            /* format chunk identifier */
+            writeString(view, 12, 'fmt ');
+            /* format chunk length */
+            view.setUint32(16, 16, true);
+            /* sample format (raw) */
+            view.setUint16(20, format, true);
+            /* channel count */
+            view.setUint16(22, numChannels, true);
+            /* sample rate */
+            view.setUint32(24, sampleRate, true);
+            /* byte rate (sample rate * block align) */
+            view.setUint32(28, sampleRate * numChannels * 2, true);
+            /* block align (channel count * bytes per sample) */
+            view.setUint16(32, numChannels * 2, true);
+            /* bits per sample */
+            view.setUint16(34, bitDepth, true);
+            /* data chunk identifier */
+            writeString(view, 36, 'data');
+            /* data chunk length */
+            view.setUint32(40, result.length * 2, true);
+
+            floatTo16BitPCM(view, 44, result);
+
+            return new Blob([view], { type: 'audio/wav' });
+        }
+
+        async function encodeMP3(audioBuffer) {
+            const channels = audioBuffer.numberOfChannels;
+            const sampleRate = audioBuffer.sampleRate;
+            const mp3encoder = new lamejs.Mp3Encoder(channels, sampleRate, 128);
+            const mp3Data = [];
+
+            const samplesL = audioBuffer.getChannelData(0);
+            const samplesR = channels > 1 ? audioBuffer.getChannelData(1) : samplesL;
+
+            // lamejs expects Int16Array
+            const sampleBlockSize = 1152;
+            for (let i = 0; i < samplesL.length; i += sampleBlockSize) {
+                const chunkL = floatTo16Bit(samplesL.subarray(i, i + sampleBlockSize));
+                const chunkR = channels > 1 ? floatTo16Bit(samplesR.subarray(i, i + sampleBlockSize)) : chunkL;
+
+                const mp3buf = mp3encoder.encodeBuffer(chunkL, chunkR);
+                if (mp3buf.length > 0) mp3Data.push(mp3buf);
+            }
+
+            const mp3buf = mp3encoder.flush();
+            if (mp3buf.length > 0) mp3Data.push(mp3buf);
+
+            return new Blob(mp3Data, { type: 'audio/mp3' });
+        }
+
+        // --- HELPER FUNCS ---
+
+        function writeString(view, offset, string) {
+            for (let i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        }
+
+        function floatTo16BitPCM(output, offset, input) {
+            for (let i = 0; i < input.length; i++, offset += 2) {
+                let s = Math.max(-1, Math.min(1, input[i]));
+                output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+            }
+        }
+
+        function floatTo16Bit(input) {
+            const output = new Int16Array(input.length);
+            for (let i = 0; i < input.length; i++) {
+                let s = Math.max(-1, Math.min(1, input[i]));
+                output[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+            }
+            return output;
+        }
+
+        function flattenChannels(audioBuffer) {
+            const channels = audioBuffer.numberOfChannels;
+            const length = audioBuffer.length * channels;
+            const result = new Float32Array(length);
+            const input = [];
+
+            for (let i = 0; i < channels; i++) {
+                input.push(audioBuffer.getChannelData(i));
+            }
+
+            let offset = 0;
+            for (let i = 0; i < audioBuffer.length; i++) {
+                for (let channel = 0; channel < channels; channel++) {
+                    result[offset++] = input[channel][i];
+                }
+            }
+            return result;
+        }
 
         document.getElementById('freqSlider').oninput = async (e) => {
             if (!audioCtx) await setupAudio();
