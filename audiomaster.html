@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Audio Master Control V5.9 - Stability Edition</title>
+    <title>Audio Master Studio V6.1 - Iamalready.com Edition</title>
     <style>
         body {
             background: #000;
@@ -202,6 +202,45 @@
             background: #ff0000;
             box-shadow: 0 0 10px #ff0000;
         }
+
+        /* Sticky Footer */
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #000;
+            border-top: 1px solid #00ff4144;
+            padding: 10px 0;
+            text-align: center;
+            font-size: 0.75em;
+            z-index: 2000;
+            color: #00ff4199;
+        }
+
+        footer a {
+            color: #00ff41;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        .gamma-label {
+            color: #ffd700;
+            font-weight: bold;
+            display: none;
+            font-size: 0.8em;
+            margin-top: 5px;
+        }
+
+        .schumann-label {
+            color: #00ffff;
+            font-weight: bold;
+            font-size: 0.8em;
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.all.min.js"></script>
 </head>
@@ -212,7 +251,10 @@
 
     <div class="console">
         <div class="header">
-            <h1>Audio Master Control V5.9</h1>
+            <div style="display: flex; align-items: center;">
+                <img src="https://iamalready.com/favicon.ico" alt="Logo" style="height: 35px; margin-right: 15px;">
+                <h1>Audio Master Studio V6.1 - Iamalready.com Edition</h1>
+            </div>
             <div id="clock">--:--:--</div>
         </div>
 
@@ -241,15 +283,33 @@
             </div>
 
             <div class="panel">
-                <span class="label">2. BINAURAL ENGINE</span>
-                <div id="hzNote" style="text-align:center; margin-bottom:10px; font-size: 1.2em; letter-spacing: 2px;">
-                    100Hz | 6Hz FLOW</div>
-                <input type="range" id="freqSlider" min="60" max="400" value="100">
-                <input type="range" id="volSlider" min="0" max="0.5" step="0.01" value="0">
-                <div style="display: flex; justify-content: space-between; font-size: 0.7em; opacity: 0.6;">
-                    <span>60Hz</span>
-                    <span>400Hz</span>
+                <span class="label">2. BIO-HACKING BINAURAL ENGINE</span>
+
+                <div style="margin-bottom: 20px;">
+                    <span class="label">FLOW (Hz)</span>
+                    <div id="flowVal" class="schumann-label">6Hz</div>
+                    <input type="range" id="flowSlider" min="0" max="7" step="1" value="5">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.6em; opacity: 0.6;">
+                        <span>1Hz</span>
+                        <span>7.83Hz</span>
+                    </div>
                 </div>
+
+                <div style="margin-bottom: 20px;">
+                    <span class="label">BASE FREQUENCY (432Hz STD)</span>
+                    <div id="hzNote"
+                        style="text-align:center; margin-bottom:10px; font-size: 1.2em; letter-spacing: 2px;">
+                        432Hz | 6Hz FLOW</div>
+                    <input type="range" id="baseSlider" min="40" max="20000" value="432">
+                    <div id="gammaLabel" class="gamma-label">Gamma Resonance Zone</div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.6em; opacity: 0.6;">
+                        <span>40Hz</span>
+                        <span>20kHz</span>
+                    </div>
+                </div>
+
+                <span class="label">BINAURAL VOLUME</span>
+                <input type="range" id="volSlider" min="0" max="0.5" step="0.01" value="0">
             </div>
 
             <div class="panel">
@@ -274,6 +334,13 @@
             <div id="wave-voice"></div>
         </div>
     </div>
+
+    <footer>
+        © 2026 Iamalready.com | For Experimental Use Only | Admin: jpatrick247.365@gmail.com <br>
+        <a href="https://rapbattlecast.com/terms">Terms of Service</a> |
+        <a href="https://rapbattlecast.com/disclaimer">Disclaimer</a>
+        <!-- Proprietary Build: James Hughes & Son. -->
+    </footer>
 
     <script type="module">
         import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js'
@@ -378,6 +445,11 @@
             osc2.connect(gainR).connect(pR).connect(binauralMasterGain);
             binauralMasterGain.connect(audioCtx.destination);
             binauralMasterGain.connect(mixer);
+
+            // Initialize to 432Hz Std
+            osc1.frequency.value = 432;
+            osc2.frequency.value = 438; // 432 + 6 (Current Flow default index 5)
+
             osc1.start(); osc2.start();
 
             // --- MIC (ONE-TIME IDEMPOTENT ROUTING) ---
@@ -397,6 +469,7 @@
                 console.error("Mic permissions denied", err);
             }
 
+            updateBinaural();
             initWaveSurfers(audioCtx);
             document.getElementById('status-text').innerText = "SYSTEM ARMED";
             document.getElementById('status-text').classList.add('ready');
@@ -410,12 +483,16 @@
 
             const mediaElement = wsMusic.getMediaElement();
             mediaElement.crossOrigin = "anonymous";
+
+            // 432 Hz Alignment: -1.818% pitch shift (432/440 = 0.981818)
+            mediaElement.playbackRate = 0.981818;
+
             if (!musicSource) { musicSource = audioCtx.createMediaElementSource(mediaElement); }
 
             musicSource.connect(audioCtx.destination);
             musicSource.connect(latencyDelay).connect(mixer);
 
-            document.getElementById('status-text').innerText = "SOURCE: " + file.name;
+            document.getElementById('status-text').innerText = "SOURCE: " + file.name + " (432Hz ALIGNED)";
         }
 
         const fileFallback = document.createElement('input');
@@ -691,13 +768,34 @@
             return result;
         }
 
-        document.getElementById('freqSlider').oninput = async (e) => {
+        const flowSteps = [1, 2, 3, 4, 5, 6, 7, 7.83];
+
+        function updateBinaural() {
+            if (!audioCtx) return;
+            const base = parseInt(document.getElementById('baseSlider').value);
+            const flowIndex = parseInt(document.getElementById('flowSlider').value);
+            const flow = flowSteps[flowIndex];
+
+            osc1.frequency.setTargetAtTime(base, audioCtx.currentTime, 0.05);
+            osc2.frequency.setTargetAtTime(base + flow, audioCtx.currentTime, 0.05);
+
+            document.getElementById('hzNote').innerText = `${base}Hz | ${flow}Hz FLOW`;
+            document.getElementById('flowVal').innerText = flow === 7.83 ? "7.83Hz - Schumann Resonance" : `${flow}Hz`;
+
+            // Gamma Zone: 40Hz - 100Hz
+            document.getElementById('gammaLabel').style.display = (base >= 40 && base <= 100) ? 'block' : 'none';
+        }
+
+        document.getElementById('baseSlider').oninput = async () => {
             if (!audioCtx) await setupAudio();
             if (audioCtx.state === 'suspended') await audioCtx.resume();
-            const val = parseInt(e.target.value);
-            osc1.frequency.setTargetAtTime(val, audioCtx.currentTime, 0.05);
-            osc2.frequency.setTargetAtTime(val + 6, audioCtx.currentTime, 0.05);
-            document.getElementById('hzNote').innerText = `${val}Hz | 6Hz FLOW`;
+            updateBinaural();
+        };
+
+        document.getElementById('flowSlider').oninput = async () => {
+            if (!audioCtx) await setupAudio();
+            if (audioCtx.state === 'suspended') await audioCtx.resume();
+            updateBinaural();
         };
 
         document.getElementById('volSlider').oninput = async (e) => {
