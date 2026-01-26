@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Audio Master Studio V6.1 - Iamalready.com Edition</title>
+    <title>Audio Master Studio V6.2 - Iamalready.com Edition</title>
     <style>
         body {
             background: #000;
@@ -254,7 +254,7 @@
             <div style="display: flex; align-items: center;">
                 <img src="https://rapbattlecast.com/iamalready.logo.png" alt="Logo"
                     style="height: 60px; margin-right: 20px;">
-                <h1>Audio Master Studio V6.1 - Iamalready.com Edition</h1>
+                <h1>Audio Master Studio V6.2 - Iamalready.com Edition</h1>
             </div>
             <div id="clock">--:--:--</div>
         </div>
@@ -284,20 +284,23 @@
             </div>
 
             <div class="panel">
-                <span class="label">2. BINAURAL ENGINE (40Hz - 5000Hz)</span>
+                <span class="label">2. BINAURAL ENGINE (40Hz - 1000Hz)</span>
                 <div id="hzNote" style="text-align:center; margin-bottom:10px; font-size: 1.2em; letter-spacing: 2px;">
                     100Hz | 6Hz FLOW</div>
-                <input type="range" id="freqSlider" min="40" max="5000" step="1" value="100">
+                <input type="range" id="freqSlider" min="40" max="1000" step="1" value="100">
+                <input type="range" id="flowSlider" min="1" max="15" step="0.1" value="6">
                 <input type="range" id="volSlider" min="0" max="0.5" step="0.01" value="0">
                 <div style="display: flex; justify-content: space-between; font-size: 0.7em; opacity: 0.6;">
                     <span>40Hz (Gamma)</span>
-                    <span>5000Hz</span>
+                    <span>1000Hz</span>
                 </div>
             </div>
 
             <div class="panel">
                 <span class="label">3. MULTITRACK TRANSPORT</span>
                 <button id="playBtn" style="height: 50px; font-size: 1.1em;">MASTER PLAY / PAUSE</button>
+                <span class="label" style="margin-bottom: 5px;">MASTER SOURCE VOLUME</span>
+                <input type="range" id="masterGainSlider" min="0" max="1.5" step="0.01" value="1.0">
                 <div class="rec-grid">
                     <button id="recLeft" class="rec-btn">REC LEFT</button>
                     <button id="recRight" class="rec-btn">REC RIGHT</button>
@@ -329,6 +332,7 @@
         import RecordPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/record.esm.js'
 
         let audioCtx, osc1, osc2, gainL, gainR, binauralMasterGain, mixer, recorder;
+        let musicGainNode;
         let recordedChunks = [];
         let musicSource, micSource, micPanner, vocalGain, masterVoiceGain, latencyDelay;
         let isRecording = false;
@@ -413,6 +417,9 @@
             mixer = audioCtx.createMediaStreamDestination();
             mixer.channelCount = 2;
 
+            musicGainNode = audioCtx.createGain();
+            musicGainNode.gain.value = 1.0;
+
             latencyDelay = audioCtx.createDelay(1.0);
             latencyDelay.delayTime.value = 0.050;
 
@@ -471,8 +478,9 @@
 
             if (!musicSource) { musicSource = audioCtx.createMediaElementSource(mediaElement); }
 
-            musicSource.connect(audioCtx.destination);
-            musicSource.connect(latencyDelay).connect(mixer);
+            musicSource.connect(musicGainNode);
+            musicGainNode.connect(audioCtx.destination);
+            musicGainNode.connect(latencyDelay).connect(mixer);
 
             document.getElementById('status-text').innerText = "SOURCE: " + file.name + " (432Hz ALIGNED)";
         }
@@ -753,7 +761,7 @@
         function updateBinaural() {
             if (!audioCtx) return;
             const base = parseInt(document.getElementById('freqSlider').value);
-            const flow = 6; // Fixed 6Hz FLOW for V6.1 functional state
+            const flow = parseFloat(document.getElementById('flowSlider').value);
 
             osc1.frequency.setTargetAtTime(base, audioCtx.currentTime, 0.05);
             osc2.frequency.setTargetAtTime(base + flow, audioCtx.currentTime, 0.05);
@@ -767,10 +775,24 @@
             updateBinaural();
         };
 
+        document.getElementById('flowSlider').oninput = async () => {
+            if (!audioCtx) await setupAudio();
+            if (audioCtx.state === 'suspended') await audioCtx.resume();
+            updateBinaural();
+        };
+
         document.getElementById('volSlider').oninput = async (e) => {
             if (!audioCtx) await setupAudio();
             if (audioCtx.state === 'suspended') await audioCtx.resume();
             binauralMasterGain.gain.setTargetAtTime(e.target.value, audioCtx.currentTime, 0.05);
+        };
+
+        document.getElementById('masterGainSlider').oninput = async (e) => {
+            if (!audioCtx) await setupAudio();
+            if (audioCtx.state === 'suspended') await audioCtx.resume();
+            if (musicGainNode) {
+                musicGainNode.gain.setTargetAtTime(e.target.value, audioCtx.currentTime, 0.05);
+            }
         };
 
         setInterval(() => {
