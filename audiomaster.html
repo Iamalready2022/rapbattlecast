@@ -316,7 +316,6 @@
         <div class="track-id" style="color: #ff4141; border-color: #ff414144;">V-01: VOCAL CHANNEL (PANNED)</div>
         <div id="wave-voice"></div>
     </div>
-    </div>
 
     <footer>
         © 2026 Iamalready.com | For Experimental Use Only | Admin: jpatrick247.365@gmail.com <br>
@@ -751,31 +750,18 @@
             return result;
         }
 
-        const flowSteps = [1, 2, 3, 4, 5, 6, 7, 7.83];
-
         function updateBinaural() {
             if (!audioCtx) return;
-            const base = parseInt(document.getElementById('baseSlider').value);
-            const flowIndex = parseInt(document.getElementById('flowSlider').value);
-            const flow = flowSteps[flowIndex];
+            const base = parseInt(document.getElementById('freqSlider').value);
+            const flow = 6; // Fixed 6Hz FLOW for V6.1 functional state
 
             osc1.frequency.setTargetAtTime(base, audioCtx.currentTime, 0.05);
             osc2.frequency.setTargetAtTime(base + flow, audioCtx.currentTime, 0.05);
 
             document.getElementById('hzNote').innerText = `${base}Hz | ${flow}Hz FLOW`;
-            document.getElementById('flowVal').innerText = flow === 7.83 ? "7.83Hz - Schumann Resonance" : `${flow}Hz`;
-
-            // Gamma Zone: 40Hz - 100Hz
-            document.getElementById('gammaLabel').style.display = (base >= 40 && base <= 100) ? 'block' : 'none';
         }
 
-        document.getElementById('baseSlider').oninput = async () => {
-            if (!audioCtx) await setupAudio();
-            if (audioCtx.state === 'suspended') await audioCtx.resume();
-            updateBinaural();
-        };
-
-        document.getElementById('flowSlider').oninput = async () => {
+        document.getElementById('freqSlider').oninput = async () => {
             if (!audioCtx) await setupAudio();
             if (audioCtx.state === 'suspended') await audioCtx.resume();
             updateBinaural();
