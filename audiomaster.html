@@ -306,23 +306,7 @@
                     SESSION MASTER</button>
             </div>
         </div>
-    </div> ```
-
-    ---
-
-    ### 🧪 Why the sound stopped
-    The "Silencing" happened because the old code probably lost the **IDs** (`id="freqSlider"`, `id="playBtn"`, etc.).
-    The JavaScript at the bottom of the file is looking for those specific names to make the noise. By pasting the block
-    above, you are "plugging the wires" back into the audio engine.
-
-    ### 🎙️ The Final Polish
-    * **The Logo:** I set it to `height: 60px`. On your NUC5 screen, that should make the **Iamalready.com** text clear
-    and crisp.
-    * **The 1Hz Slider:** I kept the `step="1"` and `max="5000"`. This fixes the 45Hz jumping issue once and for all.
-
-    **Once you hit Ctrl+S and refresh the page, let me know if the "100Hz | 6Hz FLOW" text starts moving again when you
-    slide the bar!**
-
+    </div>
     <div class="track">
         <div class="track-id">D-01: MASTER MUSIC (STEREO)</div>
         <div id="wave-music"></div>
