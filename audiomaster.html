@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Audio Master Studio V6.2 - Iamalready.com Edition</title>
+    <title>Audio Master Studio V6.3 - Iamalready.com Edition</title>
     <style>
         body {
             background: #000;
@@ -254,7 +254,7 @@
             <div style="display: flex; align-items: center;">
                 <img src="https://rapbattlecast.com/iamalready.logo.png" alt="Logo"
                     style="height: 60px; margin-right: 20px;">
-                <h1>Audio Master Studio V6.2 - Iamalready.com Edition</h1>
+                <h1>Audio Master Studio V6.3 - Iamalready.com Edition</h1>
             </div>
             <div id="clock">--:--:--</div>
         </div>
@@ -284,13 +284,23 @@
             </div>
 
             <div class="panel">
-                <span class="label">2. BINAURAL ENGINE (40Hz - 1000Hz)</span>
+                <span class="label">2. CALIBRATED ENGINE (40Hz - 1000Hz)</span>
                 <div id="hzNote" style="text-align:center; margin-bottom:10px; font-size: 1.2em; letter-spacing: 2px;">
                     100Hz | 6Hz FLOW</div>
-                <input type="range" id="freqSlider" min="40" max="1000" step="1" value="100">
+
+                <span class="label" style="margin-bottom: 5px; opacity: 0.6;">1. MASTER SOURCE VOLUME</span>
+                <input type="range" id="masterGainSlider" min="0" max="1.5" step="0.01" value="1.0">
+
+                <span class="label" style="margin-bottom: 5px; opacity: 0.6;">2. BINAURAL FLOW (1-15Hz)</span>
                 <input type="range" id="flowSlider" min="1" max="15" step="0.1" value="6">
+
+                <span class="label" style="margin-bottom: 5px; opacity: 0.6;">3. BASE FREQUENCY (40-1000Hz)</span>
+                <input type="range" id="freqSlider" min="40" max="1000" step="1" value="100">
+
+                <span class="label" style="margin-bottom: 5px; opacity: 0.6;">BINAURAL VOLUME</span>
                 <input type="range" id="volSlider" min="0" max="0.5" step="0.01" value="0">
-                <div style="display: flex; justify-content: space-between; font-size: 0.7em; opacity: 0.6;">
+
+                <div style="display: flex; justify-content: space-between; font-size: 0.7em; opacity: 0.4;">
                     <span>40Hz (Gamma)</span>
                     <span>1000Hz</span>
                 </div>
@@ -299,14 +309,12 @@
             <div class="panel">
                 <span class="label">3. MULTITRACK TRANSPORT</span>
                 <button id="playBtn" style="height: 50px; font-size: 1.1em;">MASTER PLAY / PAUSE</button>
-                <span class="label" style="margin-bottom: 5px;">MASTER SOURCE VOLUME</span>
-                <input type="range" id="masterGainSlider" min="0" max="1.5" step="0.01" value="1.0">
                 <div class="rec-grid">
                     <button id="recLeft" class="rec-btn">REC LEFT</button>
                     <button id="recRight" class="rec-btn">REC RIGHT</button>
                 </div>
-                <button id="downloadBtn" style="background:#ffd700; display:none; margin-top: 10px; color: #000;">SAVE
-                    SESSION MASTER</button>
+                <button id="downloadBtn" style="background:#ffd700; margin-top: 10px; color: #000;">STOP & SAVE TO
+                    DOWNLOADS</button>
             </div>
         </div>
     </div>
@@ -332,7 +340,7 @@
         import RecordPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/record.esm.js'
 
         let audioCtx, osc1, osc2, gainL, gainR, binauralMasterGain, mixer, recorder;
-        let musicGainNode;
+        let musicGainNode, micFilter;
         let recordedChunks = [];
         let musicSource, micSource, micPanner, vocalGain, masterVoiceGain, latencyDelay;
         let isRecording = false;
@@ -441,19 +449,23 @@
 
             osc1.start(); osc2.start();
 
-            // --- MIC (ONE-TIME IDEMPOTENT ROUTING) ---
+            // --- MIC (80Hz RUMBLE FILTER + STEREO ROUTING) ---
+            micFilter = audioCtx.createBiquadFilter();
+            micFilter.type = 'highpass';
+            micFilter.frequency.value = 80;
+
             micPanner = audioCtx.createStereoPanner();
             vocalGain = audioCtx.createGain();
             vocalGain.gain.value = 0;
             masterVoiceGain = audioCtx.createGain();
             masterVoiceGain.gain.value = 1.0;
 
-            micPanner.connect(vocalGain).connect(masterVoiceGain).connect(mixer);
+            micFilter.connect(micPanner).connect(vocalGain).connect(masterVoiceGain).connect(mixer);
 
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 micSource = audioCtx.createMediaStreamSource(stream);
-                micSource.connect(micPanner); // SOLDERED
+                micSource.connect(micFilter); // FILTER FIRST
             } catch (err) {
                 console.error("Mic permissions denied", err);
             }
@@ -579,18 +591,25 @@
             document.getElementById('recLeft').classList.remove('active');
             document.getElementById('recRight').classList.remove('active');
 
-            const downloadBtn = document.getElementById('downloadBtn');
-            downloadBtn.style.display = "block";
+            // downloadBtn.style.display = "block"; // Removed to make button persistent
             document.getElementById('status-text').innerText = "MASTER READY";
 
-            setTimeout(() => { downloadBtn.click(); }, 500);
+            // setTimeout(() => { downloadBtn.click(); }, 500); // Removed auto-click
         }
 
         document.getElementById('recLeft').onclick = () => toggleRecording('left');
         document.getElementById('recRight').onclick = () => toggleRecording('right');
 
         document.getElementById('downloadBtn').onclick = async () => {
-            if (recordedChunks.length === 0) return;
+            if (isRecording) {
+                stopAndDownload();
+                // Short delay to ensure recorder has finalized state
+                await new Promise(r => setTimeout(r, 600));
+            }
+            if (recordedChunks.length === 0) {
+                alert("No active session detected.");
+                return;
+            }
 
             const statusText = document.getElementById('status-text');
             const format = document.getElementById('formatSelector').value;
