@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Audio Master Studio V6.3 - Iamalready.com Edition</title>
+    <title>Audio Master Studio V6.4 - Iamalready.com Edition</title>
     <style>
         body {
             background: #000;
@@ -254,7 +254,7 @@
             <div style="display: flex; align-items: center;">
                 <img src="https://rapbattlecast.com/iamalready.logo.png" alt="Logo"
                     style="height: 60px; margin-right: 20px;">
-                <h1>Audio Master Studio V6.3 - Iamalready.com Edition</h1>
+                <h1>Audio Master Studio V6.4 - Iamalready.com Edition</h1>
             </div>
             <div id="clock">--:--:--</div>
         </div>
@@ -452,7 +452,7 @@
             // --- MIC (80Hz RUMBLE FILTER + STEREO ROUTING) ---
             micFilter = audioCtx.createBiquadFilter();
             micFilter.type = 'highpass';
-            micFilter.frequency.value = 80;
+            micFilter.frequency.value = 30;
 
             micPanner = audioCtx.createStereoPanner();
             vocalGain = audioCtx.createGain();
@@ -461,6 +461,7 @@
             masterVoiceGain.gain.value = 1.0;
 
             micFilter.connect(micPanner).connect(vocalGain).connect(masterVoiceGain).connect(mixer);
+            masterVoiceGain.connect(audioCtx.destination); // LIVE MONITORING
 
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
