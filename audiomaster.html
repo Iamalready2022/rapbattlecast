@@ -249,82 +249,79 @@
 
     <div id="recording-banner">RECORDING ACTIVE - STABILITY PRIORITY</div>
 
-    <div class="header">
-        <div style="display: flex; align-items: center;">
-            <img src="https://rapbattlecast.com/iamalready.logo.png" alt="Logo"
-                style="height: 35px; margin-right: 15px;">
-            <h1>Audio Master Studio V6.1 - Iamalready.com Edition</h1>
+    <div class="console">
+        <div class="header">
+            <div style="display: flex; align-items: center;">
+                <img src="https://rapbattlecast.com/iamalready.logo.png" alt="Logo"
+                    style="height: 60px; margin-right: 20px;">
+                <h1>Audio Master Studio V6.1 - Iamalready.com Edition</h1>
+            </div>
+            <div id="clock">--:--:--</div>
         </div>
-        <div id="clock">--:--:--</div>
-    </div>
 
-    <div class="panel">
-        <span class="label">2. BINAURAL ENGINE (40Hz - 5000Hz)</span>
-        <div id="hzNote" style="text-align:center; margin-bottom:10px; font-size: 1.2em; letter-spacing: 2px;">
-            100Hz | 6Hz FLOW</div>
-        <input type="range" id="freqSlider" min="40" max="5000" step="1" value="100">
-        <input type="range" id="volSlider" min="0" max="0.5" step="0.01" value="0">
-        <div style="display: flex; justify-content: space-between; font-size: 0.7em; opacity: 0.6;">
-            <span>40Hz (Gamma)</span>
-            <span>5000Hz</span>
-        </div>
-    </div>
-    <div style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <div>
-            <span class="label">FILE IDENTIFIER</span>
-            <input type="text" id="fileName" placeholder="SESSION_ALPHA_01">
-        </div>
-        <div>
-            <span class="label">FORMAT</span>
-            <select id="formatSelector"
-                style="width: 100%; background: #000; color: #00ff41; border: 1px solid #00ff4144; padding: 12px; font-family: inherit; margin-top: 5px;">
-                <option value="wav">WAV (High Quality)</option>
-                <option value="mp3">MP3 (Compressed)</option>
-            </select>
-        </div>
-    </div>
-    </div>
+        <div class="grid">
+            <div class="panel">
+                <span class="label">1. SOURCE MATERIAL</span>
+                <button id="loadBtn">LOAD MASTER SOURCE</button>
+                <div id="status-indicator">
+                    <span id="rec-light"></span>
+                    <span id="status-text">SYSTEM IDLE</span>
+                </div>
+                <div style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div>
+                        <span class="label">FILE IDENTIFIER</span>
+                        <input type="text" id="fileName" placeholder="SESSION_ALPHA_01">
+                    </div>
+                    <div>
+                        <span class="label">FORMAT</span>
+                        <select id="formatSelector"
+                            style="width: 100%; background: #000; color: #00ff41; border: 1px solid #00ff4144; padding: 12px; font-family: inherit; margin-top: 5px;">
+                            <option value="wav">WAV (High Quality)</option>
+                            <option value="mp3">MP3 (Compressed)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
 
-    <div class="panel">
-        <span class="label">2. BIO-HACKING BINAURAL ENGINE</span>
+            <div class="panel">
+                <span class="label">2. BINAURAL ENGINE (40Hz - 5000Hz)</span>
+                <div id="hzNote" style="text-align:center; margin-bottom:10px; font-size: 1.2em; letter-spacing: 2px;">
+                    100Hz | 6Hz FLOW</div>
+                <input type="range" id="freqSlider" min="40" max="5000" step="1" value="100">
+                <input type="range" id="volSlider" min="0" max="0.5" step="0.01" value="0">
+                <div style="display: flex; justify-content: space-between; font-size: 0.7em; opacity: 0.6;">
+                    <span>40Hz (Gamma)</span>
+                    <span>5000Hz</span>
+                </div>
+            </div>
 
-        <div style="margin-bottom: 20px;">
-            <span class="label">FLOW (Hz)</span>
-            <div id="flowVal" class="schumann-label">6Hz</div>
-            <input type="range" id="flowSlider" min="0" max="7" step="1" value="5">
-            <div style="display: flex; justify-content: space-between; font-size: 0.6em; opacity: 0.6;">
-                <span>1Hz</span>
-                <span>7.83Hz</span>
+            <div class="panel">
+                <span class="label">3. MULTITRACK TRANSPORT</span>
+                <button id="playBtn" style="height: 50px; font-size: 1.1em;">MASTER PLAY / PAUSE</button>
+                <div class="rec-grid">
+                    <button id="recLeft" class="rec-btn">REC LEFT</button>
+                    <button id="recRight" class="rec-btn">REC RIGHT</button>
+                </div>
+                <button id="downloadBtn" style="background:#ffd700; display:none; margin-top: 10px; color: #000;">SAVE
+                    SESSION MASTER</button>
             </div>
         </div>
+    </div> ```
 
-        <div style="margin-bottom: 20px;">
-            <span class="label">BASE FREQUENCY (432Hz STD)</span>
-            <div id="hzNote" style="text-align:center; margin-bottom:10px; font-size: 1.2em; letter-spacing: 2px;">
-                432Hz | 6Hz FLOW</div>
-            <input type="range" id="baseSlider" min="40" max="20000" value="432">
-            <div id="gammaLabel" class="gamma-label">Gamma Resonance Zone</div>
-            <div style="display: flex; justify-content: space-between; font-size: 0.6em; opacity: 0.6;">
-                <span>40Hz</span>
-                <span>20kHz</span>
-            </div>
-        </div>
+    ---
 
-        <span class="label">BINAURAL VOLUME</span>
-        <input type="range" id="volSlider" min="0" max="0.5" step="0.01" value="0">
-    </div>
+    ### 🧪 Why the sound stopped
+    The "Silencing" happened because the old code probably lost the **IDs** (`id="freqSlider"`, `id="playBtn"`, etc.).
+    The JavaScript at the bottom of the file is looking for those specific names to make the noise. By pasting the block
+    above, you are "plugging the wires" back into the audio engine.
 
-    <div class="panel">
-        <span class="label">3. MULTITRACK TRANSPORT</span>
-        <button id="playBtn" style="height: 50px; font-size: 1.1em;">MASTER PLAY / PAUSE</button>
-        <div class="rec-grid">
-            <button id="recLeft" class="rec-btn">REC LEFT</button>
-            <button id="recRight" class="rec-btn">REC RIGHT</button>
-        </div>
-        <button id="downloadBtn" style="background:#ffd700; display:none; margin-top: 10px; color: #000;">SAVE
-            SESSION MASTER</button>
-    </div>
-    </div>
+    ### 🎙️ The Final Polish
+    * **The Logo:** I set it to `height: 60px`. On your NUC5 screen, that should make the **Iamalready.com** text clear
+    and crisp.
+    * **The 1Hz Slider:** I kept the `step="1"` and `max="5000"`. This fixes the 45Hz jumping issue once and for all.
+
+    **Once you hit Ctrl+S and refresh the page, let me know if the "100Hz | 6Hz FLOW" text starts moving again when you
+    slide the bar!**
 
     <div class="track">
         <div class="track-id">D-01: MASTER MUSIC (STEREO)</div>
