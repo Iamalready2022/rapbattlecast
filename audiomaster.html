@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Audio Master Studio V6.4 - Iamalready.com Edition</title>
+    <title>Audio Master Studio V6.5 - Iamalready.com Edition</title>
     <style>
         body {
             background: #000;
@@ -254,7 +254,7 @@
             <div style="display: flex; align-items: center;">
                 <img src="https://rapbattlecast.com/iamalready.logo.png" alt="Logo"
                     style="height: 60px; margin-right: 20px;">
-                <h1>Audio Master Studio V6.4 - Iamalready.com Edition</h1>
+                <h1>Audio Master Studio V6.5 - Iamalready.com Edition</h1>
             </div>
             <div id="clock">--:--:--</div>
         </div>
@@ -288,17 +288,29 @@
                 <div id="hzNote" style="text-align:center; margin-bottom:10px; font-size: 1.2em; letter-spacing: 2px;">
                     100Hz | 6Hz FLOW</div>
 
-                <span class="label" style="margin-bottom: 5px; opacity: 0.6;">1. MASTER SOURCE VOLUME</span>
+                <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                    <span class="label" style="margin-bottom: 5px; opacity: 0.6;">1. MASTER SOURCE VOLUME</span>
+                    <span id="musicVolVal" style="font-size: 0.8em; color: #00ff41;">1.00</span>
+                </div>
                 <input type="range" id="masterGainSlider" min="0" max="1.5" step="0.01" value="1.0">
 
-                <span class="label" style="margin-bottom: 5px; opacity: 0.6;">2. BINAURAL FLOW (1-15Hz)</span>
+                <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                    <span class="label" style="margin-bottom: 5px; opacity: 0.6;">2. BINAURAL FLOW (1-15Hz)</span>
+                    <span id="flowVal" style="font-size: 0.8em; color: #00ff41;">6.0Hz</span>
+                </div>
                 <input type="range" id="flowSlider" min="1" max="15" step="0.1" value="6">
 
-                <span class="label" style="margin-bottom: 5px; opacity: 0.6;">3. BASE FREQUENCY (40-1000Hz)</span>
+                <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                    <span class="label" style="margin-bottom: 5px; opacity: 0.6;">3. BASE FREQUENCY (40-1000Hz)</span>
+                    <span id="baseVal" style="font-size: 0.8em; color: #00ff41;">100Hz</span>
+                </div>
                 <input type="range" id="freqSlider" min="40" max="1000" step="1" value="100">
 
-                <span class="label" style="margin-bottom: 5px; opacity: 0.6;">BINAURAL VOLUME</span>
-                <input type="range" id="volSlider" min="0" max="0.5" step="0.01" value="0">
+                <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                    <span class="label" style="margin-bottom: 5px; opacity: 0.6;">BINAURAL VOLUME</span>
+                    <span id="binauralVolVal" style="font-size: 0.8em; color: #00ff41;">0.30</span>
+                </div>
+                <input type="range" id="volSlider" min="0" max="0.5" step="0.01" value="0.3">
 
                 <div style="display: flex; justify-content: space-between; font-size: 0.7em; opacity: 0.4;">
                     <span>40Hz (Gamma)</span>
@@ -340,7 +352,7 @@
         import RecordPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/record.esm.js'
 
         let audioCtx, osc1, osc2, gainL, gainR, binauralMasterGain, mixer, recorder;
-        let musicGainNode, micFilter;
+        let musicGainNode, micFilter, monitorGainNode;
         let recordedChunks = [];
         let musicSource, micSource, micPanner, vocalGain, masterVoiceGain, latencyDelay;
         let isRecording = false;
@@ -434,7 +446,7 @@
             // --- BINAURAL ---
             osc1 = audioCtx.createOscillator(); osc2 = audioCtx.createOscillator();
             gainL = audioCtx.createGain(); gainR = audioCtx.createGain();
-            binauralMasterGain = audioCtx.createGain(); binauralMasterGain.gain.value = 0;
+            binauralMasterGain = audioCtx.createGain(); binauralMasterGain.gain.value = 0.3; // Default 30% balance
             const pL = audioCtx.createStereoPanner(); pL.pan.value = -1;
             const pR = audioCtx.createStereoPanner(); pR.pan.value = 1;
 
@@ -449,7 +461,7 @@
 
             osc1.start(); osc2.start();
 
-            // --- MIC (80Hz RUMBLE FILTER + STEREO ROUTING) ---
+            // --- MIC (30Hz RUMBLE FILTER + STEREO ROUTING) ---
             micFilter = audioCtx.createBiquadFilter();
             micFilter.type = 'highpass';
             micFilter.frequency.value = 30;
@@ -461,7 +473,10 @@
             masterVoiceGain.gain.value = 1.0;
 
             micFilter.connect(micPanner).connect(vocalGain).connect(masterVoiceGain).connect(mixer);
-            masterVoiceGain.connect(audioCtx.destination); // LIVE MONITORING
+
+            monitorGainNode = audioCtx.createGain();
+            monitorGainNode.gain.value = 1.0;
+            masterVoiceGain.connect(monitorGainNode).connect(audioCtx.destination); // LIVE MONITORING with echo protection
 
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -548,7 +563,12 @@
             // --- START ---
             isRecording = true;
             currentRecSide = side;
+
+            // TRUE STEREO SEPARATION: Hard pan -1.0 or 1.0 with no bleed
             micPanner.pan.setValueAtTime(side === 'left' ? -1.0 : 1.0, audioCtx.currentTime);
+
+            // ECHO PROTECTION: Mute headset monitor during active recording
+            if (monitorGainNode) monitorGainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.01);
 
             recorder = new MediaRecorder(mixer.stream, { mimeType: 'audio/webm;codecs=opus' });
             recordedChunks = [];
@@ -585,6 +605,9 @@
             if (recorder && recorder.state === "recording") recorder.stop();
 
             vocalGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05);
+
+            // RESTORE VOICE MONITORING
+            if (monitorGainNode) monitorGainNode.gain.setTargetAtTime(1, audioCtx.currentTime, 0.05);
 
             // UI: RESET
             document.getElementById('recording-banner').style.display = 'none';
@@ -787,6 +810,8 @@
             osc2.frequency.setTargetAtTime(base + flow, audioCtx.currentTime, 0.05);
 
             document.getElementById('hzNote').innerText = `${base}Hz | ${flow}Hz FLOW`;
+            document.getElementById('baseVal').innerText = `${base}Hz`;
+            document.getElementById('flowVal').innerText = `${flow.toFixed(1)}Hz`;
         }
 
         document.getElementById('freqSlider').oninput = async () => {
@@ -804,15 +829,19 @@
         document.getElementById('volSlider').oninput = async (e) => {
             if (!audioCtx) await setupAudio();
             if (audioCtx.state === 'suspended') await audioCtx.resume();
-            binauralMasterGain.gain.setTargetAtTime(e.target.value, audioCtx.currentTime, 0.05);
+            const val = parseFloat(e.target.value);
+            binauralMasterGain.gain.setTargetAtTime(val, audioCtx.currentTime, 0.05);
+            document.getElementById('binauralVolVal').innerText = val.toFixed(2);
         };
 
         document.getElementById('masterGainSlider').oninput = async (e) => {
             if (!audioCtx) await setupAudio();
             if (audioCtx.state === 'suspended') await audioCtx.resume();
+            const val = parseFloat(e.target.value);
             if (musicGainNode) {
-                musicGainNode.gain.setTargetAtTime(e.target.value, audioCtx.currentTime, 0.05);
+                musicGainNode.gain.setTargetAtTime(val, audioCtx.currentTime, 0.05);
             }
+            document.getElementById('musicVolVal').innerText = val.toFixed(2);
         };
 
         setInterval(() => {
