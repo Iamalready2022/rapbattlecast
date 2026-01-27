@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Audio Master Studio V6.5 - Iamalready.com Edition</title>
+    <title>Audio Master Studio V6.6 - Iamalready.com Edition</title>
     <style>
         body {
             background: #000;
@@ -203,6 +203,25 @@
             box-shadow: 0 0 10px #ff0000;
         }
 
+        /* V6.6 Live Meter Styles */
+        .meter-container {
+            width: 100%;
+            height: 8px;
+            background: #004411;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            border: 1px solid #00ff4133;
+        }
+
+        #level-meter {
+            height: 100%;
+            width: 0%;
+            background: #00ff41;
+            box-shadow: 0 0 10px #00ff41;
+            transition: width 0.05s ease-out;
+        }
+
         /* Sticky Footer */
         footer {
             position: fixed;
@@ -227,20 +246,6 @@
         footer a:hover {
             text-decoration: underline;
         }
-
-        .gamma-label {
-            color: #ffd700;
-            font-weight: bold;
-            display: none;
-            font-size: 0.8em;
-            margin-top: 5px;
-        }
-
-        .schumann-label {
-            color: #00ffff;
-            font-weight: bold;
-            font-size: 0.8em;
-        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.all.min.js"></script>
 </head>
@@ -254,7 +259,7 @@
             <div style="display: flex; align-items: center;">
                 <img src="https://rapbattlecast.com/iamalready.logo.png" alt="Logo"
                     style="height: 60px; margin-right: 20px;">
-                <h1>Audio Master Studio V6.5 - Iamalready.com Edition</h1>
+                <h1>Audio Master Studio V6.6 - Iamalready.com Edition</h1>
             </div>
             <div id="clock">--:--:--</div>
         </div>
@@ -270,7 +275,7 @@
                 <div style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                     <div>
                         <span class="label">FILE IDENTIFIER</span>
-                        <input type="text" id="fileName" placeholder="SESSION_ALPHA_01">
+                        <input type="text" id="fileName" placeholder="SESSION_ALPHA">
                     </div>
                     <div>
                         <span class="label">FORMAT</span>
@@ -321,6 +326,12 @@
             <div class="panel">
                 <span class="label">3. MULTITRACK TRANSPORT</span>
                 <button id="playBtn" style="height: 50px; font-size: 1.1em;">MASTER PLAY / PAUSE</button>
+
+                <!-- V6.6 Live Meter UI -->
+                <div class="meter-container">
+                    <div id="level-meter"></div>
+                </div>
+
                 <div class="rec-grid">
                     <button id="recLeft" class="rec-btn">REC LEFT</button>
                     <button id="recRight" class="rec-btn">REC RIGHT</button>
@@ -344,7 +355,6 @@
         © 2026 Iamalready.com | For Experimental Use Only | Admin: jpatrick247.365@gmail.com <br>
         <a href="https://rapbattlecast.com/terms">Terms of Service</a> |
         <a href="https://rapbattlecast.com/disclaimer">Disclaimer</a>
-        <!-- Proprietary Build: James Hughes & Son. -->
     </footer>
 
     <script type="module">
@@ -352,13 +362,12 @@
         import RecordPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/record.esm.js'
 
         let audioCtx, osc1, osc2, gainL, gainR, binauralMasterGain, mixer, recorder;
-        let musicGainNode, micFilter, monitorGainNode;
+        let musicGainNode, micFilter, monitorGainNode, vocalAnalyser;
         let recordedChunks = [];
         let musicSource, micSource, micPanner, vocalGain, masterVoiceGain, latencyDelay;
         let isRecording = false;
         let currentRecSide = null;
         let wsMusic, wsVoice, recordPlugin;
-        let hardStopTime = null;
         let tailTimeout = null;
 
         const SYNC_PX_PER_SEC = 50;
@@ -372,25 +381,14 @@
                 barGap: 2,
                 responsive: true,
                 minPxPerSec: SYNC_PX_PER_SEC,
-                hideScrollbar: false,
                 audioContext: ctx
             };
 
             if (wsMusic) wsMusic.destroy();
             if (wsVoice) wsVoice.destroy();
 
-            wsMusic = WaveSurfer.create({
-                ...commonOptions,
-                container: '#wave-music',
-                waveColor: '#004411',
-            });
-
-            wsVoice = WaveSurfer.create({
-                ...commonOptions,
-                container: '#wave-voice',
-                waveColor: '#330000',
-                progressColor: '#ff4141',
-            });
+            wsMusic = WaveSurfer.create({ ...commonOptions, container: '#wave-music', waveColor: '#004411' });
+            wsVoice = WaveSurfer.create({ ...commonOptions, container: '#wave-voice', waveColor: '#330000', progressColor: '#ff4141' });
 
             recordPlugin = wsVoice.registerPlugin(RecordPlugin.create({
                 scrollingWaveform: true,
@@ -400,7 +398,6 @@
             function mainLoop() {
                 if (wsMusic && wsVoice) {
                     const musicTime = wsMusic.getCurrentTime();
-
                     if (wsMusic.isPlaying()) {
                         if (Math.abs(wsVoice.getCurrentTime() - musicTime) > 0.01) {
                             wsVoice.setTime(musicTime);
@@ -418,9 +415,7 @@
                 if (isRecording) {
                     document.getElementById('status-text').innerText = "TAIL FORCE (3s)";
                     if (tailTimeout) clearTimeout(tailTimeout);
-                    tailTimeout = setTimeout(() => {
-                        stopAndDownload();
-                    }, 3000);
+                    tailTimeout = setTimeout(() => { stopAndDownload(); }, 3000);
                 }
             });
         }
@@ -428,7 +423,6 @@
         async function setupAudio() {
             if (audioCtx) return;
 
-            // V5.9 STABILITY: latencyHint 'playback' increases internal buffer size
             audioCtx = new (window.AudioContext || window.webkitAudioContext)({
                 latencyHint: 'playback',
                 sampleRate: 44100
@@ -446,7 +440,7 @@
             // --- BINAURAL ---
             osc1 = audioCtx.createOscillator(); osc2 = audioCtx.createOscillator();
             gainL = audioCtx.createGain(); gainR = audioCtx.createGain();
-            binauralMasterGain = audioCtx.createGain(); binauralMasterGain.gain.value = 0.3; // Default 30% balance
+            binauralMasterGain = audioCtx.createGain(); binauralMasterGain.gain.value = 0.3;
             const pL = audioCtx.createStereoPanner(); pL.pan.value = -1;
             const pR = audioCtx.createStereoPanner(); pR.pan.value = 1;
 
@@ -455,13 +449,11 @@
             binauralMasterGain.connect(audioCtx.destination);
             binauralMasterGain.connect(mixer);
 
-            // Initialize to 432Hz Std
             osc1.frequency.value = 432;
-            osc2.frequency.value = 438; // 432 + 6 (Current Flow default index 5)
-
+            osc2.frequency.value = 438;
             osc1.start(); osc2.start();
 
-            // --- MIC (30Hz RUMBLE FILTER + STEREO ROUTING) ---
+            // --- MIC (30Hz FILTER + STEREO ROUTING) ---
             micFilter = audioCtx.createBiquadFilter();
             micFilter.type = 'highpass';
             micFilter.frequency.value = 30;
@@ -472,16 +464,23 @@
             masterVoiceGain = audioCtx.createGain();
             masterVoiceGain.gain.value = 1.0;
 
-            micFilter.connect(micPanner).connect(vocalGain).connect(masterVoiceGain).connect(mixer);
+            // V6.6 Live Meter Analyser
+            vocalAnalyser = audioCtx.createAnalyser();
+            vocalAnalyser.fftSize = 256;
+
+            micFilter.connect(micPanner).connect(vocalGain).connect(masterVoiceGain);
+            masterVoiceGain.connect(mixer);
+            masterVoiceGain.connect(vocalAnalyser);
 
             monitorGainNode = audioCtx.createGain();
             monitorGainNode.gain.value = 1.0;
-            masterVoiceGain.connect(monitorGainNode).connect(audioCtx.destination); // LIVE MONITORING with echo protection
+            masterVoiceGain.connect(monitorGainNode).connect(audioCtx.destination);
 
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 micSource = audioCtx.createMediaStreamSource(stream);
-                micSource.connect(micFilter); // FILTER FIRST
+                micSource.connect(micFilter);
+                drawVocalMeter();
             } catch (err) {
                 console.error("Mic permissions denied", err);
             }
@@ -492,25 +491,34 @@
             document.getElementById('status-text').classList.add('ready');
         }
 
+        function drawVocalMeter() {
+            if (!vocalAnalyser) return;
+            const dataArray = new Uint8Array(vocalAnalyser.frequencyBinCount);
+
+            function update() {
+                vocalAnalyser.getByteFrequencyData(dataArray);
+                let sum = 0;
+                for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+                let average = sum / dataArray.length;
+                let volume = Math.min(100, average * 2); // Boost for visibility
+                document.getElementById('level-meter').style.width = volume + "%";
+                requestAnimationFrame(update);
+            }
+            update();
+        }
+
         initWaveSurfers();
 
         async function handleFile(file) {
             const url = URL.createObjectURL(file);
             await wsMusic.load(url);
-
             const mediaElement = wsMusic.getMediaElement();
-            mediaElement.crossOrigin = "anonymous";
-
-            // 432 Hz Alignment: -1.818% pitch shift (432/440 = 0.981818)
             mediaElement.playbackRate = 0.981818;
-
             if (!musicSource) { musicSource = audioCtx.createMediaElementSource(mediaElement); }
-
             musicSource.connect(musicGainNode);
             musicGainNode.connect(audioCtx.destination);
             musicGainNode.connect(latencyDelay).connect(mixer);
-
-            document.getElementById('status-text').innerText = "SOURCE: " + file.name + " (432Hz ALIGNED)";
+            document.getElementById('status-text').innerText = "SOURCE: " + file.name;
         }
 
         const fileFallback = document.createElement('input');
@@ -518,7 +526,6 @@
         fileFallback.style.display = 'none';
         fileFallback.accept = 'audio/*';
         document.body.appendChild(fileFallback);
-
         fileFallback.onchange = async (e) => {
             const file = e.target.files[0];
             if (file) await handleFile(file);
@@ -547,11 +554,7 @@
             if (!audioCtx) { alert("Load source first."); return; }
             if (audioCtx.state === 'suspended') await audioCtx.resume();
 
-            if (isRecording && currentRecSide === side) {
-                stopAndDownload();
-                return;
-            }
-
+            if (isRecording && currentRecSide === side) { stopAndDownload(); return; }
             if (isRecording && currentRecSide !== side) {
                 micPanner.pan.setValueAtTime(side === 'left' ? -1.0 : 1.0, audioCtx.currentTime);
                 currentRecSide = side;
@@ -560,39 +563,28 @@
                 return;
             }
 
-            // --- START ---
             isRecording = true;
             currentRecSide = side;
-
-            // TRUE STEREO SEPARATION: Hard pan -1.0 or 1.0 with no bleed
             micPanner.pan.setValueAtTime(side === 'left' ? -1.0 : 1.0, audioCtx.currentTime);
-
-            // ECHO PROTECTION: Mute headset monitor during active recording
             if (monitorGainNode) monitorGainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.01);
 
             recorder = new MediaRecorder(mixer.stream, { mimeType: 'audio/webm;codecs=opus' });
             recordedChunks = [];
             recorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
-
-            const startTime = wsMusic.getCurrentTime();
-            wsVoice.setTime(startTime);
-
+            wsVoice.setTime(wsMusic.getCurrentTime());
             recorder.start();
             recordPlugin.startRecording();
 
             vocalGain.gain.setValueAtTime(0, audioCtx.currentTime);
             vocalGain.gain.linearRampToValueAtTime(1, audioCtx.currentTime + 0.010);
 
-            // UI: STATIC STATE (No animation during recording)
             document.getElementById('recording-banner').style.display = 'block';
             document.getElementById('rec-light').classList.add('on');
             document.getElementById('recLeft').classList.toggle('active', side === 'left');
             document.getElementById('recRight').classList.toggle('active', side === 'right');
             document.getElementById('status-text').innerText = `REC ACTIVE [${side.toUpperCase()}]`;
 
-            setTimeout(() => {
-                if (!wsMusic.isPlaying()) { wsMusic.play(); wsVoice.play(); }
-            }, 100);
+            setTimeout(() => { if (!wsMusic.isPlaying()) { wsMusic.play(); wsVoice.play(); } }, 100);
         }
 
         function stopAndDownload() {
@@ -600,136 +592,90 @@
             isRecording = false;
             currentRecSide = null;
             if (tailTimeout) { clearTimeout(tailTimeout); tailTimeout = null; }
-
             recordPlugin.stopRecording();
             if (recorder && recorder.state === "recording") recorder.stop();
-
             vocalGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05);
-
-            // RESTORE VOICE MONITORING
             if (monitorGainNode) monitorGainNode.gain.setTargetAtTime(1, audioCtx.currentTime, 0.05);
-
-            // UI: RESET
             document.getElementById('recording-banner').style.display = 'none';
             document.getElementById('rec-light').classList.remove('on');
             document.getElementById('recLeft').classList.remove('active');
             document.getElementById('recRight').classList.remove('active');
-
-            // downloadBtn.style.display = "block"; // Removed to make button persistent
             document.getElementById('status-text').innerText = "MASTER READY";
-
-            // setTimeout(() => { downloadBtn.click(); }, 500); // Removed auto-click
         }
 
         document.getElementById('recLeft').onclick = () => toggleRecording('left');
         document.getElementById('recRight').onclick = () => toggleRecording('right');
 
+        function getTimestampedName(baseName) {
+            const now = new Date();
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const month = months[now.getMonth()];
+            const day = now.getDate();
+            let hours = now.getHours();
+            const ampm = hours >= 12 ? 'pm' : 'am';
+            hours = hours % 12 || 12;
+            return `${baseName}_${month}${day}_${hours}${ampm}`;
+        }
+
         document.getElementById('downloadBtn').onclick = async () => {
             if (isRecording) {
                 stopAndDownload();
-                // Short delay to ensure recorder has finalized state
                 await new Promise(r => setTimeout(r, 600));
             }
-            if (recordedChunks.length === 0) {
-                alert("No active session detected.");
-                return;
-            }
+            if (recordedChunks.length === 0) { alert("No active session detected."); return; }
 
             const statusText = document.getElementById('status-text');
             const format = document.getElementById('formatSelector').value;
-            const originalStatus = statusText.innerText;
-
             try {
-                statusText.innerText = format === 'mp3' ? "CONVERTING TO MP3..." : "PROCESSING WAV...";
+                statusText.innerText = "PROCESSING SESSION...";
                 statusText.classList.remove('ready');
 
-                // 1. Create a blob from chunks and decode it to AudioBuffer
                 const webmBlob = new Blob(recordedChunks, { type: 'audio/webm;codecs=opus' });
                 const arrayBuffer = await webmBlob.arrayBuffer();
                 const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
 
-                let finalBlob;
-                let extension;
+                let finalBlob, extension;
+                if (format === 'mp3') { finalBlob = await encodeMP3(audioBuffer); extension = '.mp3'; }
+                else { finalBlob = await encodeWAV(audioBuffer); extension = '.wav'; }
 
-                if (format === 'mp3') {
-                    finalBlob = await encodeMP3(audioBuffer);
-                    extension = '.mp3';
-                } else {
-                    finalBlob = await encodeWAV(audioBuffer);
-                    extension = '.wav';
-                }
+                let baseName = document.getElementById('fileName').value.trim() || 'SESSION';
+                const finalFileName = getTimestampedName(baseName) + extension;
 
-                // 2. Handle Filename
-                let fileName = document.getElementById('fileName').value.trim();
-                if (!fileName) fileName = 'audio_session';
-
-                // Strip existing extension if user typed one, then add the correct one
-                fileName = fileName.replace(/\.(wav|mp3)$/i, '') + extension;
-
-                // 3. Trigger Download
                 const url = URL.createObjectURL(finalBlob);
                 const a = document.createElement('a');
                 a.style.display = 'none';
                 a.href = url;
-                a.download = fileName;
+                a.download = finalFileName;
                 document.body.appendChild(a);
                 a.click();
-
-                setTimeout(() => {
-                    document.body.removeChild(a);
-                    window.URL.revokeObjectURL(url);
-                }, 100);
+                setTimeout(() => { document.body.removeChild(a); window.URL.revokeObjectURL(url); }, 100);
 
                 statusText.innerText = "DOWNLOAD COMPLETE";
                 statusText.classList.add('ready');
-
-            } catch (err) {
-                console.error("Export failed", err);
-                statusText.innerText = "EXPORT ERROR";
-            }
+            } catch (err) { statusText.innerText = "EXPORT ERROR"; }
         };
 
         // --- ENCODERS ---
-
         async function encodeWAV(audioBuffer) {
             const numChannels = audioBuffer.numberOfChannels;
             const sampleRate = audioBuffer.sampleRate;
-            const format = 1; // PCM
-            const bitDepth = 16;
-
             const result = flattenChannels(audioBuffer);
             const buffer = new ArrayBuffer(44 + result.length * 2);
             const view = new DataView(buffer);
-
-            /* RIFF identifier */
             writeString(view, 0, 'RIFF');
-            /* file length */
             view.setUint32(4, 36 + result.length * 2, true);
-            /* RIFF type */
             writeString(view, 8, 'WAVE');
-            /* format chunk identifier */
             writeString(view, 12, 'fmt ');
-            /* format chunk length */
             view.setUint32(16, 16, true);
-            /* sample format (raw) */
-            view.setUint16(20, format, true);
-            /* channel count */
+            view.setUint16(20, 1, true);
             view.setUint16(22, numChannels, true);
-            /* sample rate */
             view.setUint32(24, sampleRate, true);
-            /* byte rate (sample rate * block align) */
             view.setUint32(28, sampleRate * numChannels * 2, true);
-            /* block align (channel count * bytes per sample) */
             view.setUint16(32, numChannels * 2, true);
-            /* bits per sample */
-            view.setUint16(34, bitDepth, true);
-            /* data chunk identifier */
+            view.setUint16(34, 16, true);
             writeString(view, 36, 'data');
-            /* data chunk length */
             view.setUint32(40, result.length * 2, true);
-
             floatTo16BitPCM(view, 44, result);
-
             return new Blob([view], { type: 'audio/wav' });
         }
 
@@ -738,66 +684,28 @@
             const sampleRate = audioBuffer.sampleRate;
             const mp3encoder = new lamejs.Mp3Encoder(channels, sampleRate, 128);
             const mp3Data = [];
-
             const samplesL = audioBuffer.getChannelData(0);
             const samplesR = channels > 1 ? audioBuffer.getChannelData(1) : samplesL;
-
-            // lamejs expects Int16Array
-            const sampleBlockSize = 1152;
-            for (let i = 0; i < samplesL.length; i += sampleBlockSize) {
-                const chunkL = floatTo16Bit(samplesL.subarray(i, i + sampleBlockSize));
-                const chunkR = channels > 1 ? floatTo16Bit(samplesR.subarray(i, i + sampleBlockSize)) : chunkL;
-
+            const blockSize = 1152;
+            for (let i = 0; i < samplesL.length; i += blockSize) {
+                const chunkL = floatTo16Bit(samplesL.subarray(i, i + blockSize));
+                const chunkR = channels > 1 ? floatTo16Bit(samplesR.subarray(i, i + blockSize)) : chunkL;
                 const mp3buf = mp3encoder.encodeBuffer(chunkL, chunkR);
                 if (mp3buf.length > 0) mp3Data.push(mp3buf);
             }
-
-            const mp3buf = mp3encoder.flush();
-            if (mp3buf.length > 0) mp3Data.push(mp3buf);
-
+            const flush = mp3encoder.flush();
+            if (flush.length > 0) mp3Data.push(flush);
             return new Blob(mp3Data, { type: 'audio/mp3' });
         }
 
-        // --- HELPER FUNCS ---
-
-        function writeString(view, offset, string) {
-            for (let i = 0; i < string.length; i++) {
-                view.setUint8(offset + i, string.charCodeAt(i));
-            }
-        }
-
-        function floatTo16BitPCM(output, offset, input) {
-            for (let i = 0; i < input.length; i++, offset += 2) {
-                let s = Math.max(-1, Math.min(1, input[i]));
-                output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
-            }
-        }
-
-        function floatTo16Bit(input) {
-            const output = new Int16Array(input.length);
-            for (let i = 0; i < input.length; i++) {
-                let s = Math.max(-1, Math.min(1, input[i]));
-                output[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
-            }
-            return output;
-        }
-
+        function writeString(view, offset, string) { for (let i = 0; i < string.length; i++) view.setUint8(offset + i, string.charCodeAt(i)); }
+        function floatTo16BitPCM(output, offset, input) { for (let i = 0; i < input.length; i++, offset += 2) { let s = Math.max(-1, Math.min(1, input[i])); output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true); } }
+        function floatTo16Bit(input) { const output = new Int16Array(input.length); for (let i = 0; i < input.length; i++) { let s = Math.max(-1, Math.min(1, input[i])); output[i] = s < 0 ? s * 0x8000 : s * 0x7FFF; } return output; }
         function flattenChannels(audioBuffer) {
-            const channels = audioBuffer.numberOfChannels;
-            const length = audioBuffer.length * channels;
-            const result = new Float32Array(length);
-            const input = [];
-
-            for (let i = 0; i < channels; i++) {
-                input.push(audioBuffer.getChannelData(i));
-            }
-
+            const channels = audioBuffer.numberOfChannels, length = audioBuffer.length * channels, result = new Float32Array(length), input = [];
+            for (let i = 0; i < channels; i++) input.push(audioBuffer.getChannelData(i));
             let offset = 0;
-            for (let i = 0; i < audioBuffer.length; i++) {
-                for (let channel = 0; channel < channels; channel++) {
-                    result[offset++] = input[channel][i];
-                }
-            }
+            for (let i = 0; i < audioBuffer.length; i++) for (let c = 0; c < channels; c++) result[offset++] = input[c][i];
             return result;
         }
 
@@ -805,48 +713,29 @@
             if (!audioCtx) return;
             const base = parseInt(document.getElementById('freqSlider').value);
             const flow = parseFloat(document.getElementById('flowSlider').value);
-
             osc1.frequency.setTargetAtTime(base, audioCtx.currentTime, 0.05);
             osc2.frequency.setTargetAtTime(base + flow, audioCtx.currentTime, 0.05);
-
             document.getElementById('hzNote').innerText = `${base}Hz | ${flow}Hz FLOW`;
             document.getElementById('baseVal').innerText = `${base}Hz`;
             document.getElementById('flowVal').innerText = `${flow.toFixed(1)}Hz`;
         }
 
-        document.getElementById('freqSlider').oninput = async () => {
-            if (!audioCtx) await setupAudio();
-            if (audioCtx.state === 'suspended') await audioCtx.resume();
-            updateBinaural();
-        };
-
-        document.getElementById('flowSlider').oninput = async () => {
-            if (!audioCtx) await setupAudio();
-            if (audioCtx.state === 'suspended') await audioCtx.resume();
-            updateBinaural();
-        };
-
+        document.getElementById('freqSlider').oninput = async () => { if (!audioCtx) await setupAudio(); updateBinaural(); };
+        document.getElementById('flowSlider').oninput = async () => { if (!audioCtx) await setupAudio(); updateBinaural(); };
         document.getElementById('volSlider').oninput = async (e) => {
             if (!audioCtx) await setupAudio();
-            if (audioCtx.state === 'suspended') await audioCtx.resume();
             const val = parseFloat(e.target.value);
             binauralMasterGain.gain.setTargetAtTime(val, audioCtx.currentTime, 0.05);
             document.getElementById('binauralVolVal').innerText = val.toFixed(2);
         };
-
         document.getElementById('masterGainSlider').oninput = async (e) => {
             if (!audioCtx) await setupAudio();
-            if (audioCtx.state === 'suspended') await audioCtx.resume();
             const val = parseFloat(e.target.value);
-            if (musicGainNode) {
-                musicGainNode.gain.setTargetAtTime(val, audioCtx.currentTime, 0.05);
-            }
+            if (musicGainNode) musicGainNode.gain.setTargetAtTime(val, audioCtx.currentTime, 0.05);
             document.getElementById('musicVolVal').innerText = val.toFixed(2);
         };
 
-        setInterval(() => {
-            document.getElementById('clock').innerText = new Date().toLocaleTimeString();
-        }, 1000);
+        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
     </script>
 </body>
 
