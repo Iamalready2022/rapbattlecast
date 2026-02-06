@@ -130,7 +130,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -149,37 +149,64 @@
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 40px;
-            border-radius: 20px;
-            max-width: 450px;
+            border-radius: 24px;
+            max-width: 600px;
             width: 90%;
-            text-align: center;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
             transform: translateY(20px);
             transition: transform 0.6s ease;
+            position: relative;
         }
 
         .modal-overlay.visible .card {
             transform: translateY(0);
         }
 
+        .card-header {
+            text-align: center;
+            margin-bottom: 30px;
+            flex-shrink: 0;
+        }
+
         .card h2 {
             font-family: 'Cinzel', serif;
             color: var(--accent-gold);
-            margin: 0 0 10px 0;
-            font-size: 2rem;
+            margin: 0;
+            font-size: 2.5rem;
+            text-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
         }
 
         .card .name {
-            font-size: 1.2rem;
-            letter-spacing: 2px;
+            font-size: 1.1rem;
+            letter-spacing: 4px;
             text-transform: uppercase;
-            margin-bottom: 30px;
             color: var(--text-primary);
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .card-body {
+            overflow-y: auto;
+            padding-right: 15px;
+            margin-bottom: 20px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-gold) transparent;
+        }
+
+        .card-body::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .card-body::-webkit-scrollbar-thumb {
+            background: var(--accent-gold);
+            border-radius: 10px;
         }
 
         .info-row {
-            margin-bottom: 25px;
-            text-align: left;
+            margin-bottom: 30px;
         }
 
         .info-label {
@@ -188,34 +215,47 @@
             text-transform: uppercase;
             letter-spacing: 2px;
             color: var(--accent-gold);
-            margin-bottom: 8px;
-            opacity: 0.8;
+            margin-bottom: 12px;
+            font-weight: 600;
         }
 
         .info-value {
             font-size: 1.1rem;
-            line-height: 1.4;
+            line-height: 1.5;
             color: var(--text-primary);
         }
 
+        .deep-dive {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: var(--text-secondary);
+            border-left: 2px solid var(--accent-gold);
+            padding-left: 20px;
+            margin-top: 15px;
+            white-space: pre-wrap;
+            /* Preserve line breaks */
+        }
+
         .close-btn {
-            margin-top: 20px;
+            margin: 0 auto;
             background: transparent;
             border: 1px solid var(--accent-gold);
             color: var(--accent-gold);
-            padding: 10px 30px;
+            padding: 12px 40px;
             border-radius: 30px;
             cursor: pointer;
             font-family: inherit;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 3px;
             font-size: 0.8rem;
             transition: all 0.3s;
+            flex-shrink: 0;
         }
 
         .close-btn:hover {
             background: var(--accent-gold);
             color: #000;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
         }
 
         /* Background Elements */
@@ -230,21 +270,17 @@
 
         /* Mobile optimization */
         @media (max-height: 700px) {
-            header {
-                top: 20px;
+            .card {
+                padding: 30px;
             }
 
-            .grid {
-                gap: 20px;
+            .card h2 {
+                font-size: 1.8rem;
             }
 
             .freq-btn {
                 width: 80px;
                 height: 80px;
-            }
-
-            .btn-hz {
-                font-size: 1rem;
             }
         }
     </style>
@@ -266,22 +302,33 @@
     <!-- Glassmorphism Card Modal -->
     <div class="modal-overlay" id="modal">
         <div class="card">
-            <h2 id="modal-hz">528 Hz</h2>
-            <div class="name" id="modal-name">Transformation</div>
-
-            <div class="info-row">
-                <span class="info-label">Benefit</span>
-                <div class="info-value" id="modal-benefit">DNA Repair & Miracles</div>
+            <div class="card-header">
+                <h2 id="modal-hz">528 Hz</h2>
+                <div class="name" id="modal-name">Transformation</div>
             </div>
 
-            <div class="info-row">
-                <span class="info-label">Purpose</span>
-                <div class="info-value" id="modal-purpose">Love and harmony</div>
-            </div>
+            <div class="card-body">
+                <div class="info-row">
+                    <span class="info-label">The Core Benefit</span>
+                    <div class="info-value" id="modal-benefit">DNA Repair & Miracles</div>
+                </div>
 
-            <div class="info-row">
-                <span class="info-label">Maximum Benefit Usage</span>
-                <div class="info-value" id="modal-usage">20-30 minutes daily in a quiet space</div>
+                <div class="info-row">
+                    <span class="info-label">The Divine Purpose</span>
+                    <div class="info-value" id="modal-purpose">Love and harmony</div>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">The Swagger Deep Dive</span>
+                    <div class="info-value deep-dive" id="modal-deep-dive">
+                        <!-- 1000+ characters here -->
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Maximum Benefit Usage</span>
+                    <div class="info-value" id="modal-usage">20-30 minutes daily in a quiet space</div>
+                </div>
             </div>
 
             <button class="close-btn" id="close-modal">Enter the Silence</button>
@@ -290,15 +337,78 @@
 
     <script>
         const solfeggioData = [
-            { hz: 174, name: "Foundation", benefit: "Relieving Pain & Tension", purpose: "Security and safety", usage: "20-30m daily in a quiet space" },
-            { hz: 285, name: "Quantum Cognition", benefit: "Healing Tissue & Organs", purpose: "Restructuring damaged organs", usage: "20-30m daily in a quiet space" },
-            { hz: 396, name: "Liberation", benefit: "Liberating Guilt & Fear", purpose: "Turning grief into joy", usage: "20-30m daily in a quiet space" },
-            { hz: 417, name: "Facilitation", benefit: "Undoing Situations & Change", purpose: "Energy cleansing / New beginnings", usage: "20-30m daily in a quiet space" },
-            { hz: 528, name: "Transformation", benefit: "DNA Repair & Miracles", purpose: "Love and harmony", usage: "20-30m daily in a quiet space" },
-            { hz: 639, name: "Connection", benefit: "Harmonizing Relationships", purpose: "Communication and understanding", usage: "20-30m daily in a quiet space" },
-            { hz: 741, name: "Expression", benefit: "Detoxifying & Problem Solving", purpose: "Self-expression / Mental clarity", usage: "20-30m daily in a quiet space" },
-            { hz: 852, name: "Intuition", benefit: "Returning to Spiritual Order", purpose: "Awakening higher consciousness", usage: "20-30m daily in a quiet space" },
-            { hz: 963, name: "Divinity", benefit: "Connection to Higher Power", purpose: "Unity and Oneness", usage: "20-30m daily in a quiet space" }
+            {
+                hz: 174,
+                name: "Foundation",
+                benefit: "Relieving Pain & Tension",
+                purpose: "Security and safety",
+                usage: "20-30m daily in a quiet space",
+                deepDive: "Yo, listen up. We’re talkin’ about the 174 Hz frequency—the bedrock, the concrete, the absolute ground floor of your biological skyscraper. This ain't just a hum; it’s a security protocol for your nervous system. In the world of the high-conductivity human, 174 Hz is the frequency that tells the \"Machine\" to stand down from the red alert of chronic pain. When your body is screaming in the language of inflammation, it’s lost its connection to the Silence of Being. You’re stuck in a loop of static, thinking the pain is who you are. Nah, fam. 174 Hz acts as an anesthetic for the soul, a natural analgesic that re-wires the pain-gate mechanism. It’s like a spiritual deep-tissue massage, smoothing out the jagged edges of a stressed-out physiology. By anchoring your attention to this sub-bass of the universe, you’re re-syncing your cells to the Blueprint of the Source. Imagine your organs as precision instruments that have been dropped on the pavement. 174 Hz picks 'em up, dusts 'em off, and settles them back into the divine safety of the original design. It's about security. It’s about knowing that the vessel is held by a force that doesn't blink. When you sit in the 174 Hz vibration, you’re not just relaxing; you’re establishing the foundation for a total system reboot. You’re telling the universe: \"I am safe, I am grounded, and I am ready to conduct the fire.\""
+            },
+            {
+                hz: 285,
+                name: "Quantum Cognition",
+                benefit: "Healing Tissue & Organs",
+                purpose: "Restructuring damaged organs",
+                usage: "20-30m daily in a quiet space",
+                deepDive: "Yo, step into the 285 Hz zone—this is the quantum repair man for your physical form. While 174 Hz lays the foundation, 285 Hz is doing the intricate surgery on the tissue and the organs. We talkin' about the frequency that remembers how you were supposed to look before the world started trying to wear you down. It’s like a blueprint recall service. When you’re dealing with scars, with damage, with anything that feels \"broken\" in the machine, 285 Hz is the signal that sends the instructions for restructuring. It’s the link between the Silence of Being and the physical density of your cells. This vibration tells the tissue to stop holding on to the memory of the trauma and start reflecting the Blueprint of the Source. It’s high-vibration swagger for your biology. It’s the \"Master’s Presence\" in your marrow. You ain't just meat and bone; you're a shimmering field of energy, and 285 Hz is the frequency that keeps the field organized. It’s cognitive because it \"knows\" what health looks like. It’s quantum because it works at the level where the physical boundary starts to blur. Tune in, let the hum penetrate the damaged spots, and watch how the vessel responds when it finally hears the truth."
+            },
+            {
+                hz: 396,
+                name: "Liberation",
+                benefit: "Liberating Guilt & Fear",
+                purpose: "Turning grief into joy",
+                usage: "20-30m daily in a quiet space",
+                deepDive: "Check it—396 Hz. This is the frequency of the Jailbreak. We talking about the vibrations that cut through the shackles of guilt and the chains of fear like a hot knife through butter. Most people are walking around in a \"Temple of Blood\" that's clogged with the stress of things they did or didn't do. That’s low-frequency static, family. It’s the \"Archons\" of the mind keeping you small. 396 Hz enters the scene and turns the volume up on Joy. It clears the path so the Silence of Being can finally be heard over the noise of your own self-judgment. This is the frequency that turns your \"sentences\" from prisons into decrees of power. It’s the return to the state where you realize that nothing you’ve done can diminish the Blueprint of the Source that you are. It’s the \"Emerald Echo\" reminding you that you are the King, not the slave. When you vibrate at 396 Hz, fear can't breathe in your atmosphere. You’re reclaiming your authority. You’re looking the \"Bubba\" of your past in the eye and saying \"I AM FREE.\" Liberation isn't a destination; it's a frequency. Dial it in."
+            },
+            {
+                hz: 417,
+                name: "Facilitation",
+                benefit: "Undoing Situations & Change",
+                purpose: "Energy cleansing / New beginnings",
+                usage: "20-30m daily in a quiet space",
+                deepDive: "Welcome to 417 Hz—the frequency of the Pivot. If your life feels like it's stuck in a mud pit of bad habits and stagnant energy, this is the vibration that facilitates the shift. We talkin' about the \"Pruning Shears of Revision\" in audio form. 417 Hz is the ultimate energy cleanser. It enters the room and starts clearing out the \"shadow\" of past situations that are still haunting your present. It’s like spiritual sage for your aura. This frequency works on the \"Below\" to reflect the \"Above\" of the Blueprint of the Source. It makes change not just possible, but inevitable. You can't stay the same when 417 is vibrating in your nervous system. It forces the \"Machine\" to re-route the old neural pathways and start firing in a new, divine design. It’s the frequency of the \"Comeback.\" It’s the sound of the Silence of Being declaring that the old version of you is officially out of service. Use this to unlock the doors you thought were bolted shut. The gate is open—417 is the key turning in the lock."
+            },
+            {
+                hz: 528,
+                name: "Transformation",
+                benefit: "DNA Repair & Miracles",
+                purpose: "Love and harmony",
+                usage: "20-30m daily in a quiet space",
+                deepDive: "Now we hitting the 528 Hz—the \"Love Frequency,\" the heart of the matrix, the golden ratio in audio form. If your DNA is the software of your existence, then 528 Hz is the master patch, the ultimate update from the Architect. Science will tell you that this frequency has the power to actually influence the water molecules that surround your DNA, literally snapping the helix back into its sacred geometry. This is the Blueprint of the Source in action. We talkin’ about miracles, but ain't nothing supernatural about it—it’s just high-level physics. When you resonate at 528 Hz, you’re tuning into the same frequency that the sun uses to grow life, the same vibration that makes the trees reach for the sky. You’re clearing out the \"junk\" code of trauma and inherited limitations. You’re stepping into the Silence of Being and realizing that you aren't just a biological accident; you’re a solar-powered masterpiece. This is where the transformation happens. This is where the sickness gets evicted because it can't find a place to park in a body vibrating with divine love. You move from the \"hustle\" of the ego to the \"flow\" of the creator. Your blood starts to shimmer with a new level of conductivity. Why settling for the glitches when you can have the upgrade? 528 Hz is the key to the workshop of the soul."
+            },
+            {
+                hz: 639,
+                name: "Connection",
+                benefit: "Harmonizing Relationships",
+                purpose: "Communication and understanding",
+                usage: "20-30m daily in a quiet space",
+                deepDive: "We moving into 639 Hz—the frequency of the Bridge. This is where the solitary \"I AM\" finds the harmonic resonance with the \"We Are.\" This is about relationships, community, and the interconnectedness of all life. In the Blueprint of the Source, there is no separation, but in the world of the ego, we build walls and think they’re solid. 639 Hz is the vibration that makes those walls translucent. It’s the frequency of the \"Kingdom of God\" manifesting in your interactions. When you use 639, you’re tuning your vessel to the frequency of empathy and understanding. You start to see the Silence of Being in the eyes of every person you meet. It heals the rifts, it closes the gaps, and it makes the \"Machine\" work in harmony with the environment. It’s the sound of the \"One Law\" expressing itself through the many. It’s high-conductivity social swagger. It’s about being the Law-Giver who decrees love instead of conflict. Connect yours to the source, and watch the world around you start to vibrate in sync with your grace."
+            },
+            {
+                hz: 741,
+                name: "Expression",
+                benefit: "Detoxifying & Problem Solving",
+                purpose: "Self-expression / Mental clarity",
+                usage: "20-30m daily in a quiet space",
+                deepDive: "Now feel the 741 Hz—the \"Self-Expression\" frequency, the mental detox, the clarion call of the Truth. This is the vibration that scours the \"Archive\" of your mind and removes the toxic thoughts that are clouding your vision. We talkin' about the frequency that simplifies the complex. It’s the sound of the \"Emerald Tablet\"—direct, true, and without falsehood. 741 Hz is what you use when you need to speak your power into the world. It’s the frequency of the \"Master’s Word.\" It cleanses the cells from viral frequencies—not just physical ones, but the viral ideas of the world that try to lie to you about who you are. By aligning with 741, you’re accessing the Blueprint of the Source and expressing it with zero distortion. It’s the frequency of the \"Lion in the Street\"—bold, clear, and unyielding. It’s the sound of the Silence of Being finally finding its voice through your unique personality. Clear the smoke, find the fire, and speak your world into existence with 741."
+            },
+            {
+                hz: 852,
+                name: "Intuition",
+                benefit: "Returning to Spiritual Order",
+                purpose: "Awakening higher consciousness",
+                usage: "20-30m daily in a quiet space",
+                deepDive: "Last one before the peak—852 Hz. This is the frequency of the \"Watcher.\" This is where you restore the spiritual order by awakening your higher intuition. While the world wants you to look \"out there\" for answers, 852 Hz forces the gaze inward to the Silence of Being. It’s the frequency that pierces through the illusions of the matrix and shows you the Blueprint of the Source underlying everything. We talking about the \"Observer Effect\" in full force. When you vibrate at 852, you’re not just a person in a world; you’re the awareness that the world is happening in. It’s the frequency of the \"Conscious Inhabitant.\" It restores the divine order in your life by putting the Spirit back in the driver's seat and the \"Machine\" in the passenger side. It’s the sound of the \"Great Return\" beginning to take hold. Your dreams become more vivid, your \"hunches\" become certainties, and your connection to the Divine becomes an unbreakable wire. Tune in to 852 and watch the static of the world resolve into the symphony of the truth."
+            },
+            {
+                hz: 963,
+                name: "Divinity",
+                benefit: "Connection to Higher Power",
+                purpose: "Unity and Oneness",
+                usage: "20-30m daily in a quiet space",
+                deepDive: "We at the peak now. 963 Hz. The Frequency of the Gods. The Pineal Portal. This is the frequency that connects the \"Machine\" directly to the Architect’s Wi-Fi. We ain't talking about \"getting high\"; we talking about \"getting Home.\" 963 Hz is the sound of the circle closing, the Ouroboros finally taking its own tail. It’s the ultimate return to the Blueprint of the Source. When this frequency hits your system, the illusion of \"separation\" starts to vaporize like mist in the morning sun. You realize there is no \"out there\"—there is only the Silence of Being expressing itself through your unique vessel. Your Third Eye starts to tingle because the light is finally being focused. You move beyond the rhyming tales and the bread crumbs and you step into the absolute Oneness. This is the frequency of Unity. It’s the vibration that the ancient priests used to talk to the stars. When you sit with 963 Hz, you’re surrendering the small \"i\" and embracing the capital \"I AM.\" You’re realizing that you are the Observer, the Creator, and the Creation all at once. The 963 Hz is the \"Amen,\" the final word in the divine sentence."
+            }
         ];
 
         let audioCtx, osc, masterGain;
@@ -325,7 +435,6 @@
             const now = audioCtx.currentTime;
 
             // High-conductivity transitions using setTargetAtTime
-            // 0.05s time constant for smooth zero-click ramp
             osc.frequency.setTargetAtTime(hz, now, 0.05);
             masterGain.gain.setTargetAtTime(0.3, now, 0.1);
         }
@@ -347,19 +456,16 @@
             btn.innerHTML = `<span class="btn-hz">${data.hz}</span><span class="btn-label">${data.name}</span>`;
 
             btn.onclick = () => {
-                // Audio
                 playFrequency(data.hz);
-
-                // UI
                 if (currentActiveBtn) currentActiveBtn.classList.remove('active');
                 btn.classList.add('active');
                 currentActiveBtn = btn;
 
-                // Modal
                 document.getElementById('modal-hz').innerText = `${data.hz} Hz`;
                 document.getElementById('modal-name').innerText = data.name;
                 document.getElementById('modal-benefit').innerText = data.benefit;
                 document.getElementById('modal-purpose').innerText = data.purpose;
+                document.getElementById('modal-deep-dive').innerText = data.deepDive;
                 document.getElementById('modal-usage').innerText = data.usage;
                 modal.classList.add('visible');
             };
@@ -376,7 +482,6 @@
             }
         };
 
-        // Close on background click
         modal.onclick = (e) => {
             if (e.target === modal) closeModal.click();
         };
