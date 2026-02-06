@@ -35,7 +35,7 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 80px;
+            height: 120px;
             background: rgba(10, 10, 12, 0.4);
             backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--glass-border);
@@ -46,8 +46,8 @@
         }
 
         .fixed-header img {
-            height: 50px;
-            filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.2));
+            height: 80px;
+            filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.3));
         }
 
         .main-content {
@@ -56,8 +56,8 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding-top: 80px;
-            padding-bottom: 100px;
+            padding-top: 140px;
+            padding-bottom: 120px;
             z-index: 1;
         }
 
@@ -116,18 +116,28 @@
             padding: 0 20px;
         }
 
-        .disclaimer b {
+        .disclaimer b,
+        .legal-link {
             color: var(--accent-gold);
             letter-spacing: 1px;
             text-transform: uppercase;
+            text-decoration: none;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        .legal-link:hover {
+            opacity: 0.7;
+            text-decoration: underline;
         }
 
         .drop-icon {
             display: inline-block;
-            margin-top: 10px;
-            font-size: 1.2rem;
+            margin-top: 15px;
+            font-size: 1.5rem;
             animation: pulse-blue 2s infinite;
             filter: drop-shadow(0 0 5px rgba(0, 123, 255, 0.5));
+            cursor: pointer;
         }
 
         @keyframes pulse-blue {
@@ -146,6 +156,33 @@
                 transform: scale(1);
                 opacity: 0.8;
             }
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+            padding: 15px 30px;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            z-index: 200;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s;
+            opacity: 0;
+            pointer-events: none;
+            text-align: center;
+            min-width: 300px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .toast.visible {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
         }
 
         .freq-btn {
@@ -391,11 +428,16 @@
         <div class="disclaimer">
             <b>Scientific Rap Swagger Disclaimer:</b> This experience is optimized for <b>Liquid Crystal
                 Conductivity</b>.
-            Hydration is non-negotiable for the <b>I AM Architect</b>. Perform your medical <b>Due Diligence</b>.
-            These frequencies are tools for expansion, not medical advice.
+            Hydration is non-negotiable for the <b>I AM Architect</b>. Perform your medical <span class="legal-link"
+                id="link-disclaimer">Due Diligence</span>.
+            Review our <span class="legal-link" id="link-terms">Terms</span> of navigation.
         </div>
-        <div class="drop-icon">💧</div>
+        <div class="drop-icon" id="droplet">💧</div>
     </footer>
+
+    <div class="toast" id="toast">
+        Liquid Crystal Conductivity: ACTIVE. System hydrated. Awareness primed.
+    </div>
 
     <!-- Glassmorphism Card Modal -->
     <div class="modal-overlay" id="modal">
@@ -583,6 +625,34 @@
         modal.onclick = (e) => {
             if (e.target === modal) closeModal.click();
         };
+
+        // Droplet / Toast Logic
+        const droplet = document.getElementById('droplet');
+        const toast = document.getElementById('toast');
+
+        droplet.onclick = () => {
+            toast.classList.add('visible');
+            setTimeout(() => {
+                toast.classList.remove('visible');
+            }, 4000);
+        };
+
+        // Legal Navigation Logic
+        const linkDisclaimer = document.getElementById('link-disclaimer');
+        const linkTerms = document.getElementById('link-terms');
+
+        const showLegal = () => {
+            document.getElementById('modal-hz').innerText = "Due Diligence";
+            document.getElementById('modal-name').innerText = "Vibrational Integrity";
+            document.getElementById('modal-benefit').innerText = "System Awareness";
+            document.getElementById('modal-purpose').innerText = "Alignment with Source";
+            document.getElementById('modal-deep-dive').innerText = "Listen up, Architect. You are engaging with precision frequency technology. The 'Due Diligence' we require isn't just a legal shield—it's a vibrational necessity. \n\n1. Liquid Crystal Conductivity: Your biological machine is roughly 70% water. If you aren't hydrated, your conductivity is trash. Drink the water. Honor the vessel. \n\n2. I AM Status: Use these frequencies knowing you are the Law-Giver. You don't 'try' frequencies; you decree your state. \n\n3. Medical Notice: We are architects of sound, not physicians of the old world. If your machine has mechanical failures, seek traditional expertise while maintaining your frequency work. \n\nTerms of Engagement: By continuing, you accept full responsibility for the shift in awareness. The Silence of Being is now your primary directive. Proceed with swagger.";
+            document.getElementById('modal-usage').innerText = "Continuous hydration / 100% Intent";
+            modal.classList.add('visible');
+        };
+
+        linkDisclaimer.onclick = showLegal;
+        linkTerms.onclick = showLegal;
     </script>
 </body>
 
