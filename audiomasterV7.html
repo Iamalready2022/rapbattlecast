@@ -574,11 +574,11 @@
         © 2026 Iamalready.com | Audio Master <span class="swagger-gold">Architect Edition</span> | admin@iamalready.com
     </footer>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.all.min.js?v=7.5"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.all.min.js?v=7.6"></script>
     <script type="module">
-        import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js?v=7.5'
-        import RecordPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/record.esm.js?v=7.5'
-        import RegionsPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/regions.esm.js?v=7.5'
+        import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js?v=7.6'
+        import RecordPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/record.esm.js?v=7.6'
+        import RegionsPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/regions.esm.js?v=7.6'
 
         // --- Core State ---
         let audioCtx, osc1, osc2, gainL, gainR, binauralMasterGain, mixer, recorder;
@@ -594,7 +594,7 @@
         let ethicalVowAccepted = false;
         let recordedChunks = [];
         let micSourceNode, micSplitterNode;
-        let leftGainNode, rightGainNode, masterBus;
+        let leftGainNode, rightGainNode, masterBus, musicMasterMixGain;
         let mergerNode, trackRoutingMerger, trackRoutingDestination;
         let analysers = {
             t2: { l: null, r: null },
@@ -752,6 +752,23 @@
 
             trackRoutingMerger.connect(masterBus);
             trackRoutingMerger.connect(mergerNode); // Also hear it in the mix
+
+            // MUSIC MASTER MIX (T1 Alignment)
+            musicMasterMixGain = audioCtx.createGain();
+            musicMasterMixGain.gain.value = 0.5; // Calibrated -6dB balance
+            musicMasterMixGain.connect(masterBus);
+
+            // Connect Music Source to Master Mix
+            if (tracks.t1.ws) {
+                const mediaElement = tracks.t1.ws.getMediaElement();
+                if (!musicSource) {
+                    musicSource = audioCtx.createMediaElementSource(mediaElement);
+                    musicGainNode = audioCtx.createGain();
+                    musicSource.connect(musicGainNode);
+                }
+                musicGainNode.connect(musicMasterMixGain);
+                musicGainNode.connect(audioCtx.destination); // For Monitoring
+            }
 
             // INITIALIZE STEADY RECORDER
             recorder = new MediaRecorder(trackRoutingDestination.stream, { mimeType: 'audio/webm;codecs=opus' });
