@@ -689,7 +689,11 @@
 
         async function setupAudio() {
             if (audioCtx) return;
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'playback', sampleRate: 44100 });
+            // HARDWARE LOCK: 48kHz (Architect's Standard for professional gear like Yeti)
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)({
+                latencyHint: 'playback',
+                sampleRate: 48000
+            });
 
             mixer = audioCtx.createMediaStreamDestination();
             mixer.channelCount = 2;
@@ -736,7 +740,15 @@
             });
 
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const constraints = {
+                    audio: {
+                        channelCount: 2,
+                        echoCancellation: false,
+                        noiseSuppression: false,
+                        autoGainControl: false
+                    }
+                };
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 micSourceNode = audioCtx.createMediaStreamSource(stream);
 
                 // Chain: Mic -> Panner -> (Split for Meters) -> Gain -> Mixer -> Destination
