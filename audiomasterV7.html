@@ -342,6 +342,40 @@
             font-style: italic;
         }
 
+        /* --- Stereo Meters --- */
+        .meter-container {
+            width: 100px;
+            height: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--glass-border);
+            border-radius: 4px;
+            margin-top: 5px;
+            display: flex;
+            gap: 2px;
+            padding: 2px;
+            box-sizing: border-box;
+        }
+
+        .meter-bar {
+            flex: 1;
+            height: 100%;
+            background: #111;
+            position: relative;
+            overflow: hidden;
+            border-radius: 1px;
+        }
+
+        .meter-fill {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0%;
+            background: var(--accent-gold);
+            transition: height 0.1s ease;
+            box-shadow: 0 0 10px var(--accent-gold);
+        }
+
         /* --- Edit Tools --- */
         .edit-tools {
             display: flex;
@@ -440,8 +474,8 @@
                 style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); color: white; padding: 12px; border-radius: 8px; margin-bottom: 15px; box-sizing: border-box;">
             <select id="format-select"
                 style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); color: var(--accent-gold); padding: 12px; border-radius: 8px; margin-bottom: 15px;">
-                <option value="wav">WAV (Lossless)</option>
-                <option value="mp3">MP3 (Compressed)</option>
+                <option value="wav">Save as .WAV (High Res)</option>
+                <option value="mp3">Save as .MP3 (Compressed)</option>
             </select>
             <button id="download-btn" style="background: var(--accent-gold); color: black;">STOP & HARVEST
                 SESSION</button>
@@ -468,6 +502,14 @@
             <div class="track-info">
                 <div class="track-name"><span class="track-id">T2</span> VOICE</div>
                 <button class="rec-btn" data-track="t2">REC CHANNEL</button>
+                <div class="meter-container">
+                    <div class="meter-bar">
+                        <div class="meter-fill" id="meter-t2-l"></div>
+                    </div>
+                    <div class="meter-bar">
+                        <div class="meter-fill" id="meter-t2-r"></div>
+                    </div>
+                </div>
                 <div class="routing-group" data-track="t2">
                     <button class="routing-btn selected" data-route="mono-l">L</button>
                     <button class="routing-btn" data-route="mono-r">R</button>
@@ -482,6 +524,14 @@
             <div class="track-info">
                 <div class="track-name"><span class="track-id">T3</span> ATMOS</div>
                 <button class="rec-btn" data-track="t3">REC CHANNEL</button>
+                <div class="meter-container">
+                    <div class="meter-bar">
+                        <div class="meter-fill" id="meter-t3-l"></div>
+                    </div>
+                    <div class="meter-bar">
+                        <div class="meter-fill" id="meter-t3-r"></div>
+                    </div>
+                </div>
                 <div class="routing-group" data-track="t3">
                     <button class="routing-btn selected" data-route="mono-l">L</button>
                     <button class="routing-btn" data-route="mono-r">R</button>
@@ -496,6 +546,14 @@
             <div class="track-info">
                 <div class="track-name"><span class="track-id">T4</span> FX</div>
                 <button class="rec-btn" data-track="t4">REC CHANNEL</button>
+                <div class="meter-container">
+                    <div class="meter-bar">
+                        <div class="meter-fill" id="meter-t4-l"></div>
+                    </div>
+                    <div class="meter-bar">
+                        <div class="meter-fill" id="meter-t4-r"></div>
+                    </div>
+                </div>
                 <div class="routing-group" data-track="t4">
                     <button class="routing-btn selected" data-route="mono-l">L</button>
                     <button class="routing-btn" data-route="mono-r">R</button>
@@ -529,7 +587,13 @@
         };
         let ethicalVowAccepted = false;
         let recordedChunks = [];
-        let micPanner, micGain;
+        let micSourceNode, micGain;
+        let mergerNode, splitterNode;
+        let analysers = {
+            t2: { l: null, r: null },
+            t3: { l: null, r: null },
+            t4: { l: null, r: null }
+        };
 
         const SYNC_PX_PER_SEC = 50;
 
@@ -624,7 +688,11 @@
             mixer = audioCtx.createMediaStreamDestination();
             mixer.channelCount = 2;
 
-            // Binaural Core (Preserved from v6.6)
+            // Channel Merger (The Architect's Precision Hub)
+            mergerNode = audioCtx.createChannelMerger(2);
+            mergerNode.connect(mixer);
+
+            // Binaural Core
             osc1 = audioCtx.createOscillator();
             osc2 = audioCtx.createOscillator();
             gainL = audioCtx.createGain();
@@ -637,24 +705,84 @@
 
             osc1.connect(gainL).connect(pL).connect(binauralMasterGain);
             osc2.connect(gainR).connect(pR).connect(binauralMasterGain);
+
+            // Connect Binaural to Mixer channels explicitly via Merger
+            const binauralSplitter = audioCtx.createChannelSplitter(2);
+            binauralMasterGain.connect(binauralSplitter);
+            binauralSplitter.connect(mergerNode, 0, 0); // L
+            binauralSplitter.connect(mergerNode, 1, 1); // R
+
             binauralMasterGain.connect(audioCtx.destination);
-            binauralMasterGain.connect(mixer);
             osc1.start(); osc2.start();
 
-            // Mic Routing
-            micPanner = audioCtx.createStereoPanner();
+            // Mic Routing & Precision Metering
             micGain = audioCtx.createGain();
-            micGain.gain.value = 0; // Starts silent
+            micGain.gain.value = 0; // Recorded signal starts silents
+
+            // Setup Analysers for Meters
+            Object.keys(analysers).forEach(id => {
+                analysers[id].l = audioCtx.createAnalyser();
+                analysers[id].r = audioCtx.createAnalyser();
+                analysers[id].l.fftSize = 256;
+                analysers[id].r.fftSize = 256;
+            });
 
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                micSource = audioCtx.createMediaStreamSource(stream);
-                micSource.connect(micPanner).connect(micGain).connect(mixer);
-                // Monitor
-                micGain.connect(audioCtx.createGain()).connect(audioCtx.destination);
+                micSourceNode = audioCtx.createMediaStreamSource(stream);
+
+                // Pre-Listen chain for meters (Always on)
+                const preMeterGain = audioCtx.createGain();
+                preMeterGain.gain.value = 1.0;
+                micSourceNode.connect(preMeterGain);
+
+                // Route pre-meter gain to track analysers based on current routing logic
+                // For simplicity, we'll update the analyzer connections whenever routing button is clicked
+                // or just route to all if we want to see it everywhere, but user asked to see "signal hitting the Left or Right side"
+                // so we should show it in the track where it will hit.
+
+                micSourceNode.connect(micGain);
+                updateMeterConnections();
             } catch (err) { console.error("Mic access denied", err); }
 
             updateBinaural();
+            drawMeters();
+        }
+
+        function updateMeterConnections() {
+            if (!micSourceNode) return;
+            Object.keys(analysers).forEach(id => {
+                analysers[id].l.disconnect();
+                analysers[id].r.disconnect();
+
+                const route = tracks[id].routing;
+                if (route === 'mono-l') micSourceNode.connect(analysers[id].l);
+                else if (route === 'mono-r') micSourceNode.connect(analysers[id].r);
+                else {
+                    micSourceNode.connect(analysers[id].l);
+                    micSourceNode.connect(analysers[id].r);
+                }
+            });
+        }
+
+        function drawMeters() {
+            Object.keys(analysers).forEach(id => {
+                const lFill = document.getElementById(`meter-${id}-l`);
+                const rFill = document.getElementById(`meter-${id}-r`);
+                if (!lFill || !rFill || !analysers[id].l) return;
+
+                const dataL = new Uint8Array(analysers[id].l.frequencyBinCount);
+                const dataR = new Uint8Array(analysers[id].r.frequencyBinCount);
+                analysers[id].l.getByteFrequencyData(dataL);
+                analysers[id].r.getByteFrequencyData(dataR);
+
+                const volumeL = Math.max(...dataL) / 255 * 100;
+                const volumeR = Math.max(...dataR) / 255 * 100;
+
+                lFill.style.height = volumeL + "%";
+                rFill.style.height = volumeR + "%";
+            });
+            requestAnimationFrame(drawMeters);
         }
 
         function updateBinaural() {
@@ -691,7 +819,8 @@
             input.click();
         };
 
-        document.getElementById('play-btn').onclick = () => {
+        document.getElementById('play-btn').onclick = async () => {
+            if (audioCtx) await audioCtx.resume();
             const isPlaying = tracks.t1.ws.isPlaying();
             Object.values(tracks).forEach(t => isPlaying ? t.ws.pause() : t.ws.play());
         };
@@ -701,6 +830,7 @@
             btn.onclick = async () => {
                 if (!ethicalVowAccepted) { alert("Acknowledge the Vow first."); return; }
                 const id = btn.dataset.track;
+                await setupAudio(); // Ensure mic is active
                 await toggleRecording(id);
             };
         });
@@ -715,16 +845,37 @@
                 return;
             }
 
-            await setupAudio();
             isRecording = true;
             currentActiveTrackId = id;
 
-            // Set Panning based on routing selection
+            // Precision Routing Loop (Architect's Direct Wire)
             const route = tracks[id].routing;
-            let panV = 0;
-            if (route === 'mono-l') panV = -1;
-            if (route === 'mono-r') panV = 1;
-            micPanner.pan.setValueAtTime(panV, audioCtx.currentTime);
+            const trackMicGain = audioCtx.createGain();
+            trackMicGain.gain.value = 1.0;
+
+            // Disconnect old mic paths to be safe
+            micGain.disconnect();
+
+            if (route === 'mono-l') {
+                micGain.connect(mergerNode, 0, 0); // Directly to Left
+                micGain.connect(analysers[id].l);
+            } else if (route === 'mono-r') {
+                micGain.connect(mergerNode, 0, 1); // Directly to Right
+                micGain.connect(analysers[id].r);
+            } else {
+                // Stereo - Split mic (if mono source) or handle as stereo
+                const splitter = audioCtx.createChannelSplitter(2);
+                micGain.connect(splitter);
+                splitter.connect(mergerNode, 0, 0);
+                splitter.connect(mergerNode, 0, 1);
+                micGain.connect(analysers[id].l);
+                micGain.connect(analysers[id].r);
+            }
+
+            // Monitor Record signal
+            const monitorGain = audioCtx.createGain();
+            monitorGain.gain.value = 0.5;
+            micGain.connect(monitorGain).connect(audioCtx.destination);
 
             recordedChunks = [];
             recorder = new MediaRecorder(mixer.stream, { mimeType: 'audio/webm;codecs=opus' });
@@ -758,6 +909,7 @@
                 btn.closest('.routing-group').querySelectorAll('.routing-btn').forEach(b => b.classList.remove('selected'));
                 btn.classList.add('selected');
                 tracks[trackId].routing = btn.dataset.route;
+                updateMeterConnections();
             };
         });
 
