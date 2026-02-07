@@ -367,12 +367,12 @@
 
         .meter-fill {
             position: absolute;
-            bottom: 0;
+            top: 0;
             left: 0;
-            width: 100%;
-            height: 0%;
+            height: 100%;
+            width: 0%;
             background: var(--accent-gold);
-            transition: height 0.1s ease;
+            transition: width 0.1s ease;
             box-shadow: 0 0 10px var(--accent-gold);
         }
 
@@ -472,13 +472,19 @@
             <span class="panel-title">Architect Workspace</span>
             <input type="text" id="file-name" placeholder="SESSION_IDENTIFIER"
                 style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); color: white; padding: 12px; border-radius: 8px; margin-bottom: 15px; box-sizing: border-box;">
-            <select id="format-select"
-                style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); color: var(--accent-gold); padding: 12px; border-radius: 8px; margin-bottom: 15px;">
-                <option value="wav">Save as .WAV (High Res)</option>
-                <option value="mp3">Save as .MP3 (Compressed)</option>
-            </select>
-            <button id="download-btn" style="background: var(--accent-gold); color: black;">STOP & HARVEST
-                SESSION</button>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <div style="flex: 1;">
+                    <span class="panel-title" style="margin-bottom: 5px; font-size: 0.6rem;">Export Format</span>
+                    <select id="format-select"
+                        style="width: 100%; background: rgba(212, 175, 55, 0.1); border: 1px solid var(--accent-gold); color: var(--accent-gold); padding: 12px; border-radius: 8px; font-family: inherit; font-weight: 600; cursor: pointer;">
+                        <option value="wav">Format: WAV</option>
+                        <option value="mp3">Format: MP3</option>
+                    </select>
+                </div>
+                <button id="download-btn"
+                    style="flex: 1.5; background: var(--accent-gold); color: black; margin-bottom: 0;">STOP & HARVEST
+                    SESSION</button>
+            </div>
 
             <div class="edit-tools">
                 <button class="tool-btn" id="tool-cut" title="Cut Selected Region">✂️</button>
@@ -587,8 +593,8 @@
         };
         let ethicalVowAccepted = false;
         let recordedChunks = [];
-        let micSourceNode, micGain;
-        let mergerNode, splitterNode;
+        let micSourceNode, micGain, micPanner, micSplitterNode;
+        let mergerNode;
         let analysers = {
             t2: { l: null, r: null },
             t3: { l: null, r: null },
@@ -715,9 +721,11 @@
             binauralMasterGain.connect(audioCtx.destination);
             osc1.start(); osc2.start();
 
-            // Mic Routing & Precision Metering
+            // Mic Routing & Precision Metering (The Panner Bridge)
+            micPanner = audioCtx.createStereoPanner();
             micGain = audioCtx.createGain();
-            micGain.gain.value = 0; // Recorded signal starts silents
+            micGain.gain.value = 0; // Recorded signal output to mixer starts silent
+            micSplitterNode = audioCtx.createChannelSplitter(2);
 
             // Setup Analysers for Meters
             Object.keys(analysers).forEach(id => {
@@ -731,17 +739,16 @@
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 micSourceNode = audioCtx.createMediaStreamSource(stream);
 
-                // Pre-Listen chain for meters (Always on)
-                const preMeterGain = audioCtx.createGain();
-                preMeterGain.gain.value = 1.0;
-                micSourceNode.connect(preMeterGain);
+                // Chain: Mic -> Panner -> (Split for Meters) -> Gain -> Mixer -> Destination
+                micSourceNode.connect(micPanner);
+                micPanner.connect(micSplitterNode);
+                micPanner.connect(micGain).connect(mergerNode);
 
-                // Route pre-meter gain to track analysers based on current routing logic
-                // For simplicity, we'll update the analyzer connections whenever routing button is clicked
-                // or just route to all if we want to see it everywhere, but user asked to see "signal hitting the Left or Right side"
-                // so we should show it in the track where it will hit.
+                // Monitor for Jimmy (Jimmy is James)
+                const monitorGain = audioCtx.createGain();
+                monitorGain.gain.value = 0.5;
+                micGain.connect(monitorGain).connect(audioCtx.destination);
 
-                micSourceNode.connect(micGain);
                 updateMeterConnections();
             } catch (err) { console.error("Mic access denied", err); }
 
@@ -750,18 +757,10 @@
         }
 
         function updateMeterConnections() {
-            if (!micSourceNode) return;
+            if (!micSplitterNode) return;
             Object.keys(analysers).forEach(id => {
-                analysers[id].l.disconnect();
-                analysers[id].r.disconnect();
-
-                const route = tracks[id].routing;
-                if (route === 'mono-l') micSourceNode.connect(analysers[id].l);
-                else if (route === 'mono-r') micSourceNode.connect(analysers[id].r);
-                else {
-                    micSourceNode.connect(analysers[id].l);
-                    micSourceNode.connect(analysers[id].r);
-                }
+                micSplitterNode.connect(analysers[id].l, 0); // Left side
+                micSplitterNode.connect(analysers[id].r, 1); // Right side
             });
         }
 
@@ -779,8 +778,8 @@
                 const volumeL = Math.max(...dataL) / 255 * 100;
                 const volumeR = Math.max(...dataR) / 255 * 100;
 
-                lFill.style.height = volumeL + "%";
-                rFill.style.height = volumeR + "%";
+                lFill.style.width = volumeL + "%";
+                rFill.style.width = volumeR + "%";
             });
             requestAnimationFrame(drawMeters);
         }
@@ -848,36 +847,15 @@
             isRecording = true;
             currentActiveTrackId = id;
 
-            // Precision Routing Loop (Architect's Direct Wire)
+            // Set Panner based on track routing
             const route = tracks[id].routing;
-            const trackMicGain = audioCtx.createGain();
-            trackMicGain.gain.value = 1.0;
-
-            // Disconnect old mic paths to be safe
-            micGain.disconnect();
-
-            if (route === 'mono-l') {
-                micGain.connect(mergerNode, 0, 0); // Directly to Left
-                micGain.connect(analysers[id].l);
-            } else if (route === 'mono-r') {
-                micGain.connect(mergerNode, 0, 1); // Directly to Right
-                micGain.connect(analysers[id].r);
-            } else {
-                // Stereo - Split mic (if mono source) or handle as stereo
-                const splitter = audioCtx.createChannelSplitter(2);
-                micGain.connect(splitter);
-                splitter.connect(mergerNode, 0, 0);
-                splitter.connect(mergerNode, 0, 1);
-                micGain.connect(analysers[id].l);
-                micGain.connect(analysers[id].r);
-            }
-
-            // Monitor Record signal
-            const monitorGain = audioCtx.createGain();
-            monitorGain.gain.value = 0.5;
-            micGain.connect(monitorGain).connect(audioCtx.destination);
+            let panVal = 0;
+            if (route === 'mono-l') panVal = -1;
+            if (route === 'mono-r') panVal = 1;
+            micPanner.pan.setTargetAtTime(panVal, audioCtx.currentTime, 0.01);
 
             recordedChunks = [];
+            // RECORDING FROM DESTINATION (THE PRINT)
             recorder = new MediaRecorder(mixer.stream, { mimeType: 'audio/webm;codecs=opus' });
             recorder.ondataavailable = e => recordedChunks.push(e.data);
 
@@ -909,7 +887,6 @@
                 btn.closest('.routing-group').querySelectorAll('.routing-btn').forEach(b => b.classList.remove('selected'));
                 btn.classList.add('selected');
                 tracks[trackId].routing = btn.dataset.route;
-                updateMeterConnections();
             };
         });
 
