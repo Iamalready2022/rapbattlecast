@@ -252,6 +252,7 @@
             flex: 1;
             background: #000;
             position: relative;
+            overflow: hidden;
         }
 
         .track-music {
@@ -544,7 +545,9 @@
                     barWidth: 2,
                     barGap: 1,
                     minPxPerSec: SYNC_PX_PER_SEC,
-                    autoCenter: true
+                    autoCenter: true,
+                    pixelRatio: id === 't1' ? 1 : undefined,
+                    forceDecode: id === 't1' ? true : false,
                 };
 
                 tracks[id].ws = WaveSurfer.create(config);
@@ -558,17 +561,33 @@
                 }
             });
 
-            // Master Synchro Logic
-            tracks.t1.ws.on('interaction', time => syncTimeline(time));
-            tracks.t1.ws.on('seeking', time => syncTimeline(time));
-
-            function syncTimeline(time) {
-                Object.values(tracks).forEach(t => {
-                    if (t.ws && Math.abs(t.ws.getCurrentTime() - time) > 0.02) {
-                        t.ws.setTime(time);
-                    }
+            // Master Synchro Logic (Exact Mirroring)
+            tracks.t1.ws.on('interaction', time => {
+                Object.keys(tracks).forEach(id => {
+                    if (id !== 't1' && tracks[id].ws) tracks[id].ws.setTime(time);
                 });
+            });
+            tracks.t1.ws.on('seeking', time => {
+                Object.keys(tracks).forEach(id => {
+                    if (id !== 't1' && tracks[id].ws) tracks[id].ws.setTime(time);
+                });
+            });
+
+            // Frame-Rate Playhead Sync
+            function syncLoop() {
+                if (tracks.t1.ws.isPlaying()) {
+                    const masterTime = tracks.t1.ws.getCurrentTime();
+                    Object.keys(tracks).forEach(id => {
+                        if (id === 't1') return;
+                        const slaveTime = tracks[id].ws.getCurrentTime();
+                        if (Math.abs(masterTime - slaveTime) > 0.01) {
+                            tracks[id].ws.setTime(masterTime);
+                        }
+                    });
+                }
+                requestAnimationFrame(syncLoop);
             }
+            syncLoop();
 
             // Region Selection for Editing
             Object.keys(tracks).forEach(id => {
