@@ -574,11 +574,11 @@
         © 2026 Iamalready.com | Audio Master <span class="swagger-gold">Architect Edition</span> | admin@iamalready.com
     </footer>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.all.min.js?v=7.6"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.all.min.js?v=7.7"></script>
     <script type="module">
-        import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js?v=7.6'
-        import RecordPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/record.esm.js?v=7.6'
-        import RegionsPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/regions.esm.js?v=7.6'
+        import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js?v=7.7'
+        import RecordPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/record.esm.js?v=7.7'
+        import RegionsPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/regions.esm.js?v=7.7'
 
         // --- Core State ---
         let audioCtx, osc1, osc2, gainL, gainR, binauralMasterGain, mixer, recorder;
@@ -755,7 +755,7 @@
 
             // MUSIC MASTER MIX (T1 Alignment)
             musicMasterMixGain = audioCtx.createGain();
-            musicMasterMixGain.gain.value = 0.5; // Calibrated -6dB balance
+            musicMasterMixGain.gain.value = 0.6; // Calibrated V7.7 balance (Clear over heartbeat)
             musicMasterMixGain.connect(masterBus);
 
             // Connect Music Source to Master Mix
@@ -950,6 +950,9 @@
             document.querySelector(`.rec-btn[data-track="${id}"]`).classList.remove('active');
             document.getElementById('status-text').innerText = "HARVEST COMPLETE: SOURCE STABLE";
             currentActiveTrackId = null;
+
+            // V7.7: Final Handshake
+            alert("Music and Voice tracks successfully merged into the final render.");
         }
 
         // --- Routing Toggles ---
