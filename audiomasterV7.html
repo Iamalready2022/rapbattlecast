@@ -574,11 +574,11 @@
         © 2026 Iamalready.com | Audio Master <span class="swagger-gold">Architect Edition</span> | admin@iamalready.com
     </footer>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.all.min.js?v=7.4"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.all.min.js?v=7.5"></script>
     <script type="module">
-        import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js?v=7.4'
-        import RecordPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/record.esm.js?v=7.4'
-        import RegionsPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/regions.esm.js?v=7.4'
+        import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js?v=7.5'
+        import RecordPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/record.esm.js?v=7.5'
+        import RegionsPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/regions.esm.js?v=7.5'
 
         // --- Core State ---
         let audioCtx, osc1, osc2, gainL, gainR, binauralMasterGain, mixer, recorder;
@@ -593,7 +593,8 @@
         };
         let ethicalVowAccepted = false;
         let recordedChunks = [];
-        let micSourceNode, micGain, micSplitterNode;
+        let micSourceNode, micSplitterNode;
+        let leftGainNode, rightGainNode, masterBus;
         let mergerNode, trackRoutingMerger, trackRoutingDestination;
         let analysers = {
             t2: { l: null, r: null },
@@ -702,15 +703,6 @@
             mergerNode = audioCtx.createChannelMerger(2);
             mergerNode.connect(mixer);
 
-            // Track Routing Merger (The Discrete Rec Node)
-            trackRoutingMerger = audioCtx.createChannelMerger(2);
-            // Dedicated Destination for the discrete recorder handshake
-            trackRoutingDestination = audioCtx.createMediaStreamDestination();
-            trackRoutingMerger.connect(trackRoutingDestination);
-
-            // Also connect to master mixer merger so it can be heard in the session mix
-            trackRoutingMerger.connect(mergerNode);
-
             // Binaural Core
             osc1 = audioCtx.createOscillator();
             osc2 = audioCtx.createOscillator();
@@ -734,12 +726,36 @@
             binauralMasterGain.connect(audioCtx.destination);
             osc1.start(); osc2.start();
 
-            // Mic Routing & Precision Metering (The Hand-Coded Handshake)
-            micGain = audioCtx.createGain();
-            micGain.gain.value = 0; // Recorded signal output to mixer starts silent
+            // Mic Routing & Precision Metering (The Steady Master Bus Handshake)
+            masterBus = audioCtx.createGain();
+            masterBus.gain.value = 0; // Recorded signal output starts silent
 
-            // Channel Splitter (Direct from Mic)
+            trackRoutingDestination = audioCtx.createMediaStreamDestination();
+            masterBus.connect(trackRoutingDestination);
+
+            // Channel Splitter (Direct from Mic Hardware)
             micSplitterNode = audioCtx.createChannelSplitter(2);
+
+            // Left/Right Routing Gains
+            leftGainNode = audioCtx.createGain();
+            rightGainNode = audioCtx.createGain();
+
+            // Routing Merger
+            trackRoutingMerger = audioCtx.createChannelMerger(2);
+
+            // Wiring: SPLITTER -> GAINS -> MERGER -> BUS -> DESTINATION
+            micSplitterNode.connect(leftGainNode, 0);
+            micSplitterNode.connect(rightGainNode, 0); // Hardware 0 to Right Gain for Mono R fallback
+
+            leftGainNode.connect(trackRoutingMerger, 0, 0);
+            rightGainNode.connect(trackRoutingMerger, 0, 1);
+
+            trackRoutingMerger.connect(masterBus);
+            trackRoutingMerger.connect(mergerNode); // Also hear it in the mix
+
+            // INITIALIZE STEADY RECORDER
+            recorder = new MediaRecorder(trackRoutingDestination.stream, { mimeType: 'audio/webm;codecs=opus' });
+            recorder.ondataavailable = e => recordedChunks.push(e.data);
 
             // Setup Analysers for Meters
             Object.keys(analysers).forEach(id => {
@@ -871,17 +887,14 @@
             isRecording = true;
             currentActiveTrackId = id;
 
-            // V7.4: Protocol Disconnect & Re-Wire
+            // V7.5: Steady Master Bus (Gain Switch)
             applyHardwareRouting(id);
 
             recordedChunks = [];
-            // RECORDING HANDSHAKE: Listening ONLY to the output of this Merger Node
-            recorder = new MediaRecorder(trackRoutingDestination.stream, { mimeType: 'audio/webm;codecs=opus' });
-            recorder.ondataavailable = e => recordedChunks.push(e.data);
-
+            // Recorder is already steady on trackRoutingDestination.stream
             recorder.start();
             tracks[id].recordPlugin.startRecording();
-            micGain.gain.setTargetAtTime(1, audioCtx.currentTime, 0.01);
+            masterBus.gain.setTargetAtTime(1, audioCtx.currentTime, 0.01);
 
             document.getElementById('recording-banner').style.display = 'block';
             document.querySelector(`.rec-btn[data-track="${id}"]`).classList.add('active');
@@ -889,40 +902,31 @@
         }
 
         function applyHardwareRouting(trackId) {
-            if (!micSplitterNode || !trackRoutingMerger) return;
+            if (!leftGainNode || !rightGainNode) return;
 
-            // 1. DISCONNECT PROTOCOL
-            micSplitterNode.disconnect();
-            micGain.disconnect();
-            trackRoutingMerger.disconnect(); // Clear meter connections and destination
-
-            // Re-establish permanent links
-            trackRoutingMerger.connect(trackRoutingDestination);
-            trackRoutingMerger.connect(mergerNode);
-
-            // 2. DYNAMIC RE-WIRE
+            // V7.5: Toggle Gains instead of Disconnecting
             const route = tracks[trackId].routing;
             if (route === 'mono-l') {
-                micSplitterNode.connect(micGain, 0); // Hardware L
-                micGain.connect(trackRoutingMerger, 0, 0); // Destination L
+                leftGainNode.gain.setValueAtTime(1, audioCtx.currentTime);
+                rightGainNode.gain.setValueAtTime(0, audioCtx.currentTime);
             } else if (route === 'mono-r') {
-                micSplitterNode.connect(micGain, 0); // Hardware Center fallthrough or right channel
-                micGain.connect(trackRoutingMerger, 0, 1); // Destination R
+                leftGainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+                rightGainNode.gain.setValueAtTime(1, audioCtx.currentTime);
             } else {
-                // Stereo
-                micSplitterNode.connect(micGain, 0);
-                micGain.connect(trackRoutingMerger, 0, 0);
-                micGain.connect(trackRoutingMerger, 0, 1);
+                // Stereo (Dual Mono ch0 fallback)
+                leftGainNode.gain.setValueAtTime(1, audioCtx.currentTime);
+                rightGainNode.gain.setValueAtTime(1, audioCtx.currentTime);
             }
 
-            // Sync Visual Meters to new outputs
-            updateMeterConnections();
+            // Note: Analysts are already connected to the merger outputs in updateMeterConnections
+            // which is called during setupAudio.
+            document.getElementById('status-text').innerText = `ROUTING CALIBRATED: ${trackId.toUpperCase()} -> ${route.toUpperCase()}`;
         }
 
         function stopHarvest() {
             isRecording = false;
             const id = currentActiveTrackId;
-            micGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.01);
+            masterBus.gain.setTargetAtTime(0, audioCtx.currentTime, 0.01);
             tracks[id].recordPlugin.stopRecording();
             recorder.stop();
             document.getElementById('recording-banner').style.display = 'none';
