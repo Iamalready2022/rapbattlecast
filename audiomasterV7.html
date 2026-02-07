@@ -574,11 +574,11 @@
         © 2026 Iamalready.com | Audio Master <span class="swagger-gold">Architect Edition</span> | admin@iamalready.com
     </footer>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.all.min.js?v=7.3"></script>
     <script type="module">
-        import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js'
-        import RecordPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/record.esm.js'
-        import RegionsPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/regions.esm.js'
+        import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js?v=7.3'
+        import RecordPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/record.esm.js?v=7.3'
+        import RegionsPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/regions.esm.js?v=7.3'
 
         // --- Core State ---
         let audioCtx, osc1, osc2, gainL, gainR, binauralMasterGain, mixer, recorder;
@@ -593,8 +593,8 @@
         };
         let ethicalVowAccepted = false;
         let recordedChunks = [];
-        let micSourceNode, micGain, micPanner, micSplitterNode;
-        let mergerNode;
+        let micSourceNode, micGain, micSplitterNode;
+        let mergerNode, trackRoutingMerger, trackRoutingDestination;
         let analysers = {
             t2: { l: null, r: null },
             t3: { l: null, r: null },
@@ -702,6 +702,15 @@
             mergerNode = audioCtx.createChannelMerger(2);
             mergerNode.connect(mixer);
 
+            // Track Routing Merger (The Discrete Rec Node)
+            trackRoutingMerger = audioCtx.createChannelMerger(2);
+            // Dedicated Destination for the discrete recorder handshake
+            trackRoutingDestination = audioCtx.createMediaStreamDestination();
+            trackRoutingMerger.connect(trackRoutingDestination);
+
+            // Also connect to master mixer merger so it can be heard in the session mix
+            trackRoutingMerger.connect(mergerNode);
+
             // Binaural Core
             osc1 = audioCtx.createOscillator();
             osc2 = audioCtx.createOscillator();
@@ -725,10 +734,11 @@
             binauralMasterGain.connect(audioCtx.destination);
             osc1.start(); osc2.start();
 
-            // Mic Routing & Precision Metering (The Panner Bridge)
-            micPanner = audioCtx.createStereoPanner();
+            // Mic Routing & Precision Metering (The Hand-Coded Handshake)
             micGain = audioCtx.createGain();
             micGain.gain.value = 0; // Recorded signal output to mixer starts silent
+
+            // Channel Splitter (Direct from Mic)
             micSplitterNode = audioCtx.createChannelSplitter(2);
 
             // Setup Analysers for Meters
@@ -751,15 +761,14 @@
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 micSourceNode = audioCtx.createMediaStreamSource(stream);
 
-                // Chain: Mic -> Panner -> (Split for Meters) -> Gain -> Mixer -> Destination
-                micSourceNode.connect(micPanner);
-                micPanner.connect(micSplitterNode);
-                micPanner.connect(micGain).connect(mergerNode);
+                // Hardware Split
+                micSourceNode.connect(micSplitterNode);
 
-                // Monitor for Jimmy (Jimmy is James)
+                // Monitor for James
                 const monitorGain = audioCtx.createGain();
                 monitorGain.gain.value = 0.5;
-                micGain.connect(monitorGain).connect(audioCtx.destination);
+                // Use a separate node for monitoring the raw mic
+                micSourceNode.connect(monitorGain).connect(audioCtx.destination);
 
                 updateMeterConnections();
             } catch (err) { console.error("Mic access denied", err); }
@@ -859,16 +868,29 @@
             isRecording = true;
             currentActiveTrackId = id;
 
-            // Set Panner based on track routing
+            // Discrete Hand-Coded Routing
             const route = tracks[id].routing;
-            let panVal = 0;
-            if (route === 'mono-l') panVal = -1;
-            if (route === 'mono-r') panVal = 1;
-            micPanner.pan.setTargetAtTime(panVal, audioCtx.currentTime, 0.01);
+            micSplitterNode.disconnect();
+            micGain.disconnect();
+
+            if (route === 'mono-l') {
+                // Connect Mic Channel 0 to Input 0 (L)
+                micSplitterNode.connect(micGain, 0);
+                micGain.connect(trackRoutingMerger, 0, 0);
+            } else if (route === 'mono-r') {
+                // Connect Mic Channel 0 to Input 1 (R)
+                micSplitterNode.connect(micGain, 0);
+                micGain.connect(trackRoutingMerger, 0, 1);
+            } else {
+                // Stereo Handshake: Connect Mic to BOTH Merger Inputs
+                micSplitterNode.connect(micGain, 0);
+                micGain.connect(trackRoutingMerger, 0, 0);
+                micGain.connect(trackRoutingMerger, 0, 1);
+            }
 
             recordedChunks = [];
-            // RECORDING FROM DESTINATION (THE PRINT)
-            recorder = new MediaRecorder(mixer.stream, { mimeType: 'audio/webm;codecs=opus' });
+            // RECORDING HANDSHAKE: Listening ONLY to the output of this Merger Node
+            recorder = new MediaRecorder(trackRoutingDestination.stream, { mimeType: 'audio/webm;codecs=opus' });
             recorder.ondataavailable = e => recordedChunks.push(e.data);
 
             recorder.start();
