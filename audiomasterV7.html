@@ -574,11 +574,11 @@
         © 2026 Iamalready.com | Audio Master <span class="swagger-gold">Architect Edition</span> | admin@iamalready.com
     </footer>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.all.min.js?v=7.3"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.all.min.js?v=7.4"></script>
     <script type="module">
-        import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js?v=7.3'
-        import RecordPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/record.esm.js?v=7.3'
-        import RegionsPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/regions.esm.js?v=7.3'
+        import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js?v=7.4'
+        import RecordPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/record.esm.js?v=7.4'
+        import RegionsPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/regions.esm.js?v=7.4'
 
         // --- Core State ---
         let audioCtx, osc1, osc2, gainL, gainR, binauralMasterGain, mixer, recorder;
@@ -768,7 +768,8 @@
                 const monitorGain = audioCtx.createGain();
                 monitorGain.gain.value = 0.5;
                 // Use a separate node for monitoring the raw mic
-                micSourceNode.connect(monitorGain).connect(audioCtx.destination);
+                // Initialize default routing (Mono L)
+                applyHardwareRouting('t2');
 
                 updateMeterConnections();
             } catch (err) { console.error("Mic access denied", err); }
@@ -778,10 +779,12 @@
         }
 
         function updateMeterConnections() {
-            if (!micSplitterNode) return;
+            if (!micSplitterNode || !trackRoutingMerger) return;
+            // SYNC V7.4: Meters look at the Post-Routing Merger outputs
+            // This ensures clicking [Mono L] makes only the Left meter move.
             Object.keys(analysers).forEach(id => {
-                micSplitterNode.connect(analysers[id].l, 0); // Left side
-                micSplitterNode.connect(analysers[id].r, 1); // Right side
+                trackRoutingMerger.connect(analysers[id].l, 0);
+                trackRoutingMerger.connect(analysers[id].r, 1);
             });
         }
 
@@ -868,25 +871,8 @@
             isRecording = true;
             currentActiveTrackId = id;
 
-            // Discrete Hand-Coded Routing
-            const route = tracks[id].routing;
-            micSplitterNode.disconnect();
-            micGain.disconnect();
-
-            if (route === 'mono-l') {
-                // Connect Mic Channel 0 to Input 0 (L)
-                micSplitterNode.connect(micGain, 0);
-                micGain.connect(trackRoutingMerger, 0, 0);
-            } else if (route === 'mono-r') {
-                // Connect Mic Channel 0 to Input 1 (R)
-                micSplitterNode.connect(micGain, 0);
-                micGain.connect(trackRoutingMerger, 0, 1);
-            } else {
-                // Stereo Handshake: Connect Mic to BOTH Merger Inputs
-                micSplitterNode.connect(micGain, 0);
-                micGain.connect(trackRoutingMerger, 0, 0);
-                micGain.connect(trackRoutingMerger, 0, 1);
-            }
+            // V7.4: Protocol Disconnect & Re-Wire
+            applyHardwareRouting(id);
 
             recordedChunks = [];
             // RECORDING HANDSHAKE: Listening ONLY to the output of this Merger Node
@@ -900,6 +886,37 @@
             document.getElementById('recording-banner').style.display = 'block';
             document.querySelector(`.rec-btn[data-track="${id}"]`).classList.add('active');
             document.getElementById('status-text').innerText = `DIMENSION HARVESTING: ${id.toUpperCase()}`;
+        }
+
+        function applyHardwareRouting(trackId) {
+            if (!micSplitterNode || !trackRoutingMerger) return;
+
+            // 1. DISCONNECT PROTOCOL
+            micSplitterNode.disconnect();
+            micGain.disconnect();
+            trackRoutingMerger.disconnect(); // Clear meter connections and destination
+
+            // Re-establish permanent links
+            trackRoutingMerger.connect(trackRoutingDestination);
+            trackRoutingMerger.connect(mergerNode);
+
+            // 2. DYNAMIC RE-WIRE
+            const route = tracks[trackId].routing;
+            if (route === 'mono-l') {
+                micSplitterNode.connect(micGain, 0); // Hardware L
+                micGain.connect(trackRoutingMerger, 0, 0); // Destination L
+            } else if (route === 'mono-r') {
+                micSplitterNode.connect(micGain, 0); // Hardware Center fallthrough or right channel
+                micGain.connect(trackRoutingMerger, 0, 1); // Destination R
+            } else {
+                // Stereo
+                micSplitterNode.connect(micGain, 0);
+                micGain.connect(trackRoutingMerger, 0, 0);
+                micGain.connect(trackRoutingMerger, 0, 1);
+            }
+
+            // Sync Visual Meters to new outputs
+            updateMeterConnections();
         }
 
         function stopHarvest() {
@@ -916,11 +933,17 @@
 
         // --- Routing Toggles ---
         document.querySelectorAll('.routing-btn').forEach(btn => {
-            btn.onclick = () => {
+            btn.onclick = async () => {
                 const trackId = btn.closest('.routing-group').dataset.track;
                 btn.closest('.routing-group').querySelectorAll('.routing-btn').forEach(b => b.classList.remove('selected'));
                 btn.classList.add('selected');
                 tracks[trackId].routing = btn.dataset.route;
+
+                // V7.4: Dynamic Re-Wire & Context Resume
+                await setupAudio();
+                if (audioCtx) await audioCtx.resume();
+                applyHardwareRouting(trackId);
+                document.getElementById('status-text').innerText = `ROUTING RE-WIRED: ${trackId.toUpperCase()} -> ${btn.dataset.route.toUpperCase()}`;
             };
         });
 
