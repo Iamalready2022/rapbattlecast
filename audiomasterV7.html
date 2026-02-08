@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audio Master V7 | The Architect Edition</title>
+    <title>Audio Master V8 | The Compact Console</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Cinzel:wght@400;700&family=Inter:wght@300;400;700&display=swap"
         rel="stylesheet">
@@ -76,7 +76,7 @@
             position: sticky;
             top: 0;
             width: 100%;
-            height: 100px;
+            height: 70px;
             background: rgba(10, 10, 12, 0.8);
             backdrop-filter: blur(15px);
             border-bottom: 1px solid var(--glass-border);
@@ -95,7 +95,7 @@
         }
 
         .logo-block img {
-            height: 60px;
+            height: 40px;
             filter: drop-shadow(0 0 10px var(--accent-gold));
         }
 
@@ -124,7 +124,7 @@
         /* --- Console Grid --- */
         .console-main {
             max-width: 1600px;
-            margin: 20px auto;
+            margin: 10px auto;
             padding: 0 20px;
             display: grid;
             grid-template-columns: 350px 1fr 350px;
@@ -134,8 +134,8 @@
         .panel {
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 20px;
+            border-radius: 12px;
+            padding: 12px;
             backdrop-filter: blur(10px);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
@@ -155,8 +155,8 @@
             background: var(--glass-bg);
             color: var(--accent-gold);
             border: 1px solid var(--accent-gold);
-            padding: 12px;
-            border-radius: 8px;
+            padding: 8px;
+            border-radius: 6px;
             font-family: inherit;
             text-transform: uppercase;
             font-weight: 600;
@@ -164,7 +164,8 @@
             cursor: pointer;
             transition: all 0.3s ease;
             width: 100%;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
+            font-size: 0.75rem;
         }
 
         button:hover:not([disabled]) {
@@ -210,9 +211,9 @@
         .tracks-container {
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            margin-top: 20px;
-            padding-bottom: 100px;
+            gap: 8px;
+            margin-top: 10px;
+            padding-bottom: 40px;
         }
 
         .track-strip {
@@ -225,13 +226,14 @@
         }
 
         .track-info {
-            width: 250px;
-            padding: 15px;
+            width: 150px;
+            padding: 8px;
             border-right: 1px solid var(--glass-border);
-            background: rgba(0, 0, 0, 0.2);
+            background: rgba(0, 0, 0, 0.4);
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            justify-content: flex-start;
+            gap: 5px;
         }
 
         .track-name {
@@ -256,22 +258,22 @@
         }
 
         .track-music {
-            height: 150px;
+            height: 80px;
             border-left: 4px solid var(--accent-gold);
         }
 
         .track-voice {
-            height: 250px;
+            height: 110px;
             border-left: 4px solid var(--accent-red);
         }
 
         .track-atmos {
-            height: 250px;
+            height: 110px;
             border-left: 4px solid var(--accent-blue);
         }
 
         .track-fx {
-            height: 250px;
+            height: 110px;
             border-left: 4px solid var(--accent-purple);
         }
 
@@ -430,7 +432,7 @@
     <header class="fixed-header">
         <div class="logo-block">
             <img src="https://rapbattlecast.com/iamalready.logo.png" alt="Logo">
-            <h1>Audio Master <span class="swagger-gold">V7</span></h1>
+            <h1>Audio Master <span class="swagger-gold">V8</span></h1>
         </div>
         <div id="clock" style="font-family: 'Courier New', monospace; letter-spacing: 2px;">00:00:00</div>
     </header>
@@ -498,7 +500,7 @@
         <div class="track-strip track-music">
             <div class="track-info">
                 <div class="track-name"><span class="track-id">T1</span> MUSIC</div>
-                <div style="font-size: 0.6rem; opacity: 0.5;">STEREO MASTER</div>
+                <div style="font-size: 0.55rem; opacity: 0.5; letter-spacing: 1px;">STEREO MASTER</div>
             </div>
             <div class="waveform-container" id="wave-t1"></div>
         </div>
@@ -507,8 +509,8 @@
         <div class="track-strip track-voice">
             <div class="track-info">
                 <div class="track-name"><span class="track-id">T2</span> VOICE</div>
-                <button class="rec-btn" data-track="t2">REC CHANNEL</button>
-                <div class="meter-container">
+                <button class="rec-btn" data-track="t2" style="padding: 4px; font-size: 0.65rem;">REC</button>
+                <div class="meter-container" style="width: 100%; height: 8px;">
                     <div class="meter-bar">
                         <div class="meter-fill" id="meter-t2-l"></div>
                     </div>
@@ -516,7 +518,7 @@
                         <div class="meter-fill" id="meter-t2-r"></div>
                     </div>
                 </div>
-                <div class="routing-group" data-track="t2">
+                <div class="routing-group" data-track="t2" style="margin-top: 5px;">
                     <button class="routing-btn selected" data-route="mono-l">L</button>
                     <button class="routing-btn" data-route="mono-r">R</button>
                     <button class="routing-btn" data-route="stereo">S</button>
@@ -529,8 +531,8 @@
         <div class="track-strip track-atmos">
             <div class="track-info">
                 <div class="track-name"><span class="track-id">T3</span> ATMOS</div>
-                <button class="rec-btn" data-track="t3">REC CHANNEL</button>
-                <div class="meter-container">
+                <button class="rec-btn" data-track="t3" style="padding: 4px; font-size: 0.65rem;">REC</button>
+                <div class="meter-container" style="width: 100%; height: 8px;">
                     <div class="meter-bar">
                         <div class="meter-fill" id="meter-t3-l"></div>
                     </div>
@@ -538,7 +540,7 @@
                         <div class="meter-fill" id="meter-t3-r"></div>
                     </div>
                 </div>
-                <div class="routing-group" data-track="t3">
+                <div class="routing-group" data-track="t3" style="margin-top: 5px;">
                     <button class="routing-btn selected" data-route="mono-l">L</button>
                     <button class="routing-btn" data-route="mono-r">R</button>
                     <button class="routing-btn" data-route="stereo">S</button>
@@ -551,8 +553,8 @@
         <div class="track-strip track-fx">
             <div class="track-info">
                 <div class="track-name"><span class="track-id">T4</span> FX</div>
-                <button class="rec-btn" data-track="t4">REC CHANNEL</button>
-                <div class="meter-container">
+                <button class="rec-btn" data-track="t4" style="padding: 4px; font-size: 0.65rem;">REC</button>
+                <div class="meter-container" style="width: 100%; height: 8px;">
                     <div class="meter-bar">
                         <div class="meter-fill" id="meter-t4-l"></div>
                     </div>
@@ -560,7 +562,7 @@
                         <div class="meter-fill" id="meter-t4-r"></div>
                     </div>
                 </div>
-                <div class="routing-group" data-track="t4">
+                <div class="routing-group" data-track="t4" style="margin-top: 5px;">
                     <button class="routing-btn selected" data-route="mono-l">L</button>
                     <button class="routing-btn" data-route="mono-r">R</button>
                     <button class="routing-btn" data-route="stereo">S</button>
@@ -574,11 +576,11 @@
         © 2026 Iamalready.com | Audio Master <span class="swagger-gold">Architect Edition</span> | admin@iamalready.com
     </footer>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.all.min.js?v=7.7"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.all.min.js?v=8.0"></script>
     <script type="module">
-        import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js?v=7.7'
-        import RecordPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/record.esm.js?v=7.7'
-        import RegionsPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/regions.esm.js?v=7.7'
+        import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js?v=8.0'
+        import RecordPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/record.esm.js?v=8.0'
+        import RegionsPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/regions.esm.js?v=8.0'
 
         // --- Core State ---
         let audioCtx, osc1, osc2, gainL, gainR, binauralMasterGain, mixer, recorder;
@@ -586,10 +588,10 @@
         let isRecording = false;
         let currentActiveTrackId = null;
         let tracks = {
-            t1: { ws: null, height: 150 },
-            t2: { ws: null, height: 250, recordPlugin: null, regionPlugin: null, routing: 'mono-l' },
-            t3: { ws: null, height: 250, recordPlugin: null, regionPlugin: null, routing: 'mono-l' },
-            t4: { ws: null, height: 250, recordPlugin: null, regionPlugin: null, routing: 'mono-l' }
+            t1: { ws: null, height: 80 },
+            t2: { ws: null, height: 110, recordPlugin: null, regionPlugin: null, routing: 'mono-l' },
+            t3: { ws: null, height: 110, recordPlugin: null, regionPlugin: null, routing: 'mono-l' },
+            t4: { ws: null, height: 110, recordPlugin: null, regionPlugin: null, routing: 'mono-l' }
         };
         let ethicalVowAccepted = false;
         let recordedChunks = [];
@@ -617,7 +619,7 @@
                     barGap: 1,
                     minPxPerSec: SYNC_PX_PER_SEC,
                     autoCenter: true,
-                    pixelRatio: id === 't1' ? 1 : undefined,
+                    pixelRatio: 1,
                     forceDecode: id === 't1' ? true : false,
                 };
 
