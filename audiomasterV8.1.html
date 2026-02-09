@@ -272,19 +272,45 @@
 
         .vol-slider-container input[type="range"] {
             writing-mode: bt-lr;
-            /* IE, Edge */
             appearance: slider-vertical;
             -webkit-appearance: slider-vertical;
-            /* WebKit */
-            width: 8px;
-            height: 70px;
-            background: rgba(255, 255, 255, 0.05);
+            width: 15px;
+            height: 80px;
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 4px;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .vol-slider-container input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 28px;
+            height: 14px;
+            background: var(--accent-gold);
+            border-radius: 3px;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.6), inset 0 0 5px rgba(255, 255, 255, 0.5);
+            cursor: ns-resize;
+            border: 1px solid #fff;
+        }
+
+        .vol-slider-container input[type="range"]::-moz-range-thumb {
+            width: 28px;
+            height: 14px;
+            background: var(--accent-gold);
+            border-radius: 3px;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
+            cursor: ns-resize;
+            border: 1px solid #fff;
         }
 
         .vol-value {
-            font-size: 0.6rem;
+            font-size: 0.7rem;
             color: var(--accent-gold);
             font-family: 'Courier New', monospace;
+            font-weight: 700;
+            text-shadow: 0 0 5px rgba(212, 175, 55, 0.5);
         }
 
         .action-btns {
@@ -526,8 +552,8 @@
                 </div>
                 <div class="track-controls-row">
                     <div class="vol-slider-container">
-                        <input type="range" class="track-vol" data-track="t1" min="0" max="2.0" step="0.05" value="1.0">
-                        <span class="vol-value" id="val-t1">1.0</span>
+                        <input type="range" class="track-vol" data-track="t1" min="0" max="2.0" step="0.05" value="0.4">
+                        <span class="vol-value" id="val-t1">0.4</span>
                     </div>
                     <div class="action-btns">
                         <button class="load-track-btn" data-track="t1"
@@ -547,8 +573,8 @@
                 </div>
                 <div class="track-controls-row">
                     <div class="vol-slider-container">
-                        <input type="range" class="track-vol" data-track="t2" min="0" max="2.0" step="0.05" value="1.0">
-                        <span class="vol-value" id="val-t2">1.0</span>
+                        <input type="range" class="track-vol" data-track="t2" min="0" max="2.0" step="0.05" value="1.2">
+                        <span class="vol-value" id="val-t2">1.2</span>
                     </div>
                     <div class="action-btns">
                         <button class="rec-btn" data-track="t2" style="padding: 4px; font-size: 0.6rem;">REC</button>
@@ -579,8 +605,8 @@
                 </div>
                 <div class="track-controls-row">
                     <div class="vol-slider-container">
-                        <input type="range" class="track-vol" data-track="t3" min="0" max="2.0" step="0.05" value="1.0">
-                        <span class="vol-value" id="val-t3">1.0</span>
+                        <input type="range" class="track-vol" data-track="t3" min="0" max="2.0" step="0.05" value="0.4">
+                        <span class="vol-value" id="val-t3">0.4</span>
                     </div>
                     <div class="action-btns">
                         <button class="load-track-btn" data-track="t3"
@@ -600,8 +626,8 @@
                 </div>
                 <div class="track-controls-row">
                     <div class="vol-slider-container">
-                        <input type="range" class="track-vol" data-track="t4" min="0" max="2.0" step="0.05" value="1.0">
-                        <span class="vol-value" id="val-t4">1.0</span>
+                        <input type="range" class="track-vol" data-track="t4" min="0" max="2.0" step="0.05" value="1.2">
+                        <span class="vol-value" id="val-t4">1.2</span>
                     </div>
                     <div class="action-btns">
                         <button class="rec-btn" data-track="t4" style="padding: 4px; font-size: 0.6rem;">REC</button>
@@ -641,10 +667,10 @@
         let isRecording = false;
         let currentActiveTrackId = null;
         let tracks = {
-            t1: { ws: null, gain: 1.0, gainNode: null },
-            t2: { ws: null, gain: 1.0, gainNode: null, routing: 'mono-l', recordPlugin: null, regionPlugin: null },
-            t3: { ws: null, gain: 1.0, gainNode: null },
-            t4: { ws: null, gain: 1.0, gainNode: null, routing: 'mono-l', recordPlugin: null, regionPlugin: null }
+            t1: { ws: null, gain: 0.4, gainNode: null },
+            t2: { ws: null, gain: 1.2, gainNode: null, routing: 'mono-l', recordPlugin: null, regionPlugin: null },
+            t3: { ws: null, gain: 0.4, gainNode: null },
+            t4: { ws: null, gain: 1.2, gainNode: null, routing: 'mono-l', recordPlugin: null, regionPlugin: null }
         };
         let musicSource, musicGainNode;
         let masterBus, masterOutputGain;
