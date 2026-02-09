@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Master V8.4 | Multi-Source Studio</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Cinzel:wght@400;700&family=Inter:wght@300;400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0a0a0c;
+            --accent-gold: #d4af37;
+            --accent-red: #ff4141;
+            --accent-blue: #00d2ff;
+            --accent-purple: #bb86fc;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --panel-glow: rgba(212, 175, 55, 0.1);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: radial-gradient(circle at center, #1a1a2e 0%, #0a0a0c 100%);
+            height: 100vh;
+        }
+
+        /* --- Scrollable Console Container --- */
+        .master-wrapper {
+            max-height: calc(100vh - 110px);
+            overflow-y: auto;
+            padding-bottom: 20px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-gold) rgba(0, 0, 0, 0.3);
+        }
+
+        .master-wrapper::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .master-wrapper::-webkit-scrollbar-thumb {
+            background: var(--accent-gold);
+            border-radius: 10px;
+        }
+
+        /* --- Header --- */
+        .fixed-header {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            height: 80px;
+            background: rgba(10, 10, 12, 0.8);
+            backdrop-filter: blur(15px);
+            border-bottom: 2px solid var(--accent-gold);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+
+        .logo-block {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo-block img {
+            height: 80px;
+            filter: drop-shadow(0 0 10px var(--accent-gold));
+        }
+
+        .logo-block h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.8rem;
+            letter-spacing: 4px;
+            color: var(--accent-gold);
+            margin: 0;
+            text-transform: uppercase;
+            text-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+        }
+
+        #recording-banner {
+            display: none;
+            background: var(--accent-red);
+            color: white;
+            font-weight: 700;
+            text-align: center;
+            padding: 8px 0;
+            font-size: 0.9rem;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            box-shadow: 0 0 30px var(--accent-red);
+        }
+
+        /* --- Console Grid --- */
+        .console-main {
+            max-width: 1600px;
+            margin: 10px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 350px 1fr 350px;
+            gap: 20px;
+        }
+
+        .panel {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 12px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .panel-title {
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            color: var(--accent-gold);
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            display: block;
+            font-weight: 600;
+        }
+
+        button {
+            background: var(--glass-bg);
+            color: var(--accent-gold);
+            border: 1px solid var(--accent-gold);
+            padding: 8px;
+            border-radius: 6px;
+            font-family: inherit;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 5px;
+            font-size: 0.75rem;
+        }
+
+        button:hover:not([disabled]) {
+            background: var(--accent-gold);
+            color: var(--bg-color);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+        }
+
+        button.active {
+            background: var(--accent-red) !important;
+            color: white !important;
+            border-color: white !important;
+            box-shadow: 0 0 20px var(--accent-red);
+        }
+
+        .slider-group {
+            margin-bottom: 12px;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        /* --- Track View --- */
+        .tracks-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 10px;
+            padding: 0 20px 40px 20px;
+            max-width: 1600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .track-strip {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+            min-height: 120px;
+        }
+
+        .track-info {
+            width: 200px;
+            padding: 10px;
+            border-right: 1px solid var(--glass-border);
+            background: rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .track-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .track-name {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: 1px;
+        }
+
+        /* --- V8.1 Gold Slider Restoration --- */
+        .vol-slider-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .vol-slider-container input[type="range"] {
+            writing-mode: bt-lr;
+            appearance: slider-vertical;
+            -webkit-appearance: slider-vertical;
+            width: 15px;
+            height: 80px;
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 4px;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .vol-slider-container input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 28px;
+            height: 14px;
+            background: var(--accent-gold);
+            border-radius: 3px;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.6), inset 0 0 5px rgba(255, 255, 255, 0.5);
+            cursor: ns-resize;
+            border: 1px solid #fff;
+        }
+
+        .vol-slider-container input[type="range"]::-moz-range-thumb {
+            width: 28px;
+            height: 14px;
+            background: var(--accent-gold);
+            border-radius: 3px;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
+            cursor: ns-resize;
+            border: 1px solid #fff;
+        }
+
+        .vol-value {
+            font-size: 0.7rem;
+            color: var(--accent-gold);
+            font-family: 'Courier New', monospace;
+            font-weight: 700;
+        }
+
+        .waveform-stack {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #000;
+        }
+
+        .waveform-container {
+            height: 100px;
+            width: 100%;
+            position: relative;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .track-music {
+            border-left: 6px solid var(--accent-blue);
+        }
+
+        .track-voice {
+            border-left: 6px solid var(--accent-red);
+        }
+
+        .routing-group {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 3px;
+        }
+
+        .routing-btn {
+            font-size: 0.6rem;
+            padding: 4px;
+            margin: 0;
+            border-color: var(--glass-border);
+            color: var(--text-secondary);
+        }
+
+        .routing-btn.selected {
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        /* --- Footer --- */
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 30px;
+            background: rgba(10, 10, 12, 0.95);
+            backdrop-filter: blur(15px);
+            border-top: 1px solid var(--accent-gold);
+            text-align: center;
+            padding: 0 40px;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            box-sizing: border-box;
+        }
+
+        .footer-link {
+            color: var(--accent-gold);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer-link:hover {
+            color: white;
+            text-shadow: 0 0 10px var(--accent-gold);
+        }
+
+        .swagger-gold {
+            color: var(--accent-gold);
+            font-weight: 700;
+        }
+
+        .add-btn {
+            background: rgba(212, 175, 55, 0.1);
+            border-style: dashed;
+            font-size: 0.65rem;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="fixed-header">
+        <div class="logo-block">
+            <img src="https://rapbattlecast.com/iamalready.logo.png" alt="Logo">
+            <h1>Audio Master <span class="swagger-gold">V8.4</span></h1>
+        </div>
+        <div id="clock" style="font-family: 'Courier New', monospace; letter-spacing: 2px;">00:00:00</div>
+    </header>
+
+    <div id="recording-banner">RECORDING ACTIVE - PRECISION ALIGNMENT</div>
+
+    <div class="master-wrapper">
+        <main class="console-main">
+            <div class="panel">
+                <span class="panel-title">Master Engine</span>
+                <div class="slider-group">
+                    <div class="slider-label"><span>Master Mix</span><span id="label-master-gain">1.00</span></div>
+                    <input type="range" id="slider-master-gain" min="0" max="1.5" step="0.01" value="1.0">
+                </div>
+                <div class="slider-group">
+                    <div class="slider-label"><span>Master Output</span><span id="label-master-output">0.80</span></div>
+                    <input type="range" id="slider-master-output" min="0" max="1.5" step="0.01" value="0.8">
+                </div>
+                <div class="slider-group">
+                    <div class="slider-label"><span>Binaural Flow</span><span id="label-flow">6.0Hz</span></div>
+                    <input type="range" id="slider-flow" min="1" max="15" step="0.1" value="6">
+                </div>
+            </div>
+
+            <div class="panel"
+                style="text-align: center; display: flex; flex-direction: column; justify-content: center;">
+                <span class="panel-title">Session Transport</span>
+                <button id="play-btn" style="font-size: 1.5rem; padding: 20px;">PLAY / PAUSE</button>
+                <div id="status-text"
+                    style="font-size: 0.7rem; letter-spacing: 2px; margin-top: 10px; color: var(--text-secondary);">
+                    READY</div>
+            </div>
+
+            <div class="panel">
+                <span class="panel-title">Architect Workspace</span>
+                <input type="text" id="file-name" placeholder="SESSION_IDENTIFIER"
+                    style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); color: white; padding: 10px; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box;">
+                <div style="display: flex; gap: 10px;">
+                    <select id="format-select"
+                        style="flex: 1; background: rgba(212, 175, 55, 0.1); border: 1px solid var(--accent-gold); color: var(--accent-gold); padding: 8px; border-radius: 8px;">
+                        <option value="wav">WAV</option>
+                        <option value="mp3">MP3</option>
+                    </select>
+                    <button id="download-btn"
+                        style="flex: 2; background: var(--accent-gold); color: black; margin-bottom: 0;">HARVEST
+                        SESSION</button>
+                </div>
+            </div>
+        </main>
+
+        <div class="tracks-container">
+            <!-- T1: Foundation (Sources) -->
+            <div class="track-strip track-music" id="track-t1">
+                <div class="track-info">
+                    <div class="track-name">FOUNDATION</div>
+                    <div id="t1-controls-stack" style="display: flex; flex-direction: column; gap: 15px;">
+                        <!-- Dynamic Slider Sets Here -->
+                    </div>
+                    <button class="add-btn" id="add-source-btn">+ ADD SOURCE</button>
+                </div>
+                <div class="waveform-stack" id="t1-waveforms">
+                    <!-- Dynamic Waveforms Here -->
+                </div>
+            </div>
+
+            <!-- T2: Creation (Layers) -->
+            <div class="track-strip track-voice" id="track-t2">
+                <div class="track-info">
+                    <div class="track-name">CREATION</div>
+                    <div id="t2-controls-stack" style="display: flex; flex-direction: column; gap: 15px;">
+                        <!-- Dynamic Slider Sets Here -->
+                    </div>
+                    <button class="add-btn" id="add-layer-btn">+ ADD LAYER</button>
+                    <button class="rec-btn" id="global-rec-btn" style="margin-top: auto;">REC</button>
+                </div>
+                <div class="waveform-stack" id="t2-waveforms">
+                    <!-- Dynamic Waveforms Here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <span>© 2026 Iamalready.com</span>
+        <a href="terms.html" class="footer-link">Terms of Use</a>
+        <a href="privacy.html" class="footer-link">Privacy Policy</a>
+        <a href="disclaimer.html" class="footer-link">Disclaimer</a>
+        <span class="swagger-gold">V8.4 Studio Logic</span>
+        <span>admin@iamalready.com</span>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.all.min.js?v=8.4"></script>
+    <script type="module">
+        import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js?v=8.4'
+        import RecordPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/record.esm.js?v=8.4'
+
+        let audioCtx, mixer, recorder, masterOutputGain, musicGainNode, binauralMasterGain, osc1, osc2, gainL, gainR;
+        let micSourceNode, micPreAmpGain, masterBus, trackRoutingDestination, leftGainNode, rightGainNode, trackRoutingMerger;
+        let isRecording = false;
+        let currentRecordingLayer = null;
+        let recordedChunks = [];
+        let sources = []; // T1 items
+        let layers = [];  // T2 items
+
+        const SYNC_PX_PER_SEC = 50;
+
+        async function setupAudio() {
+            if (audioCtx) return;
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 48000 });
+
+            mixer = audioCtx.createMediaStreamDestination();
+            const mergerNode = audioCtx.createChannelMerger(2);
+            mergerNode.connect(mixer);
+
+            masterOutputGain = audioCtx.createGain();
+            masterOutputGain.gain.value = 0.8;
+            masterOutputGain.connect(audioCtx.destination);
+
+            musicGainNode = audioCtx.createGain();
+            musicGainNode.connect(mergerNode);
+            musicGainNode.connect(masterOutputGain);
+
+            // Binaural
+            osc1 = audioCtx.createOscillator(); osc2 = audioCtx.createOscillator();
+            gainL = audioCtx.createGain(); gainR = audioCtx.createGain();
+            binauralMasterGain = audioCtx.createGain(); binauralMasterGain.gain.value = 0.3;
+            const pL = audioCtx.createStereoPanner(); pL.pan.value = -1;
+            const pR = audioCtx.createStereoPanner(); pR.pan.value = 1;
+            osc1.connect(gainL).connect(pL).connect(binauralMasterGain);
+            osc2.connect(gainR).connect(pR).connect(binauralMasterGain);
+            binauralMasterGain.connect(mergerNode);
+            binauralMasterGain.connect(masterOutputGain);
+            osc1.start(); osc2.start();
+            updateBinaural();
+
+            // Mic Path Setup (Pre-Amp Boost 1.8)
+            masterBus = audioCtx.createGain(); masterBus.gain.value = 0;
+            trackRoutingDestination = audioCtx.createMediaStreamDestination();
+            masterBus.connect(trackRoutingDestination);
+
+            const micSplitter = audioCtx.createChannelSplitter(2);
+            leftGainNode = audioCtx.createGain(); rightGainNode = audioCtx.createGain();
+            trackRoutingMerger = audioCtx.createChannelMerger(2);
+
+            micSplitter.connect(leftGainNode, 0);
+            micSplitter.connect(rightGainNode, 0);
+            leftGainNode.connect(trackRoutingMerger, 0, 0);
+            rightGainNode.connect(trackRoutingMerger, 0, 1);
+
+            trackRoutingMerger.connect(mergerNode);
+            trackRoutingMerger.connect(masterOutputGain);
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 2, echoCancellation: false } });
+                micSourceNode = audioCtx.createMediaStreamSource(stream);
+                micPreAmpGain = audioCtx.createGain();
+                micPreAmpGain.gain.value = 1.8; // +80% Software Boost requested
+                micSourceNode.connect(micPreAmpGain).connect(micSplitter);
+            } catch (err) { console.error("Mic access denied or error:", err); }
+
+            recorder = new MediaRecorder(trackRoutingDestination.stream, { mimeType: 'audio/webm;codecs=opus' });
+            recorder.ondataavailable = e => recordedChunks.push(e.data);
+
+            // Sync Loop
+            function syncLoop() {
+                const anyPlaying = sources.some(s => s.ws.isPlaying()) || layers.some(l => l.ws.isPlaying());
+                if (anyPlaying) {
+                    const master = sources.find(s => s.ws.isPlaying()) || layers.find(l => l.ws.isPlaying());
+                    if (master) {
+                        const time = master.ws.getCurrentTime();
+                        sources.forEach(s => { if (s !== master && Math.abs(s.ws.getCurrentTime() - time) > 0.05) s.ws.setTime(time); });
+                        layers.forEach(l => { if (l !== master && Math.abs(l.ws.getCurrentTime() - time) > 0.05) l.ws.setTime(time); });
+                    }
+                }
+                requestAnimationFrame(syncLoop);
+            }
+            syncLoop();
+        }
+
+        function updateBinaural() {
+            const flow = parseFloat(document.getElementById('slider-flow').value);
+            osc1.frequency.setTargetAtTime(432, audioCtx.currentTime, 0.05);
+            osc2.frequency.setTargetAtTime(432 + flow, audioCtx.currentTime, 0.05);
+            document.getElementById('label-flow').innerText = flow.toFixed(1) + "Hz";
+        }
+
+        function createSourceEntry() {
+            const id = 'src-' + Date.now();
+            const container = document.getElementById('t1-controls-stack');
+            const entry = document.createElement('div');
+            entry.className = 'vol-slider-container';
+            entry.innerHTML = `
+                <div style="font-size:0.6rem; color:var(--accent-blue); opacity:0.6;">SOURCE</div>
+                <input type="range" class="track-vol" data-id="${id}" min="0" max="2" step="0.05" value="0.4">
+                <span class="vol-value" id="val-${id}">0.4</span>
+            `;
+            container.appendChild(entry);
+
+            const waveContainer = document.getElementById('t1-waveforms');
+            const waveDiv = document.createElement('div');
+            waveDiv.className = 'waveform-container';
+            waveDiv.id = `wave-${id}`;
+            waveContainer.appendChild(waveDiv);
+
+            const ws = WaveSurfer.create({
+                container: `#wave-${id}`,
+                height: 80,
+                waveColor: '#00d2ff33',
+                progressColor: '#00d2ff',
+                barWidth: 2,
+                barGap: 1,
+                minPxPerSec: SYNC_PX_PER_SEC,
+                autoCenter: true
+            });
+
+            const sourceObj = { id, ws, gainNode: null, sourceNode: null, gain: 0.4 };
+            sources.push(sourceObj);
+
+            entry.querySelector('input').oninput = (e) => {
+                const val = parseFloat(e.target.value);
+                sourceObj.gain = val;
+                document.getElementById(`val-${id}`).innerText = val.toFixed(1);
+                if (sourceObj.gainNode) sourceObj.gainNode.gain.setTargetAtTime(val, audioCtx.currentTime, 0.05);
+            };
+
+            return sourceObj;
+        }
+
+        async function addSourceFile() {
+            await setupAudio();
+            const input = document.createElement('input'); input.type = 'file';
+            input.onchange = async (e) => {
+                const source = createSourceEntry();
+                const url = URL.createObjectURL(e.target.files[0]);
+                await source.ws.load(url).then(() => {
+                    const media = source.ws.getMediaElement();
+                    source.sourceNode = audioCtx.createMediaElementSource(media);
+                    source.gainNode = audioCtx.createGain();
+                    source.gainNode.gain.value = source.gain;
+                    source.sourceNode.connect(source.gainNode).connect(musicGainNode);
+                    source.ws.on('interaction', time => syncAll(time));
+                    document.getElementById('status-text').innerText = "FOUNDATION ADDED: " + e.target.files[0].name;
+                });
+            };
+            input.click();
+        }
+
+        function syncAll(time) {
+            sources.forEach(s => s.ws.setTime(time));
+            layers.forEach(l => l.ws.setTime(time));
+        }
+
+        document.getElementById('add-source-btn').onclick = addSourceFile;
+
+        // --- Layers (T2) ---
+        function createLayerEntry() {
+            const id = 'lyr-' + Date.now();
+            const container = document.getElementById('t2-controls-stack');
+            const entry = document.createElement('div');
+            entry.className = 'vol-slider-container';
+            entry.style.border = "1px solid rgba(255,255,255,0.05)";
+            entry.style.padding = "5px";
+            entry.style.borderRadius = "8px";
+            entry.innerHTML = `
+                <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                    <div style="font-size:0.6rem; color:var(--accent-red); opacity:0.6;">LAYER</div>
+                    <button class="arm-btn" id="arm-${id}" style="width:40px; font-size:0.5rem; padding:2px; margin:0;">ARM</button>
+                </div>
+                <input type="range" class="take-vol" data-id="${id}" min="0" max="2.5" step="0.05" value="1.8">
+                <div class="routing-group" style="margin-top:5px;">
+                    <button class="routing-btn selected" data-route="mono-l">L</button>
+                    <button class="routing-btn" data-route="mono-r">R</button>
+                    <button class="routing-btn" data-route="stereo">S</button>
+                </div>
+                <span class="vol-value" id="val-${id}">1.8</span>
+            `;
+            container.appendChild(entry);
+
+            const waveContainer = document.getElementById('t2-waveforms');
+            const waveDiv = document.createElement('div');
+            waveDiv.className = 'waveform-container';
+            waveDiv.id = `wave-${id}`;
+            waveContainer.appendChild(waveDiv);
+
+            const ws = WaveSurfer.create({
+                container: `#wave-${id}`,
+                height: 80,
+                waveColor: '#ff414133',
+                progressColor: '#ff4141',
+                barWidth: 2,
+                barGap: 1,
+                minPxPerSec: SYNC_PX_PER_SEC,
+                autoCenter: true
+            });
+
+            const recordPlugin = ws.registerPlugin(RecordPlugin.create({ scrollingWaveform: true, renderRecordedAudio: true }));
+
+            const layerObj = { id, ws, recordPlugin, routing: 'mono-l', gain: 1.8, gainNode: null, sourceNode: null };
+            layers.push(layerObj);
+
+            entry.querySelector('input').oninput = (e) => {
+                const val = parseFloat(e.target.value);
+                layerObj.gain = val;
+                document.getElementById(`val-${id}`).innerText = val.toFixed(1);
+                if (layerObj.gainNode) layerObj.gainNode.gain.setTargetAtTime(val, audioCtx.currentTime, 0.05);
+            };
+
+            entry.querySelectorAll('.routing-btn').forEach(btn => {
+                btn.onclick = () => {
+                    entry.querySelectorAll('.routing-btn').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    layerObj.routing = btn.dataset.route;
+                    if (isRecording && currentRecordingLayer === layerObj) applyRouting(layerObj.routing);
+                }
+            });
+
+            entry.querySelector('.arm-btn').onclick = () => {
+                document.querySelectorAll('.arm-btn').forEach(b => {
+                    b.style.color = 'var(--accent-gold)';
+                    b.innerText = 'ARM';
+                });
+                entry.querySelector('.arm-btn').style.color = 'var(--accent-red)';
+                entry.querySelector('.arm-btn').innerText = 'READY';
+                currentRecordingLayer = layerObj;
+            };
+
+            return layerObj;
+        }
+
+        function applyRouting(route) {
+            leftGainNode.gain.setValueAtTime(route === 'mono-r' ? 0 : 1, audioCtx.currentTime);
+            rightGainNode.gain.setValueAtTime(route === 'mono-l' ? 0 : 1, audioCtx.currentTime);
+        }
+
+        document.getElementById('add-layer-btn').onclick = () => {
+            setupAudio().then(() => {
+                const layer = createLayerEntry();
+                if (!currentRecordingLayer) {
+                    document.getElementById(`arm-${layer.id}`).click();
+                }
+                document.getElementById('status-text').innerText = "NEW LAYER ADDED AND ARMED";
+            });
+        }
+
+        document.getElementById('play-btn').onclick = async () => {
+            if (audioCtx) await audioCtx.resume();
+            const anyPlaying = sources.some(s => s.ws.isPlaying()) || layers.some(l => l.ws.isPlaying());
+            sources.forEach(s => anyPlaying ? s.ws.pause() : s.ws.play());
+            layers.forEach(l => anyPlaying ? l.ws.pause() : l.ws.play());
+        };
+
+        document.getElementById('global-rec-btn').onclick = async () => {
+            if (!currentRecordingLayer) return alert("Arm a layer first.");
+            await setupAudio();
+
+            if (isRecording) {
+                stopRecording();
+            } else {
+                startRecording();
+            }
+        };
+
+        function startRecording() {
+            isRecording = true;
+            applyRouting(currentRecordingLayer.routing);
+            recordedChunks = [];
+            recorder.start();
+            currentRecordingLayer.recordPlugin.startRecording();
+            masterBus.gain.setTargetAtTime(currentRecordingLayer.gain, audioCtx.currentTime, 0.01);
+            document.getElementById('recording-banner').style.display = 'block';
+            document.getElementById('global-rec-btn').classList.add('active');
+            document.getElementById('status-text').innerText = "CAPTURING CREATION...";
+        }
+
+        function stopRecording() {
+            isRecording = false;
+            masterBus.gain.setTargetAtTime(0, audioCtx.currentTime, 0.01);
+            currentRecordingLayer.recordPlugin.stopRecording();
+            recorder.stop();
+            document.getElementById('recording-banner').style.display = 'none';
+            document.getElementById('global-rec-btn').classList.remove('active');
+            document.getElementById('status-text').innerText = "TAKE COMPLETE";
+
+            // Set up playback for this layer
+            currentRecordingLayer.recordPlugin.on('record-end', (blob) => {
+                const url = URL.createObjectURL(blob);
+                currentRecordingLayer.ws.load(url).then(() => {
+                    const media = currentRecordingLayer.ws.getMediaElement();
+                    currentRecordingLayer.sourceNode = audioCtx.createMediaElementSource(media);
+                    currentRecordingLayer.gainNode = audioCtx.createGain();
+                    currentRecordingLayer.gainNode.gain.value = currentRecordingLayer.gain;
+                    currentRecordingLayer.sourceNode.connect(currentRecordingLayer.gainNode).connect(musicGainNode);
+                });
+            });
+        }
+
+        document.getElementById('download-btn').onclick = async () => {
+            if (isRecording) stopRecording();
+            if (recordedChunks.length === 0) return alert("Nothing recorded.");
+            const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url;
+            const name = document.getElementById('file-name').value || 'session';
+            a.download = `${name}.webm`;
+            a.click();
+        };
+
+        window.addEventListener('load', () => {
+            setInterval(() => document.getElementById('clock').innerText = new Date().toLocaleTimeString(), 1000);
+            document.getElementById('slider-flow').oninput = updateBinaural;
+            document.getElementById('slider-master-gain').oninput = e => {
+                if (musicGainNode) musicGainNode.gain.setTargetAtTime(parseFloat(e.target.value), audioCtx.currentTime, 0.05);
+                document.getElementById('label-master-gain').innerText = parseFloat(e.target.value).toFixed(2);
+            };
+            document.getElementById('slider-master-output').oninput = e => {
+                if (masterOutputGain) masterOutputGain.gain.setTargetAtTime(parseFloat(e.target.value), audioCtx.currentTime, 0.05);
+                document.getElementById('label-master-output').innerText = parseFloat(e.target.value).toFixed(2);
+            };
+
+            // Auto-create initial layer
+            createLayerEntry();
+        });
+    </script>
+</body>
+
+</html>
