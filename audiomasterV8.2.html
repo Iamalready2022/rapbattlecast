@@ -94,10 +94,12 @@
             position: sticky;
             top: 0;
             width: 100%;
-            height: 70px;
+            height: 80px;
+            /* EXACTLY 80px */
             background: rgba(10, 10, 12, 0.8);
             backdrop-filter: blur(15px);
-            border-bottom: 1px solid var(--glass-border);
+            border-bottom: 2px solid var(--accent-gold);
+            /* Thicker gold border */
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -113,17 +115,20 @@
         }
 
         .logo-block img {
-            height: 40px;
+            height: 80px;
+            /* EXACTLY 80px */
             filter: drop-shadow(0 0 10px var(--accent-gold));
         }
 
         .logo-block h1 {
             font-family: 'Cinzel', serif;
-            font-size: 1.2rem;
+            font-size: 1.8rem;
+            /* Clear and readable */
             letter-spacing: 4px;
             color: var(--accent-gold);
             margin: 0;
             text-transform: uppercase;
+            text-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
         }
 
         #recording-banner {
@@ -307,21 +312,23 @@
         .vol-slider-container input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 24px;
-            height: 24px;
+            width: 32px;
+            /* Large enough to grab easily */
+            height: 32px;
             background: var(--accent-gold);
             border-radius: 50%;
-            box-shadow: 0 0 15px rgba(212, 175, 55, 0.6), inset 0 0 5px rgba(255, 255, 255, 0.5);
+            /* Circular thumb */
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.8), inset 0 0 8px rgba(255, 255, 255, 0.6);
             cursor: ns-resize;
             border: 2px solid #fff;
         }
 
         .vol-slider-container input[type="range"]::-moz-range-thumb {
-            width: 24px;
-            height: 24px;
+            width: 32px;
+            height: 32px;
             background: var(--accent-gold);
             border-radius: 50%;
-            box-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.8);
             cursor: ns-resize;
             border: 2px solid #fff;
         }
@@ -350,7 +357,8 @@
 
         .track-music {
             border-left: 4px solid var(--accent-gold);
-            height: 110px;
+            height: 80px;
+            /* Compact Console T1 height */
         }
 
         .track-voice {
@@ -491,13 +499,16 @@
         }
 
         .footer-link {
-            color: var(--text-secondary);
+            color: var(--accent-gold);
+            /* Restoration of Gold links */
             text-decoration: none;
-            transition: color 0.3s ease;
+            transition: all 0.3s ease;
+            font-weight: 600;
         }
 
         .footer-link:hover {
-            color: var(--accent-gold);
+            color: white;
+            text-shadow: 0 0 10px var(--accent-gold);
         }
 
         .swagger-gold {
