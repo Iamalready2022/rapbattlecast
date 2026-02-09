@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Master V8.1 | The Master Console</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Cinzel:wght@400;700&family=Inter:wght@300;400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0a0a0c;
+            --accent-gold: #d4af37;
+            --accent-red: #ff4141;
+            --accent-blue: #00d2ff;
+            --accent-purple: #bb86fc;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --panel-glow: rgba(212, 175, 55, 0.1);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            background: radial-gradient(circle at center, #1a1a2e 0%, #0a0a0c 100%);
+            min-height: 100vh;
+        }
+
+        /* --- Zen Drop Animation --- */
+        @keyframes zen-drop {
+            0% {
+                transform: translateY(-100px);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 0.8;
+            }
+
+            90% {
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: translateY(110vh);
+                opacity: 0;
+            }
+        }
+
+        #zen-drop-container {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        .zen-water {
+            font-size: 3rem;
+            filter: drop-shadow(0 0 20px var(--accent-blue));
+            animation: zen-drop 15s linear infinite;
+            display: none;
+        }
+
+        /* --- Header --- */
+        .fixed-header {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            height: 70px;
+            background: rgba(10, 10, 12, 0.8);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+
+        .logo-block {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo-block img {
+            height: 40px;
+            filter: drop-shadow(0 0 10px var(--accent-gold));
+        }
+
+        .logo-block h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.2rem;
+            letter-spacing: 4px;
+            color: var(--accent-gold);
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        #recording-banner {
+            display: none;
+            background: var(--accent-red);
+            color: white;
+            font-weight: 700;
+            text-align: center;
+            padding: 8px 0;
+            font-size: 0.9rem;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            box-shadow: 0 0 30px var(--accent-red);
+        }
+
+        /* --- Console Grid --- */
+        .console-main {
+            max-width: 1600px;
+            margin: 10px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 350px 1fr 350px;
+            gap: 20px;
+        }
+
+        .panel {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 12px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .panel-title {
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            color: var(--accent-gold);
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            display: block;
+            font-weight: 600;
+        }
+
+        /* --- Controls --- */
+        button {
+            background: var(--glass-bg);
+            color: var(--accent-gold);
+            border: 1px solid var(--accent-gold);
+            padding: 8px;
+            border-radius: 6px;
+            font-family: inherit;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 5px;
+            font-size: 0.75rem;
+        }
+
+        button:hover:not([disabled]) {
+            background: var(--accent-gold);
+            color: var(--bg-color);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+        }
+
+        button.active {
+            background: var(--accent-red) !important;
+            color: white !important;
+            border-color: white !important;
+            box-shadow: 0 0 20px var(--accent-red);
+        }
+
+        button[disabled] {
+            opacity: 0.2;
+            cursor: not-allowed;
+        }
+
+        .slider-group {
+            margin-bottom: 12px;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--accent-gold);
+            background: rgba(255, 255, 255, 0.1);
+            height: 4px;
+            border-radius: 2px;
+            appearance: none;
+        }
+
+        /* --- Track View --- */
+        .tracks-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+            padding-bottom: 40px;
+        }
+
+        .track-strip {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .track-info {
+            width: 180px;
+            /* Slightly wider for slider */
+            padding: 8px;
+            border-right: 1px solid var(--glass-border);
+            background: rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            gap: 5px;
+        }
+
+        .track-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .track-name {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .track-id {
+            opacity: 0.3;
+            font-family: 'Courier New', monospace;
+        }
+
+        .track-controls-row {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            margin-top: 5px;
+        }
+
+        .vol-slider-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .vol-slider-container input[type="range"] {
+            writing-mode: bt-lr;
+            /* IE, Edge */
+            appearance: slider-vertical;
+            -webkit-appearance: slider-vertical;
+            /* WebKit */
+            width: 8px;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .vol-value {
+            font-size: 0.6rem;
+            color: var(--accent-gold);
+            font-family: 'Courier New', monospace;
+        }
+
+        .action-btns {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .waveform-container {
+            flex: 1;
+            background: #000;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .track-music {
+            border-left: 4px solid var(--accent-gold);
+            height: 110px;
+        }
+
+        .track-voice {
+            border-left: 4px solid var(--accent-red);
+            height: 110px;
+        }
+
+        .track-atmos {
+            border-left: 4px solid var(--accent-blue);
+            height: 110px;
+        }
+
+        .track-fx {
+            border-left: 4px solid var(--accent-purple);
+            height: 110px;
+        }
+
+        .routing-group {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 3px;
+            margin-top: 2px;
+        }
+
+        .routing-btn {
+            font-size: 0.55rem;
+            padding: 3px;
+            margin: 0;
+            border-color: var(--glass-border);
+            color: var(--text-secondary);
+        }
+
+        .routing-btn.selected {
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        /* --- Ethical Modal --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+
+        .modal-overlay.visible {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .ethical-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--accent-gold);
+            padding: 60px;
+            border-radius: 24px;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(212, 175, 55, 0.2);
+        }
+
+        .ethical-card h2 {
+            font-family: 'Cinzel', serif;
+            color: var(--accent-gold);
+            margin-bottom: 30px;
+        }
+
+        .ethical-card p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 40px;
+            font-style: italic;
+        }
+
+        /* --- Stereo Meters --- */
+        .meter-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--glass-border);
+            border-radius: 4px;
+            display: flex;
+            gap: 2px;
+            padding: 1px;
+            box-sizing: border-box;
+            margin-top: 2px;
+        }
+
+        .meter-bar {
+            flex: 1;
+            height: 100%;
+            background: #111;
+            position: relative;
+            overflow: hidden;
+            border-radius: 1px;
+        }
+
+        .meter-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0%;
+            background: var(--accent-gold);
+            transition: width 0.1s ease;
+            box-shadow: 0 0 10px var(--accent-gold);
+        }
+
+        /* --- Footer --- */
+        footer {
+            text-align: center;
+            padding: 30px;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            opacity: 0.5;
+        }
+
+        .swagger-gold {
+            color: var(--accent-gold);
+            font-weight: 700;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="zen-drop-container">
+        <div class="zen-water">💧</div>
+    </div>
+
+    <div id="ethical-modal" class="modal-overlay visible">
+        <div class="ethical-card">
+            <h2>The Architect's Vow</h2>
+            <p>"I acknowledge my voice is a sacred vibration. I commit to ethical creation."</p>
+            <button id="vow-btn" style="width: auto; padding: 15px 40px;">I ACCEPT</button>
+        </div>
+    </div>
+
+    <div id="recording-banner">RECORDING ACTIVE - PRECISION ALIGNMENT</div>
+
+    <header class="fixed-header">
+        <div class="logo-block">
+            <img src="https://rapbattlecast.com/iamalready.logo.png" alt="Logo">
+            <h1>Audio Master <span class="swagger-gold">V8.1</span></h1>
+        </div>
+        <div id="clock" style="font-family: 'Courier New', monospace; letter-spacing: 2px;">00:00:00</div>
+    </header>
+
+    <main class="console-main">
+        <div class="panel">
+            <span class="panel-title">Master Engine</span>
+            <div class="slider-group">
+                <div class="slider-label"><span>Master Mix</span><span id="label-master-gain">1.00</span></div>
+                <input type="range" id="slider-master-gain" min="0" max="1.5" step="0.01" value="1.0">
+            </div>
+            <div class="slider-group">
+                <div class="slider-label"><span>Master Output (Monitor)</span><span id="label-master-output">0.80</span>
+                </div>
+                <input type="range" id="slider-master-output" min="0" max="1.5" step="0.01" value="0.8">
+            </div>
+            <div class="slider-group">
+                <div class="slider-label"><span>Binaural Flow</span><span id="label-flow">6.0Hz</span></div>
+                <input type="range" id="slider-flow" min="1" max="15" step="0.1" value="6">
+            </div>
+            <div class="slider-group">
+                <div class="slider-label"><span>Binaural Gain</span><span id="label-binaural-gain">0.30</span></div>
+                <input type="range" id="slider-binaural-gain" min="0" max="0.5" step="0.01" value="0.3">
+            </div>
+        </div>
+
+        <div class="panel" style="text-align: center; display: flex; flex-direction: column; justify-content: center;">
+            <span class="panel-title" style="margin-bottom: 20px;">Session Transport</span>
+            <button id="load-btn">LOAD SOURCE MATERIAL</button>
+            <button id="play-btn" style="font-size: 1.5rem; padding: 20px;">PLAY / PAUSE</button>
+            <div id="status-text"
+                style="font-size: 0.7rem; letter-spacing: 3px; margin-top: 10px; color: var(--text-secondary);">IDLE:
+                READY FOR CALIBRATION</div>
+        </div>
+
+        <div class="panel">
+            <span class="panel-title">Architect Workspace</span>
+            <input type="text" id="file-name" placeholder="SESSION_IDENTIFIER"
+                style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); color: white; padding: 12px; border-radius: 8px; margin-bottom: 15px; box-sizing: border-box;">
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <div style="flex: 1;">
+                    <span class="panel-title" style="margin-bottom: 5px; font-size: 0.6rem;">Format</span>
+                    <select id="format-select"
+                        style="width: 100%; background: rgba(212, 175, 55, 0.1); border: 1px solid var(--accent-gold); color: var(--accent-gold); padding: 12px; border-radius: 8px; font-family: inherit; font-weight: 600;">
+                        <option value="wav">WAV</option>
+                        <option value="mp3">MP3</option>
+                    </select>
+                </div>
+                <button id="download-btn"
+                    style="flex: 1.5; background: var(--accent-gold); color: black; margin-bottom: 0;">STOP & HARVEST
+                    SESSION</button>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button id="tool-cut" style="flex: 1;">✂️ CUT</button>
+                <button id="tool-paste" style="flex: 1;">📋 PASTE</button>
+            </div>
+        </div>
+    </main>
+
+    <div class="tracks-container">
+        <!-- T1: Local Upload (Blue/Gold) -->
+        <div class="track-strip track-music" style="border-left-color: var(--accent-blue);">
+            <div class="track-info">
+                <div class="track-header">
+                    <div class="track-name"><span class="track-id">T1</span> LOCAL UPLOAD</div>
+                </div>
+                <div class="track-controls-row">
+                    <div class="vol-slider-container">
+                        <input type="range" class="track-vol" data-track="t1" min="0" max="2.0" step="0.05" value="1.0">
+                        <span class="vol-value" id="val-t1">1.0</span>
+                    </div>
+                    <div class="action-btns">
+                        <button class="load-track-btn" data-track="t1"
+                            style="padding: 4px; font-size: 0.6rem;">LOAD</button>
+                        <div style="font-size: 0.5rem; opacity: 0.5;">SOURCE MASTER</div>
+                    </div>
+                </div>
+            </div>
+            <div class="waveform-container" id="wave-t1"></div>
+        </div>
+
+        <!-- T2: Live Mic (Red/Purple) -->
+        <div class="track-strip track-voice">
+            <div class="track-info">
+                <div class="track-header">
+                    <div class="track-name"><span class="track-id">T2</span> LIVE MIC</div>
+                </div>
+                <div class="track-controls-row">
+                    <div class="vol-slider-container">
+                        <input type="range" class="track-vol" data-track="t2" min="0" max="2.0" step="0.05" value="1.0">
+                        <span class="vol-value" id="val-t2">1.0</span>
+                    </div>
+                    <div class="action-btns">
+                        <button class="rec-btn" data-track="t2" style="padding: 4px; font-size: 0.6rem;">REC</button>
+                        <div class="meter-container">
+                            <div class="meter-bar">
+                                <div class="meter-fill" id="meter-t2-l"></div>
+                            </div>
+                            <div class="meter-bar">
+                                <div class="meter-fill" id="meter-t2-r"></div>
+                            </div>
+                        </div>
+                        <div class="routing-group" data-track="t2">
+                            <button class="routing-btn selected" data-route="mono-l">L</button>
+                            <button class="routing-btn" data-route="mono-r">R</button>
+                            <button class="routing-btn" data-route="stereo">S</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="waveform-container" id="wave-t2"></div>
+        </div>
+
+        <!-- T3: Local Upload (Blue/Gold) -->
+        <div class="track-strip track-atmos" style="border-left-color: var(--accent-gold);">
+            <div class="track-info">
+                <div class="track-header">
+                    <div class="track-name"><span class="track-id">T3</span> LOCAL UPLOAD</div>
+                </div>
+                <div class="track-controls-row">
+                    <div class="vol-slider-container">
+                        <input type="range" class="track-vol" data-track="t3" min="0" max="2.0" step="0.05" value="1.0">
+                        <span class="vol-value" id="val-t3">1.0</span>
+                    </div>
+                    <div class="action-btns">
+                        <button class="load-track-btn" data-track="t3"
+                            style="padding: 4px; font-size: 0.6rem;">LOAD</button>
+                        <div style="font-size: 0.5rem; opacity: 0.5;">ATMOS LAYER</div>
+                    </div>
+                </div>
+            </div>
+            <div class="waveform-container" id="wave-t3"></div>
+        </div>
+
+        <!-- T4: Live Mic (Red/Purple) -->
+        <div class="track-strip track-fx" style="border-left-color: var(--accent-purple);">
+            <div class="track-info">
+                <div class="track-header">
+                    <div class="track-name"><span class="track-id">T4</span> LIVE MIC</div>
+                </div>
+                <div class="track-controls-row">
+                    <div class="vol-slider-container">
+                        <input type="range" class="track-vol" data-track="t4" min="0" max="2.0" step="0.05" value="1.0">
+                        <span class="vol-value" id="val-t4">1.0</span>
+                    </div>
+                    <div class="action-btns">
+                        <button class="rec-btn" data-track="t4" style="padding: 4px; font-size: 0.6rem;">REC</button>
+                        <div class="meter-container">
+                            <div class="meter-bar">
+                                <div class="meter-fill" id="meter-t4-l"></div>
+                            </div>
+                            <div class="meter-bar">
+                                <div class="meter-fill" id="meter-t4-r"></div>
+                            </div>
+                        </div>
+                        <div class="routing-group" data-track="t4">
+                            <button class="routing-btn selected" data-route="mono-l">L</button>
+                            <button class="routing-btn" data-route="mono-r">R</button>
+                            <button class="routing-btn" data-route="stereo">S</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="waveform-container" id="wave-t4"></div>
+        </div>
+    </div>
+
+    <footer>
+        © 2026 Iamalready.com | Audio Master <span class="swagger-gold">V8.1 Master Logic</span> | admin@iamalready.com
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.all.min.js?v=8.1"></script>
+    <script type="module">
+        import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js?v=8.1'
+        import RecordPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/record.esm.js?v=8.1'
+        import RegionsPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/regions.esm.js?v=8.1'
+
+        // --- Core State ---
+        let audioCtx, osc1, osc2, gainL, gainR, binauralMasterGain, mixer, recorder;
+        let micSourceNode, micPreAmpGain;
+        let isRecording = false;
+        let currentActiveTrackId = null;
+        let tracks = {
+            t1: { ws: null, gain: 1.0, gainNode: null },
+            t2: { ws: null, gain: 1.0, gainNode: null, routing: 'mono-l', recordPlugin: null, regionPlugin: null },
+            t3: { ws: null, gain: 1.0, gainNode: null },
+            t4: { ws: null, gain: 1.0, gainNode: null, routing: 'mono-l', recordPlugin: null, regionPlugin: null }
+        };
+        let musicSource, musicGainNode;
+        let masterBus, masterOutputGain;
+        let leftGainNode, rightGainNode, mergerNode, trackRoutingMerger, trackRoutingDestination;
+        let recordedChunks = [];
+        let analysers = { t2: { l: null, r: null }, t4: { l: null, r: null } };
+        let ethicalVowAccepted = false;
+
+        const SYNC_PX_PER_SEC = 50;
+
+        function initWaveSurfers() {
+            Object.keys(tracks).forEach(id => {
+                const isLocal = (id === 't1' || id === 't3');
+                const config = {
+                    container: `#wave-${id}`,
+                    height: 110,
+                    waveColor: isLocal ? '#00d2ff33' : '#ffffff22',
+                    progressColor: getProgressColor(id),
+                    barWidth: 2,
+                    barGap: 1,
+                    minPxPerSec: SYNC_PX_PER_SEC,
+                    autoCenter: true,
+                    pixelRatio: 1,
+                    forceDecode: isLocal
+                };
+
+                tracks[id].ws = WaveSurfer.create(config);
+
+                if (!isLocal) {
+                    tracks[id].recordPlugin = tracks[id].ws.registerPlugin(RecordPlugin.create({
+                        scrollingWaveform: true,
+                        renderRecordedAudio: true
+                    }));
+                }
+                tracks[id].regionPlugin = tracks[id].ws.registerPlugin(RegionsPlugin.create());
+
+                tracks[id].ws.on('ready', () => {
+                    tracks[id].regionPlugin.enableDragSelection({ color: 'rgba(212, 175, 55, 0.3)' });
+                });
+            });
+
+            // Sync
+            tracks.t1.ws.on('interaction', time => Object.keys(tracks).forEach(id => id !== 't1' && tracks[id].ws.setTime(time)));
+            tracks.t1.ws.on('seeking', time => Object.keys(tracks).forEach(id => id !== 't1' && tracks[id].ws.setTime(time)));
+
+            function syncLoop() {
+                if (tracks.t1.ws.isPlaying()) {
+                    const masterTime = tracks.t1.ws.getCurrentTime();
+                    Object.keys(tracks).forEach(id => {
+                        if (id === 't1') return;
+                        if (Math.abs(masterTime - tracks[id].ws.getCurrentTime()) > 0.01) tracks[id].ws.setTime(masterTime);
+                    });
+                }
+                requestAnimationFrame(syncLoop);
+            }
+            syncLoop();
+        }
+
+        function getProgressColor(id) {
+            switch (id) {
+                case 't1': return '#00d2ff';
+                case 't2': return '#ff4141';
+                case 't3': return '#d4af37';
+                case 't4': return '#bb86fc';
+                default: return '#fff';
+            }
+        }
+
+        async function setupAudio() {
+            if (audioCtx) return;
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 48000 });
+
+            mixer = audioCtx.createMediaStreamDestination();
+            mergerNode = audioCtx.createChannelMerger(2);
+            mergerNode.connect(mixer);
+
+            // Master Output (Headphone Control)
+            masterOutputGain = audioCtx.createGain();
+            masterOutputGain.gain.value = 0.8;
+            masterOutputGain.connect(audioCtx.destination);
+
+            // Binaural
+            osc1 = audioCtx.createOscillator(); osc2 = audioCtx.createOscillator();
+            gainL = audioCtx.createGain(); gainR = audioCtx.createGain();
+            binauralMasterGain = audioCtx.createGain(); binauralMasterGain.gain.value = 0.3;
+            const pL = audioCtx.createStereoPanner(); pL.pan.value = -1;
+            const pR = audioCtx.createStereoPanner(); pR.pan.value = 1;
+            osc1.connect(gainL).connect(pL).connect(binauralMasterGain);
+            osc2.connect(gainR).connect(pR).connect(binauralMasterGain);
+            binauralMasterGain.connect(mergerNode);
+            binauralMasterGain.connect(masterOutputGain);
+            osc1.start(); osc2.start();
+
+            // Mic Path
+            masterBus = audioCtx.createGain(); masterBus.gain.value = 0;
+            trackRoutingDestination = audioCtx.createMediaStreamDestination();
+            masterBus.connect(trackRoutingDestination);
+
+            const micSplitter = audioCtx.createChannelSplitter(2);
+            leftGainNode = audioCtx.createGain(); rightGainNode = audioCtx.createGain();
+            trackRoutingMerger = audioCtx.createChannelMerger(2);
+
+            micSplitter.connect(leftGainNode, 0);
+            micSplitter.connect(rightGainNode, 0);
+            leftGainNode.connect(trackRoutingMerger, 0, 0);
+            rightGainNode.connect(trackRoutingMerger, 0, 1);
+            trackRoutingMerger.connect(masterBus);
+            trackRoutingMerger.connect(mergerNode);
+            trackRoutingMerger.connect(masterOutputGain);
+
+            // Per Track Gain Nodes
+            Object.keys(tracks).forEach(id => {
+                tracks[id].gainNode = audioCtx.createGain();
+                tracks[id].gainNode.gain.value = tracks[id].gain;
+            });
+
+            // Music / Upload Mix
+            musicGainNode = audioCtx.createGain();
+            musicGainNode.gain.value = 1.0;
+            musicGainNode.connect(mergerNode);
+            musicGainNode.connect(masterOutputGain);
+
+            recorder = new MediaRecorder(trackRoutingDestination.stream, { mimeType: 'audio/webm;codecs=opus' });
+            recorder.ondataavailable = e => recordedChunks.push(e.data);
+
+            Object.keys(analysers).forEach(id => {
+                analysers[id].l = audioCtx.createAnalyser(); analysers[id].r = audioCtx.createAnalyser();
+                analysers[id].l.fftSize = 256; analysers[id].r.fftSize = 256;
+                trackRoutingMerger.connect(analysers[id].l, 0);
+                trackRoutingMerger.connect(analysers[id].r, 1);
+            });
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 2, echoCancellation: false } });
+                micSourceNode = audioCtx.createMediaStreamSource(stream);
+                micPreAmpGain = audioCtx.createGain();
+                micPreAmpGain.gain.value = 1.2; // +20% Boost
+                micSourceNode.connect(micPreAmpGain).connect(micSplitter);
+            } catch (err) { console.error(err); }
+
+            updateBinaural(); drawMeters();
+        }
+
+        function drawMeters() {
+            Object.keys(analysers).forEach(id => {
+                const dataL = new Uint8Array(analysers[id].l.frequencyBinCount);
+                const dataR = new Uint8Array(analysers[id].r.frequencyBinCount);
+                analysers[id].l.getByteFrequencyData(dataL);
+                analysers[id].r.getByteFrequencyData(dataR);
+                document.getElementById(`meter-${id}-l`).style.width = (Math.max(...dataL) / 2.55) + "%";
+                document.getElementById(`meter-${id}-r`).style.width = (Math.max(...dataR) / 2.55) + "%";
+            });
+            requestAnimationFrame(drawMeters);
+        }
+
+        function updateBinaural() {
+            const base = parseInt(document.getElementById('slider-base').value);
+            const flow = parseFloat(document.getElementById('slider-flow').value);
+            osc1.frequency.setTargetAtTime(base, audioCtx.currentTime, 0.05);
+            osc2.frequency.setTargetAtTime(base + flow, audioCtx.currentTime, 0.05);
+            document.getElementById('label-base').innerText = base + "Hz";
+            document.getElementById('label-flow').innerText = flow.toFixed(1) + "Hz";
+        }
+
+        // --- Interactions ---
+        document.getElementById('vow-btn').onclick = () => {
+            ethicalVowAccepted = true;
+            document.getElementById('ethical-modal').classList.remove('visible');
+        };
+
+        document.querySelectorAll('.load-track-btn').forEach(btn => {
+            btn.onclick = async () => {
+                await setupAudio();
+                const id = btn.dataset.track;
+                const input = document.createElement('input'); input.type = 'file';
+                input.onchange = async (e) => {
+                    const url = URL.createObjectURL(e.target.files[0]);
+                    await tracks[id].ws.load(url);
+
+                    if (!tracks[id].source) {
+                        const media = tracks[id].ws.getMediaElement();
+                        tracks[id].source = audioCtx.createMediaElementSource(media);
+                        tracks[id].source.connect(tracks[id].gainNode).connect(musicGainNode);
+                    }
+
+                    document.getElementById('status-text').innerText = `${id.toUpperCase()} LOADED: ` + e.target.files[0].name;
+                };
+                input.click();
+            };
+        });
+
+        document.getElementById('play-btn').onclick = async () => {
+            if (audioCtx) await audioCtx.resume();
+            const playing = tracks.t1.ws.isPlaying();
+            Object.values(tracks).forEach(t => playing ? t.ws.pause() : t.ws.play());
+        };
+
+        document.querySelectorAll('.rec-btn').forEach(btn => {
+            btn.onclick = async () => {
+                if (!ethicalVowAccepted) return alert("Accept the Vow.");
+                await setupAudio();
+                const id = btn.dataset.track;
+                if (isRecording && currentActiveTrackId === id) {
+                    stopRecording(id);
+                } else if (!isRecording) {
+                    startRecording(id);
+                }
+            };
+        });
+
+        function startRecording(id) {
+            isRecording = true; currentActiveTrackId = id;
+            applyRouting(id);
+            recordedChunks = [];
+            recorder.start();
+            tracks[id].recordPlugin.startRecording();
+            masterBus.gain.setTargetAtTime(tracks[id].gain, audioCtx.currentTime, 0.01);
+            document.getElementById('recording-banner').style.display = 'block';
+            document.querySelector(`.rec-btn[data-track="${id}"]`).classList.add('active');
+        }
+
+        function stopRecording(id) {
+            isRecording = false;
+            masterBus.gain.setTargetAtTime(0, audioCtx.currentTime, 0.01);
+            tracks[id].recordPlugin.stopRecording();
+            recorder.stop();
+            document.getElementById('recording-banner').style.display = 'none';
+            document.querySelector(`.rec-btn[data-track="${id}"]`).classList.remove('active');
+            currentActiveTrackId = null;
+        }
+
+        function applyRouting(id) {
+            const route = tracks[id].routing;
+            leftGainNode.gain.setValueAtTime(route === 'mono-r' ? 0 : 1, audioCtx.currentTime);
+            rightGainNode.gain.setValueAtTime(route === 'mono-l' ? 0 : 1, audioCtx.currentTime);
+        }
+
+        document.querySelectorAll('.routing-btn').forEach(btn => {
+            btn.onclick = () => {
+                const id = btn.closest('.routing-group').dataset.track;
+                btn.closest('.routing-group').querySelectorAll('.routing-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                tracks[id].routing = btn.dataset.route;
+                if (isRecording && currentActiveTrackId === id) applyRouting(id);
+            };
+        });
+
+        // Track Vol Sliders
+        document.querySelectorAll('.track-vol').forEach(slider => {
+            slider.oninput = (e) => {
+                const id = e.target.dataset.track;
+                const val = parseFloat(e.target.value);
+                tracks[id].gain = val;
+                document.getElementById(`val-${id}`).innerText = val.toFixed(1);
+                if (tracks[id].gainNode) tracks[id].gainNode.gain.setTargetAtTime(val, audioCtx.currentTime, 0.05);
+                if (id === currentActiveTrackId && masterBus) masterBus.gain.setTargetAtTime(val, audioCtx.currentTime, 0.05);
+            };
+        });
+
+        document.getElementById('slider-master-gain').oninput = e => {
+            const v = parseFloat(e.target.value);
+            if (musicGainNode) musicGainNode.gain.setTargetAtTime(v, audioCtx.currentTime, 0.05);
+            document.getElementById('label-master-gain').innerText = v.toFixed(2);
+        };
+
+        document.getElementById('slider-master-output').oninput = e => {
+            const v = parseFloat(e.target.value);
+            if (masterOutputGain) masterOutputGain.gain.setTargetAtTime(v, audioCtx.currentTime, 0.05);
+            document.getElementById('label-master-output').innerText = v.toFixed(2);
+        };
+
+        document.getElementById('slider-flow').oninput = updateBinaural;
+        document.getElementById('slider-binaural-gain').oninput = e => {
+            binauralMasterGain.gain.setTargetAtTime(parseFloat(e.target.value), audioCtx.currentTime, 0.05);
+            document.getElementById('label-binaural-gain').innerText = parseFloat(e.target.value).toFixed(2);
+        };
+
+        document.getElementById('download-btn').onclick = async () => {
+            if (isRecording) stopRecording(currentActiveTrackId);
+            if (recordedChunks.length === 0) return alert("Nothing recorded.");
+            const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = 'session.webm'; a.click();
+        };
+
+        setInterval(() => document.getElementById('clock').innerText = new Date().toLocaleTimeString(), 1000);
+        initWaveSurfers();
+    </script>
+</body>
+
+</html>
