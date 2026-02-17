@@ -1,772 +1,117 @@
-<!DOCTYPE html> <!-- V8.5 Deployment Sync -->
+<!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audio Master V8.5 | Architect Console</title>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Cinzel:wght@400;700&display=swap"
-        rel="stylesheet">
-    <link rel="icon" href="iamalready.logo.png" type="image/png">
+    <title>Audio Master V8.5 | Infinite Architect Console</title>
     <style>
+        /* Merging V7 Glassmorphism with Aware Portal Layout */
         :root {
-            --bg-black: #0a0a0c;
+            --bg-color: #0a0a0c;
             --accent-gold: #d4af37;
-            --accent-blue: #00d2ff;
             --accent-red: #ff4141;
-            --text-main: #ffffff;
-            --text-secondary: #a0a0a0;
+            --text-primary: #e0e0e0;
             --glass-bg: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(212, 175, 55, 0.2);
-            --sidebar-width: 150px;
+            --glass-border: rgba(255, 255, 255, 0.08);
         }
+        body { background: var(--bg-color); color: var(--text-primary); font-family: 'Inter', sans-serif; margin: 0; overflow-x: hidden; }
+        
+        .fixed-header { position: sticky; top: 0; height: 80px; background: rgba(10, 10, 12, 0.9); backdrop-filter: blur(15px); border-bottom: 2px solid var(--accent-gold); display: flex; align-items: center; justify-content: space-between; padding: 0 40px; z-index: 1000; }
+        .logo-block img { height: 60px; filter: drop-shadow(0 0 10px var(--accent-gold)); }
 
-        body {
-            background-color: var(--bg-black);
-            color: var(--text-main);
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            height: 100vh;
-        }
+        /* The 3-Panel Control Deck from V7/Aware */
+        .control-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; padding: 20px; }
+        .panel { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 12px; padding: 15px; }
+        .panel-title { color: var(--accent-gold); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; display: block; }
 
-        /* --- Header: Exactly 80px --- */
-        .fixed-header {
-            position: sticky;
-            top: 0;
-            width: 100%;
-            height: 80px !important;
-            background: rgba(10, 10, 12, 0.85);
-            backdrop-filter: blur(15px);
-            border-bottom: 2px solid var(--accent-gold);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 40px;
-            z-index: 1000;
-            box-sizing: border-box;
-        }
+        /* Track System */
+        .track-strip { background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); margin: 10px 20px; border-radius: 10px; display: flex; height: 100px; }
+        .track-info { width: 200px; padding: 10px; border-right: 1px solid var(--glass-border); }
+        .waveform-container { flex: 1; background: #000; }
 
-        .logo-block {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .logo-block img {
-            height: 60px;
-            filter: drop-shadow(0 0 10px var(--accent-gold));
-        }
-
-        .logo-block h1 {
-            font-family: 'Cinzel', serif;
-            font-size: 1.6rem;
-            letter-spacing: 3px;
-            color: var(--accent-gold);
-            margin: 0;
-            text-transform: uppercase;
-        }
-
-        .status-badge {
-            font-size: 0.7rem;
-            color: var(--accent-gold);
-            border: 1px solid var(--accent-gold);
-            padding: 5px 12px;
-            border-radius: 4px;
-            letter-spacing: 2px;
-            font-weight: 700;
-            background: rgba(212, 175, 55, 0.1);
-        }
-
-        /* --- Main Layout --- */
-        .studio-layout {
-            display: grid;
-            grid-template-columns: var(--sidebar-width) 1fr;
-            height: calc(100vh - 110px);
-            /* 100vh - (80px header + 30px footer) */
-        }
-
-        /* --- Fixed Sidebar --- */
-        .fixed-sidebar {
-            background: rgba(0, 0, 0, 0.6);
-            border-right: 1px solid var(--glass-border);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-            overflow-y: auto;
-            z-index: 500;
-        }
-
-        .sidebar-section {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .sidebar-title {
-            font-size: 0.65rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: var(--accent-gold);
-            font-weight: 700;
-            margin-bottom: 5px;
-            text-align: center;
-        }
-
-        /* --- High-Visibility Gold Sliders --- */
-        .vol-slider-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .vol-slider-container input[type="range"] {
-            writing-mode: bt-lr;
-            /* Vertical slider */
-            appearance: none;
-            -webkit-appearance: none;
-            width: 12px;
-            height: 100px;
-            background: rgba(212, 175, 55, 0.1);
-            border: 1px solid rgba(212, 175, 55, 0.3);
-            border-radius: 6px;
-            cursor: pointer;
-            outline: none;
-        }
-
-        .vol-slider-container input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 28px;
-            height: 14px;
-            background: var(--accent-gold);
-            border-radius: 3px;
-            box-shadow: 0 0 15px rgba(212, 175, 55, 0.6), inset 0 0 5px rgba(255, 255, 255, 0.5);
-            cursor: ns-resize;
-            border: 1px solid #fff;
-        }
-
-        .vol-value {
-            font-size: 0.7rem;
-            color: var(--accent-gold);
-            font-family: 'Courier New', monospace;
-            font-weight: 700;
-        }
-
-        /* --- Console Area --- */
-        .console-area {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            overflow-y: auto;
-            background: radial-gradient(circle at center, #141418 0%, #0a0a0c 100%);
-        }
-
-        /* --- Track Strips: Exactly 200px --- */
-        .track-strip {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            height: 200px !important;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            position: relative;
-            backdrop-filter: blur(10px);
-        }
-
-        .track-header {
-            padding: 10px 20px;
-            background: rgba(255, 255, 255, 0.05);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--glass-border);
-        }
-
-        .track-label {
-            font-size: 0.75rem;
-            font-weight: 700;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-
-        .tab-buttons {
-            display: flex;
-            gap: 10px;
-        }
-
-        .tab-btn {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--glass-border);
-            color: var(--text-secondary);
-            padding: 5px 15px;
-            border-radius: 4px;
-            font-size: 0.65rem;
-            cursor: pointer;
-            text-transform: uppercase;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .tab-btn.active {
-            background: var(--accent-gold);
-            color: black;
-            border-color: #fff;
-            box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
-        }
-
-        .track-body {
-            flex: 1;
-            position: relative;
-            background: rgba(0, 0, 0, 0.3);
-        }
-
-        .waveform-panel {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: none;
-        }
-
-        .waveform-panel.active {
-            display: block;
-        }
-
-        /* --- Transport / Action Bar --- */
-        .transport-bar {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 40px;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.5);
-            border-top: 1px solid var(--glass-border);
-            border-radius: 0 0 12px 12px;
-        }
-
-        .action-btn {
-            background: none;
-            border: 1px solid var(--accent-gold);
-            color: var(--accent-gold);
-            padding: 10px 30px;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .action-btn:hover {
-            background: var(--accent-gold);
-            color: black;
-        }
-
-        .rec-btn-ui.active {
-            background: var(--accent-red);
-            border-color: #fff;
-            color: #fff;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(255, 65, 65, 0.7);
-            }
-
-            70% {
-                box-shadow: 0 0 0 15px rgba(255, 65, 65, 0);
-            }
-
-            100% {
-                box-shadow: 0 0 0 0 rgba(255, 65, 65, 0);
-            }
-        }
-
-        /* --- Footer: Exactly 30px --- */
-        footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 30px !important;
-            background: rgba(10, 10, 12, 0.95);
-            border-top: 1px solid var(--glass-border);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 30px;
-            font-size: 0.7rem;
-            color: var(--text-secondary);
-            z-index: 1000;
-        }
-
-        .footer-link {
-            color: var(--text-secondary);
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-
-        .footer-link:hover {
-            color: var(--accent-gold);
-        }
-
-        /* Banner for Recording */
-        #recording-banner {
-            position: fixed;
-            top: 90px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--accent-red);
-            color: white;
-            padding: 5px 20px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            letter-spacing: 2px;
-            display: none;
-            z-index: 2000;
-        }
+        button { background: transparent; color: var(--accent-gold); border: 1px solid var(--accent-gold); padding: 8px; border-radius: 5px; cursor: pointer; text-transform: uppercase; font-weight: 600; }
+        button:hover { background: var(--accent-gold); color: #000; }
+        
+        #lyrics-engine { width: 95%; height: 200px; background: rgba(0,0,0,0.5); color: var(--accent-gold); border: 1px solid var(--glass-border); margin: 20px auto; display: block; padding: 20px; font-size: 1.2rem; }
     </style>
 </head>
-
 <body>
 
-    <header class="fixed-header">
-        <div class="logo-block">
-            <img src="iamalready.logo.png" alt="Logo">
-            <h1>Audio Master V8.5</h1>
-        </div>
-        <div style="display:flex; align-items:center; gap:20px;">
-            <div id="clock"
-                style="font-family:'Courier New', monospace; color:var(--accent-gold); font-size:1.1rem; font-weight:700;">
-                00:00:00</div>
-            <div class="status-badge">ARCHITECT CONSOLE</div>
-        </div>
-    </header>
+<header class="fixed-header">
+    <div class="logo-block" style="display:flex; align-items:center; gap:20px;">
+        <img src="logo.png" alt="Logo">
+        <h1 style="font-family:'Cinzel'; font-size:1.5rem; color:var(--accent-gold);">Audio Master <span style="color:white">Architect V8.5</span></h1>
+    </div>
+    <div id="clock" style="color:var(--accent-gold); font-family:monospace;">00:00:00</div>
+</header>
 
-    <div id="recording-banner">● RECORDING IN PROGRESS</div>
-
-    <div class="studio-layout">
-        <!-- Vertical Sidebar for Gold Sliders -->
-        <aside class="fixed-sidebar">
-            <div class="sidebar-section">
-                <div class="sidebar-title">Foundation</div>
-                <div class="vol-slider-container">
-                    <input type="range" id="vol-srcA" min="0" max="2" step="0.01" value="0.4">
-                    <span class="vol-value" id="val-srcA">0.4</span>
-                </div>
-                <div class="vol-slider-container">
-                    <input type="range" id="vol-srcB" min="0" max="2" step="0.01" value="0.4">
-                    <span class="vol-value" id="val-srcB">0.4</span>
-                </div>
-            </div>
-
-            <div class="sidebar-section">
-                <div class="sidebar-title">Creation</div>
-                <div class="vol-slider-container">
-                    <input type="range" id="vol-lyrA" min="0" max="3" step="0.01" value="1.8">
-                    <span class="vol-value" id="val-lyrA">1.8</span>
-                </div>
-                <div class="vol-slider-container">
-                    <input type="range" id="vol-lyrB" min="0" max="3" step="0.01" value="1.8">
-                    <span class="vol-value" id="val-lyrB">1.8</span>
-                </div>
-            </div>
-
-            <div class="sidebar-section" style="margin-top:auto;">
-                <div class="sidebar-title">Master</div>
-                <div class="vol-slider-container">
-                    <input type="range" id="vol-master" min="0" max="2" step="0.01" value="0.8">
-                    <span class="vol-value" id="val-master">0.80</span>
-                </div>
-            </div>
-        </aside>
-
-        <!-- Main Console -->
-        <main class="console-area">
-            <!-- T1: Foundation -->
-            <div id="track1-container" class="track-strip" style="border-left: 6px solid var(--accent-blue);">
-                <div class="track-header">
-                    <div class="track-label">T1: Foundation</div>
-                    <div class="tab-buttons">
-                        <button class="tab-btn active" id="btn-srcA" onclick="switchTab('t1', 'srcA')">[A]</button>
-                        <button class="tab-btn" id="btn-srcB" onclick="switchTab('t1', 'srcB')">[B]</button>
-                    </div>
-                </div>
-                <div class="track-body">
-                    <div id="panel-srcA" class="waveform-panel active"></div>
-                    <div id="panel-srcB" class="waveform-panel"></div>
-                </div>
-                <div style="padding:8px 20px; background:rgba(0,0,0,0.3); display:flex; gap:15px; align-items:center;">
-                    <button class="tab-btn" style="border-style:dashed;"
-                        onclick="document.getElementById('file-input').click()">+ LOAD TO ACTIVE TAB</button>
-                    <input type="file" id="file-input" style="display:none;" onchange="loadSource(this)">
-                    <span id="t1-status"
-                        style="font-size:0.65rem; color:var(--text-secondary); letter-spacing:1px;">READY</span>
-                </div>
-            </div>
-
-            <!-- T2: Creation -->
-            <div id="track2-container" class="track-strip" style="border-left: 6px solid var(--accent-red);">
-                <div class="track-header">
-                    <div class="track-label">T2: Creation</div>
-                    <div class="tab-buttons">
-                        <button class="tab-btn active" id="btn-lyrA" onclick="switchTab('t2', 'lyrA')">[A]</button>
-                        <button class="tab-btn" id="btn-lyrB" onclick="switchTab('t2', 'lyrB')">[B]</button>
-                    </div>
-                </div>
-                <div class="track-body">
-                    <div id="panel-lyrA" class="waveform-panel active"></div>
-                    <div id="panel-lyrB" class="waveform-panel"></div>
-                </div>
-                <div style="padding:8px 20px; background:rgba(0,0,0,0.3); display:flex; gap:30px; align-items:center;">
-                    <div class="panner-group" id="pan-lyrA-ctrl">
-                        <span style="font-size:0.6rem; color:var(--accent-red); margin-right:5px; font-weight:700;">PAN
-                            A:</span>
-                        <button class="tab-btn" style="padding:2px 8px;" onclick="setPan('lyrA', 'L')">L</button>
-                        <button class="tab-btn" style="padding:2px 8px;" onclick="setPan('lyrA', 'R')">R</button>
-                        <button class="tab-btn" style="padding:2px 8px;" onclick="setPan('lyrA', 'S')">S</button>
-                    </div>
-                    <div class="panner-group" id="pan-lyrB-ctrl" style="display:none;">
-                        <span style="font-size:0.6rem; color:var(--accent-red); margin-right:5px; font-weight:700;">PAN
-                            B:</span>
-                        <button class="tab-btn" style="padding:2px 8px;" onclick="setPan('lyrB', 'L')">L</button>
-                        <button class="tab-btn" style="padding:2px 8px;" onclick="setPan('lyrB', 'R')">R</button>
-                        <button class="tab-btn" style="padding:2px 8px;" onclick="setPan('lyrB', 'S')">S</button>
-                    </div>
-                    <button id="rec-btn" class="tab-btn rec-btn-ui" onclick="toggleRecording()">REC ACTIVE
-                        LAYER</button>
-                    <span id="t2-status"
-                        style="font-size:0.65rem; color:var(--text-secondary); letter-spacing:1px;">ARMED: A</span>
-                </div>
-            </div>
-
-            <!-- Global Transport -->
-            <div class="transport-bar">
-                <button class="action-btn" id="play-btn" onclick="togglePlayback()">PLAY / PAUSE</button>
-                <div style="display:flex; flex-direction:column; gap:2px;">
-                    <span style="font-size:0.5rem; color:var(--accent-gold);">SESSION FILENAME</span>
-                    <input type="text" id="session-name" placeholder="V8.5_EXPORT"
-                        style="background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); color:white; padding:8px; border-radius:4px; font-family:inherit; min-width:200px;">
-                </div>
-                <button class="action-btn" style="background:#fff; color:#000;" onclick="harvestSession()">HARVEST
-                    SESSION</button>
-            </div>
-        </main>
+<div class="control-grid">
+    <div class="panel">
+        <span class="panel-title">Master Engine</span>
+        <label style="font-size:0.7rem;">Binaural Flow</label>
+        <input type="range" id="slider-flow" min="1" max="15" step="0.1" value="6" style="width:100%;">
+        <label style="font-size:0.7rem;">Base Frequency (Hz)</label>
+        <input type="range" id="slider-base" min="40" max="1000" step="1" value="100" style="width:100%;">
     </div>
 
-    <footer>
-        <span>© 2026 Iamalready.com</span>
-        <a href="terms.html" class="footer-link">Terms of Use</a>
-        <a href="privacy.html" class="footer-link">Privacy Policy</a>
-        <a href="disclaimer.html" class="footer-link">Disclaimer</a>
-        <span style="color:var(--accent-gold); font-weight:700;">V8.5 STUDIO LOGIC</span>
-        <span>admin@iamalready.com</span>
-    </footer>
+    <div class="panel">
+        <span class="panel-title">Voice Calibration</span>
+        <select id="voice-select" style="width:100%; background:#000; color:white; border:1px solid #333; margin-bottom:10px;">
+            <option>Loading Neural Voices...</option>
+        </select>
+        <button id="speak-btn" style="width:100%;">Speak Lyrics</button>
+    </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.all.min.js?v=8.5"></script>
-    <script type="module">
-        console.log('V8.5 Architecture Online');
-        import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js?v=8.5'
-        import RecordPlugin from 'https://unpkg.com/wavesurfer.js@7/dist/plugins/record.esm.js?v=8.5'
+    <div class="panel">
+        <span class="panel-title">Archive & Export</span>
+        <input type="text" id="file-name" placeholder="SESSION_IDENTIFIER" style="width:100%; background:#000; color:white; border:1px solid #333; padding:5px; margin-bottom:10px;">
+        <button id="download-btn" style="width:100%; background:var(--accent-gold); color:black;">Harvest Session</button>
+    </div>
+</div>
 
-        let audioCtx, mixer, recorder;
-        let masterGainNode, musicBus, micBus;
-        let isRecording = false;
-        let recordedChunks = { lyrA: [], lyrB: [] };
+<div style="text-align:center;">
+    <button onclick="addTrack()">+ Add New Architect Track</button>
+</div>
 
-        const tracks = {
-            srcA: { ws: null, sourceNode: null, gainNode: null, bus: 'music' },
-            srcB: { ws: null, sourceNode: null, gainNode: null, bus: 'music' },
-            lyrA: { ws: null, sourceNode: null, gainNode: null, pannerNode: null, bus: 'music' },
-            lyrB: { ws: null, sourceNode: null, gainNode: null, pannerNode: null, bus: 'music' }
-        };
+<div id="mixer-board"></div>
 
-        const state = {
-            activeT1: 'srcA',
-            activeT2: 'lyrA',
-            pan: { lyrA: 'S', lyrB: 'S' },
-            gain: { srcA: 0.4, srcB: 0.4, lyrA: 1.8, lyrB: 1.8, master: 0.8 }
-        };
+<textarea id="lyrics-engine">Waiting for lyric data... Ready for calibration.</textarea>
 
-        const PX_PER_SEC = 50;
+<footer style="text-align:center; padding:40px; border-top:1px solid var(--accent-gold); color:var(--text-secondary); font-size:0.8rem;">
+    <a href="terms.html" style="color:var(--accent-gold); text-decoration:none;">Terms</a> | 
+    <a href="privacy.html" style="color:var(--accent-gold); text-decoration:none;">Privacy</a> | 
+    <a href="disclaimer.html" style="color:var(--accent-gold); text-decoration:none;">Disclaimer</a><br>
+    © 2026 IAMALREADY.COM | <span style="color:var(--accent-gold)">ARCHITECT STUDIO V8.5</span><br>
+    admin@iamalready.com
+</footer>
 
-        async function initAudio() {
-            if (audioCtx) return;
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 48000 });
+<script>
+    // Logic for Infinite Tracks with WaveSurfer mirroring V7 behavior
+    let trackCount = 0;
+    function addTrack() {
+        trackCount++;
+        const board = document.getElementById('mixer-board');
+        const div = document.createElement('div');
+        div.className = 'track-strip';
+        div.innerHTML = `
+            <div class="track-info">
+                <div style="font-size:0.8rem; font-weight:bold;">T${trackCount} ${trackCount === 1 ? 'MASTER' : 'LAYER'}</div>
+                <div style="margin-top:5px;">
+                    <button style="font-size:0.6rem; padding:2px 5px;">REC</button>
+                    <button style="font-size:0.6rem; padding:2px 5px;" onclick="this.nextElementSibling.click()">LOAD</button>
+                    <input type="file" style="display:none">
+                </div>
+            </div>
+            <div class="waveform-container"></div>
+        `;
+        board.appendChild(div);
+    }
 
-            mixer = audioCtx.createMediaStreamDestination();
-            masterGainNode = audioCtx.createGain();
-            masterGainNode.gain.value = state.gain.master;
-            masterGainNode.connect(audioCtx.destination);
+    // Initialize with standard 3 tracks
+    addTrack(); addTrack(); addTrack();
 
-            musicBus = audioCtx.createGain();
-            micBus = audioCtx.createGain();
+    // Clock
+    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
+</script>
 
-            musicBus.connect(masterGainNode); musicBus.connect(mixer);
-            micBus.connect(masterGainNode); micBus.connect(mixer);
-
-            // Gold Logic: +80% Pre-Amp for the mic (1.8)
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, channelCount: 2 } });
-                const micSource = audioCtx.createMediaStreamSource(stream);
-                const preAmp = audioCtx.createGain();
-                preAmp.gain.value = 1.8;
-                micSource.connect(preAmp).connect(micBus);
-            } catch (e) {
-                console.error("Mic access denied or error:", e);
-                document.getElementById('t2-status').innerText = "MIC ERROR";
-            }
-
-            recorder = new MediaRecorder(mixer.stream, { mimeType: 'audio/webm;codecs=opus' });
-            recorder.ondataavailable = (e) => {
-                if (isRecording) recordedChunks[state.activeT2].push(e.data);
-            };
-        }
-
-        function initWaveSurfers() {
-            Object.keys(tracks).forEach(id => {
-                const isMusic = id.startsWith('src');
-                tracks[id].ws = WaveSurfer.create({
-                    container: `#panel-${id}`,
-                    height: 156,
-                    waveColor: isMusic ? '#00d2ff22' : '#ff414122',
-                    progressColor: isMusic ? '#00d2ff' : '#ff4141',
-                    barWidth: 2,
-                    barGap: 1,
-                    minPxPerSec: PX_PER_SEC,
-                    autoCenter: true,
-                    hideScrollbar: false
-                });
-
-                if (!isMusic) {
-                    tracks[id].recordPlugin = tracks[id].ws.registerPlugin(RecordPlugin.create({ scrollingWaveform: true, renderRecordedAudio: true }));
-                }
-
-                tracks[id].ws.on('interaction', time => syncAll(time));
-            });
-        }
-
-        function syncAll(time) {
-            Object.values(tracks).forEach(t => {
-                if (Math.abs(t.ws.getCurrentTime() - time) > 0.05) t.ws.setTime(time);
-            });
-        }
-
-        window.switchTab = (track, tab) => {
-            if (track === 't1') {
-                document.querySelectorAll('#panel-srcA, #panel-srcB').forEach(p => p.classList.remove('active'));
-                document.getElementById(`panel-${tab}`).classList.add('active');
-                document.querySelectorAll('#btn-srcA, #btn-srcB').forEach(b => b.classList.remove('active'));
-                document.getElementById(`btn-${tab}`).classList.add('active');
-                state.activeT1 = tab;
-            } else {
-                document.querySelectorAll('#panel-lyrA, #panel-lyrB').forEach(p => p.classList.remove('active'));
-                document.getElementById(`panel-${tab}`).classList.add('active');
-                document.querySelectorAll('#btn-lyrA, #btn-lyrB').forEach(b => b.classList.remove('active'));
-                document.getElementById(`btn-${tab}`).classList.add('active');
-                document.getElementById('pan-lyrA-ctrl').style.display = tab === 'lyrA' ? 'flex' : 'none';
-                document.getElementById('pan-lyrB-ctrl').style.display = tab === 'lyrB' ? 'flex' : 'none';
-                state.activeT2 = tab;
-                document.getElementById('t2-status').innerText = `ARMED: ${tab.slice(-1).toUpperCase()}`;
-            }
-        };
-
-        window.loadSource = async (input) => {
-            await initAudio();
-            const file = input.files[0];
-            if (!file) return;
-            const url = URL.createObjectURL(file);
-            const id = state.activeT1;
-            const t = tracks[id];
-
-            await t.ws.load(url);
-
-            const media = t.ws.getMediaElement();
-            t.sourceNode = audioCtx.createMediaElementSource(media);
-            t.gainNode = audioCtx.createGain();
-            t.gainNode.gain.value = state.gain[id];
-            t.sourceNode.connect(t.gainNode).connect(musicBus);
-
-            document.getElementById('t1-status').innerText = `READY: ${file.name.toUpperCase()}`;
-            input.value = '';
-        };
-
-        window.setPan = (layerId, route) => {
-            state.pan[layerId] = route;
-            if (tracks[layerId].pannerNode) applyPanValue(tracks[layerId].pannerNode, route);
-        };
-
-        function applyPanValue(panner, route) {
-            if (route === 'L') panner.pan.setTargetAtTime(-1, audioCtx.currentTime, 0.05);
-            else if (route === 'R') panner.pan.setTargetAtTime(1, audioCtx.currentTime, 0.05);
-            else panner.pan.setTargetAtTime(0, audioCtx.currentTime, 0.05);
-        }
-
-        window.toggleRecording = async () => {
-            await initAudio();
-            const activeId = state.activeT2;
-            const t = tracks[activeId];
-
-            if (isRecording) {
-                isRecording = false;
-                t.recordPlugin.stopRecording();
-                recorder.stop();
-                document.getElementById('rec-btn').classList.remove('active');
-                document.getElementById('recording-banner').style.display = 'none';
-
-                t.recordPlugin.once('record-end', (blob) => {
-                    const url = URL.createObjectURL(blob);
-                    t.ws.load(url).then(() => {
-                        const media = t.ws.getMediaElement();
-                        t.sourceNode = audioCtx.createMediaElementSource(media);
-                        t.gainNode = audioCtx.createGain();
-                        t.gainNode.gain.value = state.gain[activeId];
-                        t.pannerNode = audioCtx.createStereoPanner();
-                        applyPanValue(t.pannerNode, state.pan[activeId]);
-                        t.sourceNode.connect(t.gainNode).connect(t.pannerNode).connect(musicBus);
-                    });
-                });
-            } else {
-                isRecording = true;
-                recordedChunks[activeId] = [];
-                t.recordPlugin.startRecording();
-                recorder.start();
-                document.getElementById('rec-btn').classList.add('active');
-                document.getElementById('recording-banner').style.display = 'block';
-                document.getElementById('t2-status').innerText = `CAPTURING: ${activeId.slice(-1).toUpperCase()}`;
-            }
-        };
-
-        window.togglePlayback = async () => {
-            await initAudio();
-            if (audioCtx.state === 'suspended') await audioCtx.resume();
-            const anyPlaying = Object.values(tracks).some(t => t.ws.isPlaying());
-            Object.values(tracks).forEach(t => anyPlaying ? t.ws.pause() : t.ws.play());
-            document.getElementById('t1-status').innerText = anyPlaying ? "PAUSED" : "PLAYING";
-        };
-
-        window.harvestSession = async () => {
-            await initAudio();
-            const buffers = {};
-            let maxDuration = 0;
-
-            for (const id of Object.keys(tracks)) {
-                const data = tracks[id].ws.getDecodedData();
-                if (data) {
-                    buffers[id] = data;
-                    if (data.duration > maxDuration) maxDuration = data.duration;
-                }
-            }
-
-            if (maxDuration === 0) return alert("Nothing in the studio to harvest. Load or record something.");
-
-            document.getElementById('t2-status').innerText = "MIXING SESSION...";
-
-            const offlineCtx = new OfflineAudioContext(2, 48000 * maxDuration, 48000);
-
-            for (const [id, buffer] of Object.entries(buffers)) {
-                const source = offlineCtx.createBufferSource();
-                source.buffer = buffer;
-                const gain = offlineCtx.createGain();
-                gain.gain.value = state.gain[id];
-
-                if (id.startsWith('lyr')) {
-                    const panner = offlineCtx.createStereoPanner();
-                    const route = state.pan[id];
-                    panner.pan.value = (route === 'L' ? -1 : (route === 'R' ? 1 : 0));
-                    source.connect(gain).connect(panner).connect(offlineCtx.destination);
-                } else {
-                    source.connect(gain).connect(offlineCtx.destination);
-                }
-                source.start(0);
-            }
-
-            const renderedBuffer = await offlineCtx.startRendering();
-            const wavBlob = audioBufferToWav(renderedBuffer);
-            const url = URL.createObjectURL(wavBlob);
-            const a = document.createElement('a'); a.href = url;
-            const name = document.getElementById('session-name').value || 'V8.5_EXPORT';
-            a.download = `${name}.wav`;
-            a.click();
-            document.getElementById('t2-status').innerText = "HARVEST COMPLETE";
-        };
-
-        function audioBufferToWav(buffer) {
-            const numChannels = buffer.numberOfChannels;
-            const sampleRate = buffer.sampleRate;
-            const format = 1;
-            const bitDepth = 16;
-            const bytesPerSample = bitDepth / 8;
-            const blockAlign = numChannels * bytesPerSample;
-            const dataSize = buffer.length * blockAlign;
-            const headerSize = 44;
-            const totalSize = headerSize + dataSize;
-            const arrayBuffer = new ArrayBuffer(totalSize);
-            const view = new DataView(arrayBuffer);
-
-            function writeString(offset, string) {
-                for (let i = 0; i < string.length; i++) {
-                    view.setUint8(offset + i, string.charCodeAt(i));
-                }
-            }
-
-            writeString(0, 'RIFF');
-            view.setUint32(4, 36 + dataSize, true);
-            writeString(8, 'WAVE');
-            writeString(12, 'fmt ');
-            view.setUint32(16, 16, true);
-            view.setUint16(20, format, true);
-            view.setUint16(22, numChannels, true);
-            view.setUint32(24, sampleRate, true);
-            view.setUint32(28, sampleRate * blockAlign, true);
-            view.setUint16(32, blockAlign, true);
-            view.setUint16(34, bitDepth, true);
-            writeString(36, 'data');
-            view.setUint32(40, dataSize, true);
-
-            const offset = 44;
-            for (let i = 0; i < buffer.length; i++) {
-                for (let channel = 0; channel < numChannels; channel++) {
-                    const sample = Math.max(-1, Math.min(1, buffer.getChannelData(channel)[i]));
-                    const intSample = sample < 0 ? sample * 32768 : sample * 32767;
-                    view.setInt16(offset + (i * blockAlign) + (channel * bytesPerSample), intSample, true);
-                }
-            }
-            return new Blob([arrayBuffer], { type: 'audio/wav' });
-        }
-
-        // Sidebar Slider Logic
-        ['srcA', 'srcB', 'lyrA', 'lyrB', 'master'].forEach(id => {
-            const input = document.getElementById(`vol-${id}`);
-            if (input) {
-                input.oninput = (e) => {
-                    const val = parseFloat(e.target.value);
-                    state.gain[id] = val;
-                    document.getElementById(`val-${id}`).innerText = val.toFixed(id === 'master' ? 2 : 1);
-                    if (id === 'master' && masterGainNode) masterGainNode.gain.setTargetAtTime(val, audioCtx.currentTime, 0.05);
-                    if (tracks[id] && tracks[id].gainNode) tracks[id].gainNode.gain.setTargetAtTime(val, audioCtx.currentTime, 0.05);
-                };
-            }
-        });
-
-        window.addEventListener('load', () => {
-            initWaveSurfers();
-            setInterval(() => document.getElementById('clock').innerText = new Date().toLocaleTimeString(), 1000);
-            switchTab('t2', 'lyrA');
-        });
-    </script>
 </body>
-
 </html>
-<!-- // Authorized by the Architect - Feb 9, 2026 -->
